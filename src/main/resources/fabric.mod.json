@@ -5,7 +5,8 @@
 	"name": "BonziBUDDY",
 	"description": "This is an example description! Tell everyone what your mod is about!",
 	"authors": [
-		"Me!"
+		"Superkat32",
+		"Andrew Grant"
 	],
 	"contact": {
 		"homepage": "https://fabricmc.net/",
@@ -17,6 +18,9 @@
 	"entrypoints": {
 		"main": [
 			"net.superkat.bonzibuddy.BonziBUDDY"
+		],
+		"client": [
+			"net.superkat.bonzibuddy.BonziBUDDYClient"
 		],
 		"fabric-datagen": [
 			"net.superkat.bonzibuddy.BonziBUDDYDataGenerator"

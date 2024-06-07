@@ -8,6 +8,8 @@ import net.superkat.bonzibuddy.entity.client.renderer.BonziBuddyEntityRenderer;
 public class BonziBUDDYClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
+
+        //Registers Bonzi Buddy Entity model and renderer
         EntityRendererRegistry.register(BonziBUDDY.BONZI_BUDDY, BonziBuddyEntityRenderer::new);
         BonziBuddyModelLayers.registerModelLayers();
     }

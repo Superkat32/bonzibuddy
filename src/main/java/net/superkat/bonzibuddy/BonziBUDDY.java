@@ -24,6 +24,7 @@ public class BonziBUDDY implements ModInitializer {
 	public void onInitialize() {
 		LOGGER.info("Hello Fabric world!");
 
+		//Bonzi Buddy Entity
 		FabricDefaultAttributeRegistry.register(BONZI_BUDDY, BonziBuddyEntity.createMobAttributes());
 	}
 }

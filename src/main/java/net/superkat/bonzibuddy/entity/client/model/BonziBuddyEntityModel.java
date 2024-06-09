@@ -1,50 +1,54 @@
 package net.superkat.bonzibuddy.entity.client.model;
 
 import net.minecraft.client.model.*;
+import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.entity.model.SinglePartEntityModel;
+import net.minecraft.client.util.math.MatrixStack;
 import net.superkat.bonzibuddy.entity.BonziBuddyEntity;
 
 // Made with Blockbench 4.10.3
 // Exported for Minecraft version 1.17+ for Yarn
 // Paste this class into your mod and generate all required imports
-public class BonziBuddyEntityModel<T extends BonziBuddyEntity> extends SinglePartEntityModel<T> {
-	private final ModelPart root;
-//	private final ModelPart body;
-//	private final ModelPart arms;
+public class BonziBuddyEntityModel extends SinglePartEntityModel<BonziBuddyEntity> {
+	private final ModelPart bonzibuddy;
+	private final ModelPart body;
+	private final ModelPart arms;
 //	private final ModelPart leftarm;
 //	private final ModelPart lefthand;
 //	private final ModelPart rightarm;
 //	private final ModelPart righthand;
-//	private final ModelPart items;
+	private final ModelPart items;
 //	private final ModelPart globe;
 //	private final ModelPart banana;
+//	private final ModelPart bone2;
 //	private final ModelPart spyglass;
 //	private final ModelPart bone;
-//	private final ModelPart head;
+	private final ModelPart head;
 //	private final ModelPart nose;
-//	private final ModelPart sunglasses;
+	private final ModelPart sunglasses;
 //	private final ModelPart legs;
 //	private final ModelPart leftleg;
 //	private final ModelPart rightleg;
 	public BonziBuddyEntityModel(ModelPart root) {
-		this.root = root.getChild("bonzibuddy"); //main folder in the blockbench project
-//		this.body = this.root.getChild("body");
-//		this.arms = this.body.getChild("arms");
-//		this.leftarm = this.arms.getChild("leftarm");
-//		this.lefthand = this.leftarm.getChild("lefthand");
-//		this.rightarm = this.arms.getChild("rightarm");
-//		this.righthand = this.rightarm.getChild("righthand");
-//		this.items = this.arms.getChild("items");
-//		this.globe = this.items.getChild("globe");
-//		this.banana = this.items.getChild("banana");
-//		this.spyglass = this.items.getChild("spyglass");
-//		this.bone = this.spyglass.getChild("bone");
-//		this.head = this.body.getChild("head");
-//		this.nose = this.head.getChild("nose");
-//		this.sunglasses = this.head.getChild("sunglasses");
-//		this.legs = this.root.getChild("legs");
-//		this.leftleg = this.legs.getChild("leftleg");
-//		this.rightleg = this.legs.getChild("rightleg");
+		this.bonzibuddy = root.getChild("bonzibuddy");
+		this.body = bonzibuddy.getChild("body");
+		this.arms = body.getChild("arms");
+//		this.leftarm = root.getChild("leftarm");
+//		this.lefthand = root.getChild("lefthand");
+//		this.rightarm = root.getChild("rightarm");
+//		this.righthand = root.getChild("righthand");
+		this.items = arms.getChild("items");
+//		this.globe = root.getChild("globe");
+//		this.banana = root.getChild("banana");
+//		this.bone2 = root.getChild("bone2");
+//		this.spyglass = root.getChild("spyglass");
+//		this.bone = root.getChild("bone");
+		this.head = body.getChild("head");
+//		this.nose = root.getChild("nose");
+		this.sunglasses = head.getChild("sunglasses");
+//		this.legs = root.getChild("legs");
+//		this.leftleg = root.getChild("leftleg");
+//		this.rightleg = root.getChild("rightleg");
 	}
 	public static TexturedModelData getTexturedModelData() {
 		ModelData modelData = new ModelData();
@@ -72,8 +76,7 @@ public class BonziBuddyEntityModel<T extends BonziBuddyEntity> extends SinglePar
 
 		ModelPartData globe = items.addChild("globe", ModelPartBuilder.create().uv(16, 19).cuboid(-2.0F, -2.0F, -2.0F, 4.0F, 4.0F, 4.0F, new Dilation(0.0F)), ModelTransform.pivot(0.0F, -7.0F, 1.8F));
 
-		ModelPartData banana = items.addChild("banana", ModelPartBuilder.create().uv(0, 12).cuboid(5.0F, -1.0F, 0.0F, 1.0F, 1.0F, 1.0F, new Dilation(0.0F))
-		.uv(18, 31).cuboid(5.0F, -5.0F, 0.0F, 1.0F, 4.0F, 1.0F, new Dilation(0.0F)), ModelTransform.pivot(-6.0F, -6.0F, 1.0F));
+		ModelPartData banana = items.addChild("banana", ModelPartBuilder.create().uv(0, 12).cuboid(5.0F, -1.0F, 0.0F, 1.0F, 1.0F, 1.0F, new Dilation(0.0F)), ModelTransform.pivot(-5.0F, -6.0F, 1.0F));
 
 		ModelPartData cube_r3 = banana.addChild("cube_r3", ModelPartBuilder.create().uv(0, 0).cuboid(0.0F, -3.0F, -1.0F, 0.0F, 3.0F, 1.0F, new Dilation(0.0F)), ModelTransform.of(5.0F, -1.0F, 1.0F, 0.0F, 0.0F, -0.2618F));
 
@@ -82,6 +85,8 @@ public class BonziBuddyEntityModel<T extends BonziBuddyEntity> extends SinglePar
 		ModelPartData cube_r5 = banana.addChild("cube_r5", ModelPartBuilder.create().uv(16, 12).cuboid(-1.0F, -3.0F, 0.0F, 1.0F, 3.0F, 0.0F, new Dilation(0.0F)), ModelTransform.of(6.0F, -1.0F, 1.0F, -0.2618F, 0.0F, 0.0F));
 
 		ModelPartData cube_r6 = banana.addChild("cube_r6", ModelPartBuilder.create().uv(18, 12).cuboid(-1.0F, -3.0F, 0.0F, 1.0F, 3.0F, 0.0F, new Dilation(0.0F)), ModelTransform.of(6.0F, -1.0F, 0.0F, 0.2618F, 0.0F, 0.0F));
+
+		ModelPartData bone2 = banana.addChild("bone2", ModelPartBuilder.create().uv(18, 31).cuboid(5.0F, -5.0F, 0.0F, 1.0F, 4.0F, 1.0F, new Dilation(0.0F)), ModelTransform.pivot(0.0F, 0.0F, 0.0F));
 
 		ModelPartData spyglass = items.addChild("spyglass", ModelPartBuilder.create().uv(10, 46).cuboid(-1.0F, -1.0F, -2.5F, 2.0F, 2.0F, 5.0F, new Dilation(0.0F)), ModelTransform.of(0.0F, -7.0F, 1.5F, -1.5708F, 0.0F, 0.0F));
 
@@ -105,19 +110,33 @@ public class BonziBuddyEntityModel<T extends BonziBuddyEntity> extends SinglePar
 		.uv(0, 23).cuboid(1.0F, -1.0F, -3.0F, 3.0F, 1.0F, 4.0F, new Dilation(0.0F)), ModelTransform.pivot(0.0F, 0.0F, 0.0F));
 		return TexturedModelData.of(modelData, 64, 64);
 	}
-
-	@Override
-	public ModelPart getPart() {
-		return root;
-	}
-
 	@Override
 	public void setAngles(BonziBuddyEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
 		//this line is so important otherwise Bonzi Buddy's model freaking dies and explodes
 		this.getPart().traverse().forEach(ModelPart::resetTransform);
+		if(entity.shouldTurnHead) {
+			this.head.yaw = netHeadYaw * (float) (Math.PI / 180.0);
+			this.head.pitch = headPitch * (float) (Math.PI / 180.0);
+			this.items.visible = false; //workaround for hiding the items & sunglasses inside of Bonzi Buddy's model
+			this.sunglasses.visible = false;
+		} else {
+			this.items.visible = true;
+			this.sunglasses.visible = true;
+		}
 
-		this.updateAnimation(entity.idleAnimState, BonziBuddyAnimations.idlemain, ageInTicks);
-		this.updateAnimation(entity.sunglassAnimState, BonziBuddyAnimations.idlesunglasses, ageInTicks);
+		this.updateAnimation(entity.idleAnimState, BonziBuddyAnimations.IDLE_MAIN, ageInTicks);
+		this.updateAnimation(entity.idleSunglassAnimState, BonziBuddyAnimations.IDLE_SUNGLASSES, ageInTicks);
+		this.updateAnimation(entity.idleGlobeAnimState, BonziBuddyAnimations.IDLE_GLOBE, ageInTicks);
+		this.updateAnimation(entity.idleSpyglassAnimState, BonziBuddyAnimations.IDLE_SPYGLASS, ageInTicks);
+		this.updateAnimation(entity.idleBananaAnimState, BonziBuddyAnimations.IDLE_BANANA, ageInTicks);
+	}
+	@Override
+	public void render(MatrixStack matrices, VertexConsumer vertexConsumer, int light, int overlay, int color) {
+		bonzibuddy.render(matrices, vertexConsumer, light, overlay, color);
 	}
 
+	@Override
+	public ModelPart getPart() {
+		return bonzibuddy;
+	}
 }

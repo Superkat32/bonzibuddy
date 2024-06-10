@@ -8,6 +8,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.superkat.bonzibuddy.entity.BonziBuddyEntity;
+import net.superkat.bonzibuddy.network.BonziBuddyServerNetworkHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,5 +27,8 @@ public class BonziBUDDY implements ModInitializer {
 
 		//Bonzi Buddy Entity
 		FabricDefaultAttributeRegistry.register(BONZI_BUDDY, BonziBuddyEntity.createMobAttributes());
+
+		//Packets
+		BonziBuddyServerNetworkHandler.registerServerPackets();
 	}
 }

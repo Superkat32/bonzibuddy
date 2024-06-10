@@ -41,7 +41,7 @@ public class BonziBuddyEntityModel extends SinglePartEntityModel<BonziBuddyEntit
 //		this.globe = root.getChild("globe");
 //		this.banana = root.getChild("banana");
 //		this.bone2 = root.getChild("bone2");
-//		this.spyglass = root.getChild("spyglass");
+//		this.spyglass = items.getChild("spyglass");
 //		this.bone = root.getChild("bone");
 		this.head = body.getChild("head");
 //		this.nose = root.getChild("nose");
@@ -99,7 +99,7 @@ public class BonziBuddyEntityModel extends SinglePartEntityModel<BonziBuddyEntit
 
 		ModelPartData nose = head.addChild("nose", ModelPartBuilder.create().uv(20, 0).cuboid(-1.0F, -16.0F, -1.0F, 2.0F, 1.0F, 2.0F, new Dilation(0.0F)), ModelTransform.pivot(0.0F, 12.0F, -1.875F));
 
-		ModelPartData sunglasses = head.addChild("sunglasses", ModelPartBuilder.create().uv(0, 40).cuboid(-4.0F, -1.5F, -1.5F, 8.0F, 3.0F, 3.0F, new Dilation(0.0F)), ModelTransform.of(0.0F, 3.5F, 0.525F, 0.0F, 0.0F, -1.5708F));
+		ModelPartData sunglasses = head.addChild("sunglasses", ModelPartBuilder.create().uv(1, 40).cuboid(-4.0F, -1.5F, -1.5F, 8.0F, 3.0F, 3.0F, new Dilation(0.0F)), ModelTransform.of(0.0F, 3.5F, 0.525F, 0.0F, 0.0F, -1.5708F));
 
 		ModelPartData legs = bonzibuddy.addChild("legs", ModelPartBuilder.create(), ModelTransform.pivot(0.0F, 0.0F, 0.0F));
 
@@ -118,7 +118,7 @@ public class BonziBuddyEntityModel extends SinglePartEntityModel<BonziBuddyEntit
 			this.head.yaw = netHeadYaw * (float) (Math.PI / 180.0);
 			this.head.pitch = headPitch * (float) (Math.PI / 180.0);
 			this.items.visible = false; //workaround for hiding the items & sunglasses inside of Bonzi Buddy's model
-			this.sunglasses.visible = false;
+			this.sunglasses.visible = entity.showSunglasses;
 		} else {
 			this.items.visible = true;
 			this.sunglasses.visible = true;

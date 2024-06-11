@@ -24,13 +24,13 @@ public class BonziBuddyScreen extends Screen {
     @Override
     protected void init() {
         ButtonWidget button = ButtonWidget.builder(Text.of("Do A Trick!"), (btn) -> {
-            bonziBuddyIdle();
+            doATrick();
         }).dimensions(40, 40, 120, 20).build();
 
         this.addDrawableChild(button);
     }
 
-    public void bonziBuddyIdle() {
+    public void doATrick() {
         if(bonziBuddyEntity != null) {
             ClientPlayNetworking.send(new BonziBuddyDoATrickC2S(bonziBuddyEntity.getId()));
         }

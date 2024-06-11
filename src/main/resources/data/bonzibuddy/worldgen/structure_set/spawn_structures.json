@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "bonzibuddy:platform",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "bonzibuddy:constant_spread",
+    "salt": 1113429559,
+    "spacing_x": 7,
+    "spacing_z": 7
+  }
+}

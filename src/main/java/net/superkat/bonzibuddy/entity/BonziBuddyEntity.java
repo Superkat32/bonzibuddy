@@ -23,9 +23,6 @@ public class BonziBuddyEntity extends PathAwareEntity {
     public final AnimationState idleGlobeAnimState = new AnimationState();
     public final AnimationState idleSpyglassAnimState = new AnimationState();
     public final AnimationState idleBananaAnimState = new AnimationState();
-    public final List<AnimationState> idleAnimations = List.of(idleAnimState, idleSunglassAnimState, idleGlobeAnimState, idleSpyglassAnimState, idleBananaAnimState);
-    //take the seconds from BonziBuddyAnimations and multiply by 20 - I miss GeckoLib
-    public final List<Integer> idleAnimationTimes = List.of(200, 220, 80, 140, 60);
 
     public int ticksUntilNextIdleAnim = 100;
     public int ticksSinceIdleAnim = 0;
@@ -124,7 +121,11 @@ public class BonziBuddyEntity extends PathAwareEntity {
     }
 
     public void stopIdleAnimations() {
-        idleAnimations.forEach(AnimationState::stop);
+        idleAnimState.stop();
+        idleSunglassAnimState.stop();
+        idleGlobeAnimState.stop();
+        idleSpyglassAnimState.stop();
+        idleBananaAnimState.stop();
     }
 
     public boolean isIdle() {
@@ -148,20 +149,20 @@ public class BonziBuddyEntity extends PathAwareEntity {
         return state;
     }
     public enum BonziAnimation {
-        IDLE_MAIN(10.0417),
-        IDLE_SUNGLASSES(11.0, true),
-        IDLE_GLOBE(4.0),
-        IDLE_SPYGLASS(6.875, true),
-        IDLE_BANANA(2.5);
+        IDLE_MAIN(10.0417F),
+        IDLE_SUNGLASSES(11.0F, true),
+        IDLE_GLOBE(4.0F),
+        IDLE_SPYGLASS(6.875F),
+        IDLE_BANANA(2.5F);
         private final int ticks;
         private final boolean canTurnHead;
         private static final List<BonziAnimation> IDLE_ANIMATIONS = List.of(IDLE_MAIN, IDLE_SUNGLASSES, IDLE_GLOBE, IDLE_SPYGLASS, IDLE_BANANA);
         private static final List<BonziAnimation> VALUES = List.of(values());
-        BonziAnimation(double seconds, boolean canTurnHead) {
+        BonziAnimation(float seconds, boolean canTurnHead) {
             this.ticks = (int) (seconds * 20);
             this.canTurnHead = canTurnHead;
         }
-        BonziAnimation(double seconds) {
+        BonziAnimation(float seconds) {
             //copy-paste seconds from BonziBuddyAnimations to here
             //The Animation class can't be loaded on a server, which is why manual input has to be given
             this(seconds, false);

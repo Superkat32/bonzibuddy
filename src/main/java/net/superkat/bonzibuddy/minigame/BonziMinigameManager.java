@@ -11,8 +11,10 @@ import net.minecraft.world.PersistentState;
 import net.superkat.bonzibuddy.BonziBUDDY;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameApi;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
+import org.apache.commons.compress.utils.Lists;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,9 +34,16 @@ public class BonziMinigameManager extends PersistentState {
     public BonziMinigameManager(ServerWorld world) {
         this.world = world;
         this.nextAvailableId = 0;
-        this.markDirty();
+        this.markDirty(); //save nbt
     }
 
+    /**
+     * Create a new Bonzi Minigame.
+     *
+     * @param minigame The minigame type to be created.
+     * @param startingPos The minigame's starting BlockPos.
+     * @return The newly created minigame.
+     */
     public BonziMinigame createNewBonziMinigame(BonziMinigameType minigame, BlockPos startingPos) {
         BonziBUDDY.LOGGER.info("Creating new Bonzi Minigame...");
         BonziMinigame bonziMinigame = BonziMinigameApi.createMinigameFromType(minigame, nextId(), world, startingPos);
@@ -43,6 +52,11 @@ public class BonziMinigameManager extends PersistentState {
         return bonziMinigame;
     }
 
+    /**
+     * Add a minigame to the stored minigame list.
+     *
+     * @param minigame Minigame to be finalized.
+     */
     public void finalizeNewBonziMinigame(BonziMinigame minigame) {
         BonziBUDDY.LOGGER.info("Finalizing new Bonzi Minigame...");
         minigames.put(minigame.getId(), minigame);
@@ -62,6 +76,16 @@ public class BonziMinigameManager extends PersistentState {
         }
     }
 
+    public BonziMinigame getMinigameById(int id) {
+        return this.minigames.get(id);
+    }
+
+    public List<BonziMinigame> getAllMinigames() {
+        List<BonziMinigame> allMinigames = Lists.newArrayList();
+        allMinigames.addAll(this.minigames.values());
+        return allMinigames;
+    }
+
     private int nextId() {
         return ++nextAvailableId;
     }
@@ -74,7 +98,6 @@ public class BonziMinigameManager extends PersistentState {
 
         for (int i = 0; i < nbtList.size(); i++) {
             NbtCompound nbtCompound = nbtList.getCompound(i);
-//            BonziMinigame minigame = new BonziMinigame(world, nbtCompound);
             BonziMinigame minigame = BonziMinigameApi.createMinigameFromType(BonziMinigameType.fromName(nbtCompound.getString("Type")), world, nbtCompound);
             minigameManager.minigames.put(minigame.getId(), minigame);
         }

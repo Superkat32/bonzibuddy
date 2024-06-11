@@ -46,6 +46,9 @@ public class BonziMinigame {
         readNbt(nbt);
     }
 
+    /**
+     * Send updates, such as packets, to all involved players.
+     */
     public void updateInvolvedPlayers() {
 
     }
@@ -63,14 +66,23 @@ public class BonziMinigame {
         ticksSinceStart++;
     }
 
+    /**
+     * @return If the minigame should be ready to end. May not end the game right away, as a winning or losing event may be played first.
+     */
     public boolean checkForGameEnd() {
         return getNearbyPlayers().isEmpty();
     }
 
+    /**
+     * Called when the minigame has been created, used to set fields to their starting value.
+     */
     public void start() {
         ticksSinceStart = 0;
     }
 
+    /**
+     * @return All players within the minigame's range.
+     */
     public List<ServerPlayerEntity> getNearbyPlayers() {
         return this.world.getPlayers(player -> {
             return player.squaredDistanceTo(this.startPos.getX(), this.startPos.getY(), this.startPos.getZ()) <= minigameRange();
@@ -85,18 +97,50 @@ public class BonziMinigame {
         this.status = Status.STOPPED;
     }
 
+    /**
+     * Called when the minigame is ready to be removed.
+     */
+    public void invalidate() {
+        this.status = Status.STOPPED;
+    }
+
+    /**
+     * @return If the Minigame has stopped and is ready to be removed.
+     */
     public boolean stopped() {
         return this.status == Status.STOPPED;
     }
 
+    public BlockPos getStartPos() {
+        return startPos;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    /**
+     * @return The minigame's unique ID, which may or may not never get used honestly.
+     */
     public int getId() {
         return this.id;
     }
 
+    /**
+     * Read special NBT specific to the minigame
+     *
+     * @param nbt - The nbt to read from.
+     */
     public void readNbt(NbtCompound nbt) {
         this.status = Status.fromName(nbt.getString("Status"));
     }
 
+    /**
+     * Write special NBT specific to the minigame.
+     *
+     * @param nbt The NBT to write to.
+     * @return The NBT param but with the newly written NBT data.
+     */
     public NbtCompound writeNbt(NbtCompound nbt) {
         nbt.putInt("Id", this.id);
         nbt.putString("Type", this.getMinigameType().getName());

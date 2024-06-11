@@ -1,6 +1,7 @@
 package net.superkat.bonzibuddy;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
@@ -12,6 +13,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.chunk.placement.StructurePlacementType;
 import net.superkat.bonzibuddy.entity.BonziBuddyEntity;
+import net.superkat.bonzibuddy.minigame.command.BonziMinigameCommand;
 import net.superkat.bonzibuddy.network.BonziBuddyServerNetworkHandler;
 import net.superkat.bonzibuddy.worldgen.ConstantSpreadStructurePlacement;
 import org.slf4j.Logger;
@@ -41,5 +43,8 @@ public class BonziBUDDY implements ModInitializer {
 
 		//Packets
 		BonziBuddyServerNetworkHandler.registerServerPackets();
+
+		//BonziMinigame command
+		CommandRegistrationCallback.EVENT.register(((dispatcher, registryAccess, environment) -> BonziMinigameCommand.register(dispatcher)));
 	}
 }

@@ -1,5 +1,5 @@
 {
-  "type": "bonzibuddy:north_jigsaw",
+  "type": "minecraft:jigsaw",
   "biomes": "bonzibuddy:windows_void",
   "step": "surface_structures",
   "spawn_overrides": {},

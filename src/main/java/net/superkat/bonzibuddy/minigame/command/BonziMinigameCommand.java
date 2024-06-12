@@ -81,6 +81,7 @@ public class BonziMinigameCommand {
         ServerWorld world = source.getWorld();
         if(world != null) {
             List<BonziMinigame> minigames = BonziMinigameApi.getAllMinigames(world);
+            source.sendFeedback(() -> Text.literal("Searching for minigames...").formatted(Formatting.BOLD), false);
             if(minigames != null && !minigames.isEmpty()) {
                 minigames.forEach(minigame -> {
                     source.sendFeedback(() -> Text.literal(""), false);

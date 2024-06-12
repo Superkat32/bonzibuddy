@@ -1,11 +1,14 @@
 package net.superkat.bonzibuddy.minigame;
 
 import com.google.common.collect.Sets;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
+import net.superkat.bonzibuddy.network.packets.minigame.MinigameHudUpdateS2C;
 
 import java.util.List;
 import java.util.Locale;
@@ -24,6 +27,7 @@ public class BonziMinigame {
     private final ServerWorld world;
     private final BlockPos startPos;
 
+    public MinigameHudData hudData = new MinigameHudData();
     private BonziMinigame.Status status;
     public int ticksSinceStart;
 
@@ -46,17 +50,48 @@ public class BonziMinigame {
         readNbt(nbt);
     }
 
+    public void sendCreateMinigameHudPacket() {
+        sendUpdateMinigameHudPacket(MinigameHudUpdateS2C.Action.ADD);
+    }
+
+    public void sendRemoveMinigameHudPacket() {
+        sendUpdateMinigameHudPacket(MinigameHudUpdateS2C.Action.REMOVE);
+    }
+
+    public void sendUpdateMinigameHudPacket(MinigameHudUpdateS2C.Action updateAction) {
+        MinigameHudUpdateS2C packet = new MinigameHudUpdateS2C(hudData, updateAction);
+        sendPacketToInvolvedPlayers(packet);
+    }
+
+    public void sendPacketToInvolvedPlayers(CustomPayload payload) {
+        getNearbyPlayers().forEach(player -> {
+            ServerPlayNetworking.send(player, payload);
+        });
+    }
+
     /**
      * Send updates, such as packets, to all involved players.
      */
     public void updateInvolvedPlayers() {
+        List<ServerPlayerEntity> allPlayers = world.getPlayers();
+        List<ServerPlayerEntity> inRangePlayers = getNearbyPlayers();
 
+        for (ServerPlayerEntity player : allPlayers) {
+            if(!inRangePlayers.contains(player) && players.contains(player.getUuid())) {
+                removePlayer(player);
+            }
+        }
+
+        for (ServerPlayerEntity player : inRangePlayers) {
+            if(!players.contains(player.getUuid())) {
+                addPlayer(player);
+            }
+        }
     }
 
-    public boolean objectiveComplete() {
-        return ticksSinceStart >= 100;
-    }
-
+    /**
+     * Called every Minecraft tick. Should be the main method for handling everything.
+     */
     public void tick() {
         if(checkForGameEnd()) {
             this.end();
@@ -64,6 +99,18 @@ public class BonziMinigame {
         }
 
         ticksSinceStart++;
+
+        if(ticksSinceStart % 20 == 0) {
+            tickSecond();
+        }
+
+    }
+
+    /**
+     * Called every second(20 Minecraft ticks). Notably used for updating involved players, as it is a bit more of an expensive method.
+     */
+    public void tickSecond() {
+        updateInvolvedPlayers();
     }
 
     /**
@@ -78,6 +125,19 @@ public class BonziMinigame {
      */
     public void start() {
         ticksSinceStart = 0;
+        sendCreateMinigameHudPacket();
+    }
+
+    public void addPlayer(ServerPlayerEntity player) {
+        players.add(player.getUuid());
+        MinigameHudUpdateS2C packet = new MinigameHudUpdateS2C(hudData, MinigameHudUpdateS2C.Action.ADD);
+        ServerPlayNetworking.send(player, packet);
+    }
+
+    public void removePlayer(ServerPlayerEntity player) {
+        players.remove(player.getUuid());
+        MinigameHudUpdateS2C packet = new MinigameHudUpdateS2C(hudData, MinigameHudUpdateS2C.Action.REMOVE);
+        ServerPlayNetworking.send(player, packet);
     }
 
     /**
@@ -85,7 +145,7 @@ public class BonziMinigame {
      */
     public List<ServerPlayerEntity> getNearbyPlayers() {
         return this.world.getPlayers(player -> {
-            return player.squaredDistanceTo(this.startPos.getX(), this.startPos.getY(), this.startPos.getZ()) <= minigameRange();
+            return player.squaredDistanceTo(this.startPos.getX(), this.startPos.getY(), this.startPos.getZ()) <= minigameRange() * minigameRange();
         });
     }
 
@@ -94,7 +154,7 @@ public class BonziMinigame {
     }
 
     public void end() {
-        this.status = Status.STOPPED;
+        invalidate();
     }
 
     /**
@@ -102,6 +162,7 @@ public class BonziMinigame {
      */
     public void invalidate() {
         this.status = Status.STOPPED;
+        sendRemoveMinigameHudPacket();
     }
 
     /**

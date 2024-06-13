@@ -41,15 +41,21 @@ public class BonziBuddyClientNetworkHandler {
     
     public static void onMinigameTimerUpdate(MinigameHudUpdateS2C payload, ClientPlayNetworking.Context context) {
         MinecraftClient client = context.client();
-        UUID hudUuid = payload.getUuid();
-        MinigameHudUpdateS2C.Action action = payload.getAction();
+        UUID hudUuid = payload.uuid;
+        MinigameHudUpdateS2C.Action action = payload.action;
         switch(action) {
             case ADD -> {
-                MinigameHudData minigameHud = new MinigameHudData(hudUuid, payload.getTime());
+                MinigameHudData minigameHud = new MinigameHudData(payload);
                 MinigameHudRenderer.minigameHuds.put(hudUuid, minigameHud);
             }
-            case UPDATE_TIMER -> {
-                MinigameHudRenderer.updateTime(hudUuid, payload.getTime());
+            case UPDATE_TIME -> {
+                MinigameHudRenderer.updateTime(hudUuid, payload.time);
+            }
+            case UPDATE_WAVE -> {
+                MinigameHudRenderer.updateWave(hudUuid, payload.wave);
+            }
+            case UPDATE_ONE_PLAYER_LEFT -> {
+                MinigameHudRenderer.updateOnePlayerLeft(hudUuid, payload.onePlayerLeft);
             }
             case REMOVE -> {
                 MinigameHudRenderer.minigameHuds.remove(hudUuid);

@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.suggestion.SuggestionProviders;
 import net.minecraft.server.command.CommandManager;
@@ -14,14 +15,18 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.MathHelper;
 import net.superkat.bonzibuddy.BonziBUDDY;
 import net.superkat.bonzibuddy.minigame.BonziMinigame;
+import net.superkat.bonzibuddy.minigame.MinigameHudData;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameApi;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
+import net.superkat.bonzibuddy.network.packets.minigame.MinigameHudUpdateS2C;
 
 import java.util.List;
 
 public class BonziMinigameCommand {
+    private static MinigameHudData hudData = placeholderHudData();
     public static final SuggestionProvider<ServerCommandSource> BONZI_MINIGAMES = SuggestionProviders.register(
             Identifier.of(BonziBUDDY.MOD_ID, "bonzi_minigames"),
             (context, builder) -> CommandSource.suggestMatching(
@@ -45,6 +50,11 @@ public class BonziMinigameCommand {
                                                 .executes(context -> executeRemove(context.getSource(), IntegerArgumentType.getInteger(context, "id"))))
                             ).then(CommandManager.literal("removeall")
                                         .executes(context -> executeRemoveAll(context.getSource()))
+                            ).then(CommandManager.literal("hud")
+                                        .executes(context -> executeHud(context.getSource()))
+                                        .then(CommandManager.literal("delete").executes(context -> removeHud(context.getSource()))
+                                        ).then(CommandManager.literal("onePlayerLeft").executes(context -> onePlayerLeft(context.getSource()))
+                                        ).then(CommandManager.literal("wave").executes(context -> waveUpdate(context.getSource())))
                             ).then(CommandManager.literal("test")
                                 .then(CommandManager.literal("teleportPlayerToRespawn")
                                         .executes(context -> executeTpRespawn(context.getSource()))
@@ -129,6 +139,60 @@ public class BonziMinigameCommand {
             }
         }
         return -1;
+    }
+
+    private static int executeHud(ServerCommandSource source) throws CommandSyntaxException {
+        ServerPlayerEntity player = source.getPlayerOrThrow();
+        ServerWorld world = source.getWorld();
+        if(world != null) {
+            MinigameHudUpdateS2C packet = new MinigameHudUpdateS2C(hudData, MinigameHudUpdateS2C.Action.ADD);
+            ServerPlayNetworking.send(player, packet);
+            source.sendFeedback(() -> Text.literal("Created placeholder hud!"), false);
+            return 1;
+        }
+        return -1;
+    }
+
+    private static int removeHud(ServerCommandSource source) throws CommandSyntaxException {
+        ServerPlayerEntity player = source.getPlayerOrThrow();
+        ServerWorld world = source.getWorld();
+        if(world != null) {
+            MinigameHudUpdateS2C packet = new MinigameHudUpdateS2C(hudData, MinigameHudUpdateS2C.Action.REMOVE);
+            ServerPlayNetworking.send(player, packet);
+            source.sendFeedback(() -> Text.literal("Removed all placeholder huds!"), false);
+            return 1;
+        }
+        return -1;
+    }
+
+    private static int onePlayerLeft(ServerCommandSource source) throws CommandSyntaxException {
+        ServerPlayerEntity player = source.getPlayerOrThrow();
+        ServerWorld world = source.getWorld();
+        if(world != null) {
+            hudData.onePlayerLeft = !hudData.onePlayerLeft;
+            MinigameHudUpdateS2C packet = new MinigameHudUpdateS2C(hudData, MinigameHudUpdateS2C.Action.UPDATE_ONE_PLAYER_LEFT);
+            ServerPlayNetworking.send(player, packet);
+            source.sendFeedback(() -> Text.literal("Updated placeholder hud!"), false);
+            return 1;
+        }
+        return -1;
+    }
+
+    private static int waveUpdate(ServerCommandSource source) throws CommandSyntaxException {
+        ServerPlayerEntity player = source.getPlayerOrThrow();
+        ServerWorld world = source.getWorld();
+        if(world != null) {
+            hudData.wave++;
+            MinigameHudUpdateS2C packet = new MinigameHudUpdateS2C(hudData, MinigameHudUpdateS2C.Action.UPDATE_WAVE);
+            ServerPlayNetworking.send(player, packet);
+            source.sendFeedback(() -> Text.literal("Updated placeholder hud!"), false);
+            return 1;
+        }
+        return -1;
+    }
+
+    private static MinigameHudData placeholderHudData() {
+        return new MinigameHudData(MathHelper.randomUuid(), BonziMinigameType.CATASTROPHIC_CLONES, "Bonzi Minigame", 70, 1, false);
     }
 
     private static int executeTpRespawn(ServerCommandSource source) throws CommandSyntaxException {

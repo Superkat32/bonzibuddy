@@ -6,45 +6,49 @@ import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 import net.superkat.bonzibuddy.BonziBUDDY;
 import net.superkat.bonzibuddy.minigame.MinigameHudData;
+import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
 
 import java.util.UUID;
 
 public class MinigameHudUpdateS2C implements CustomPayload {
-    public static final CustomPayload.Id<MinigameHudUpdateS2C> ID = new Id<>(Identifier.of(BonziBUDDY.MOD_ID, "minigame_timer_update_s2c"));
+    public static final CustomPayload.Id<MinigameHudUpdateS2C> ID = new Id<>(Identifier.of(BonziBUDDY.MOD_ID, "minigame_hud_update_s2c"));
     public static final PacketCodec<RegistryByteBuf, MinigameHudUpdateS2C> CODEC = CustomPayload.codecOf(MinigameHudUpdateS2C::write, MinigameHudUpdateS2C::new);
 
-    private final UUID uuid;
-    private final MinigameHudUpdateS2C.Action action;
-    private final int time;
+    public final UUID uuid;
+    public final MinigameHudUpdateS2C.Action action;
+    public final BonziMinigameType type;
+    public final String name;
+    public final int time;
+    public final int wave;
+    public final boolean onePlayerLeft;
 
     public MinigameHudUpdateS2C(MinigameHudData hudData, MinigameHudUpdateS2C.Action action) {
         this.uuid = hudData.uuid;
         this.action = action;
+        this.type = hudData.type;
+        this.name = hudData.name;
         this.time = hudData.time;
-
+        this.wave = hudData.wave;
+        this.onePlayerLeft = hudData.onePlayerLeft;
     }
     public MinigameHudUpdateS2C(RegistryByteBuf buf) {
         this.uuid = buf.readUuid();
         this.action = buf.readEnumConstant(MinigameHudUpdateS2C.Action.class);
+        this.type = buf.readEnumConstant(BonziMinigameType.class);
+        this.name = buf.readString();
         this.time = buf.readInt();
+        this.wave = buf.readInt();
+        this.onePlayerLeft = buf.readBoolean();
     }
 
     public void write(RegistryByteBuf buf) {
         buf.writeUuid(this.uuid);
         buf.writeEnumConstant(this.action);
+        buf.writeEnumConstant(this.type);
+        buf.writeString(this.name);
         buf.writeInt(this.time);
-    }
-
-    public UUID getUuid() {
-        return uuid;
-    }
-
-    public Action getAction() {
-        return action;
-    }
-
-    public int getTime() {
-        return time;
+        buf.writeInt(this.wave);
+        buf.writeBoolean(this.onePlayerLeft);
     }
 
     @Override
@@ -57,8 +61,10 @@ public class MinigameHudUpdateS2C implements CustomPayload {
      */
     public static enum Action {
         ADD,
-        UPDATE_TIMER,
-        REMOVE;
+        UPDATE_TIME,
+        UPDATE_WAVE,
+        UPDATE_ONE_PLAYER_LEFT,
+        REMOVE,
     }
 
 

@@ -9,6 +9,7 @@ import net.superkat.bonzibuddy.network.packets.minigame.MinigameHudUpdateS2C;
 public class BonziCatastrophicClonesMinigame extends BonziMinigame {
     public int ticksUntilWaveEnd;
     public int secondsUntilWaveEnd;
+    public int wave;
     public BonziCatastrophicClonesMinigame(int id, ServerWorld world, BlockPos startPos) {
         super(id, world, startPos);
     }
@@ -27,7 +28,7 @@ public class BonziCatastrophicClonesMinigame extends BonziMinigame {
     public void tickSecond() {
         secondsUntilWaveEnd = ticksUntilWaveEnd / 20;
         this.hudData.setTime(secondsUntilWaveEnd);
-        sendUpdateMinigameHudPacket(MinigameHudUpdateS2C.Action.UPDATE_TIMER);
+        sendUpdateMinigameHudPacket(MinigameHudUpdateS2C.Action.UPDATE_TIME);
         super.tickSecond();
     }
 
@@ -40,7 +41,9 @@ public class BonziCatastrophicClonesMinigame extends BonziMinigame {
     public void start() {
         ticksUntilWaveEnd = 2000;
         secondsUntilWaveEnd = ticksUntilWaveEnd / 20;
+        wave = 1;
         this.hudData.setTime(secondsUntilWaveEnd);
+        this.hudData.setWave(this.wave);
         super.start();
     }
 
@@ -55,6 +58,11 @@ public class BonziCatastrophicClonesMinigame extends BonziMinigame {
     public NbtCompound writeNbt(NbtCompound nbt) {
         nbt.putInt("TicksUntilWaveEnd", ticksUntilWaveEnd);
         return super.writeNbt(nbt);
+    }
+
+    @Override
+    public MinigameHudData createHudData() {
+        return new MinigameHudData(this.getMinigameType(), "Catastrophic Clones");
     }
 
     @Override

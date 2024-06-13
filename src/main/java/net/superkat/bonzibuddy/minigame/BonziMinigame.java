@@ -27,7 +27,7 @@ public class BonziMinigame {
     private final ServerWorld world;
     private final BlockPos startPos;
 
-    public MinigameHudData hudData = new MinigameHudData();
+    public MinigameHudData hudData = createHudData();
     private BonziMinigame.Status status;
     public int ticksSinceStart;
 
@@ -211,6 +211,11 @@ public class BonziMinigame {
         nbt.putString("Status", this.status.getName());
 
         return nbt;
+    }
+
+    public MinigameHudData createHudData() {
+        //FIXME - getName() Text method with translatable string here
+        return new MinigameHudData(getMinigameType(), "Abstract Bonzi Minigame");
     }
 
     public BonziMinigameType getMinigameType() {

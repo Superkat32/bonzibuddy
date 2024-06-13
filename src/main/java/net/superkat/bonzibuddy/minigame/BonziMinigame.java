@@ -2,6 +2,7 @@ package net.superkat.bonzibuddy.minigame;
 
 import com.google.common.collect.Sets;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -147,6 +148,24 @@ public class BonziMinigame {
         return this.world.getPlayers(player -> {
             return player.squaredDistanceTo(this.startPos.getX(), this.startPos.getY(), this.startPos.getZ()) <= minigameRange() * minigameRange();
         });
+    }
+
+    public int playersAlive() {
+        return (int) getNearbyPlayers().stream().filter(LivingEntity::isAlive).count();
+    }
+
+    /**
+     * @return If the minigame is multiplayer, NOT the world/server!!!
+     */
+    public boolean multiplayer() {
+        return this.players.size() >= 2;
+    }
+
+    /**
+     * @return If there is one player remaining in a multiplayer minigame.
+     */
+    public boolean onePlayerLeft() {
+        return multiplayer() && playersAlive() == 1;
     }
 
     public double minigameRange() {

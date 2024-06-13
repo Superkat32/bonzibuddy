@@ -27,8 +27,16 @@ public class BonziCatastrophicClonesMinigame extends BonziMinigame {
     @Override
     public void tickSecond() {
         secondsUntilWaveEnd = ticksUntilWaveEnd / 20;
-        this.hudData.setTime(secondsUntilWaveEnd);
+        hudData.setTime(secondsUntilWaveEnd);
         sendUpdateMinigameHudPacket(MinigameHudUpdateS2C.Action.UPDATE_TIME);
+
+        if(onePlayerLeft()) {
+            hudData.onePlayerLeft = true;
+            sendUpdateMinigameHudPacket(MinigameHudUpdateS2C.Action.UPDATE_ONE_PLAYER_LEFT);
+        } else if (hudData.onePlayerLeft) {
+            hudData.onePlayerLeft = false;
+            sendUpdateMinigameHudPacket(MinigameHudUpdateS2C.Action.UPDATE_ONE_PLAYER_LEFT);
+        }
         super.tickSecond();
     }
 

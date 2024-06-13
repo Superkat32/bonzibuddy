@@ -50,13 +50,17 @@ public class MinigameHudRenderer {
     public static void updateOnePlayerLeft(UUID uuid, boolean onePlayerLeft) {
         MinigameHudData hudData = getHudFromUuid(uuid);
         if(hudData != null) {
+            TextTypeWriter textTypeWriter = textTypeWriters.get(uuid);
+            //Checks if typewriter exists AND is the one player typewriter.
+            //This is done because 1) the one player left packet gets sent every second,
+            //and 2) the typewriter can be overridden by another packet, like the wave clear packet
+            boolean typeWriterExist = textTypeWriter != null && Objects.equals(textTypeWriter.text, Text.translatable("bonzibuddy.minigame.oneplayer"));
+
             hudData.setOnePlayerLeft(onePlayerLeft);
-            if (onePlayerLeft) {
+            if (onePlayerLeft && !typeWriterExist) {
                 createOnePlayerLeftWriter(uuid);
             } else {
-                TextTypeWriter textTypeWriter = textTypeWriters.get(uuid);
-                //Checks if typewriter exists AND is the one player typewriter.
-                if(textTypeWriter != null && Objects.equals(textTypeWriter.text, Text.translatable("bonzibuddy.minigame.oneplayer"))) {
+                if(!onePlayerLeft && typeWriterExist) {
                     textTypeWriter.end();
                 }
             }
@@ -77,6 +81,7 @@ public class MinigameHudRenderer {
     }
 
     private static void renderMinigameHud(DrawContext context, RenderTickCounter tickCounter, MinigameHudData minigameHud, int y) {
+        //this whole method can be summed up in one word: confusion
         MinecraftClient client = MinecraftClient.getInstance();
         int windowWidth = context.getScaledWindowWidth();
         int initY = y;

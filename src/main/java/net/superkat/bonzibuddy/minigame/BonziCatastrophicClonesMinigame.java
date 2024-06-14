@@ -21,6 +21,11 @@ public class BonziCatastrophicClonesMinigame extends BonziMinigame {
     @Override
     public void tick() {
         super.tick();
+
+        if(!isLoaded()) {
+            return;
+        }
+
         ticksUntilWaveEnd--;
     }
 

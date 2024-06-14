@@ -23,13 +23,15 @@ import java.util.UUID;
  * @see BonziMinigameManager
  */
 public class BonziMinigame {
-    private final Set<UUID> players = Sets.newHashSet();
+    private final Set<ServerPlayerEntity> players = Sets.newHashSet();
+    private final Set<UUID> playersUuid = Sets.newHashSet();
     private final int id;
     private final ServerWorld world;
     private final BlockPos startPos;
 
     public MinigameHudData hudData = createHudData();
     private BonziMinigame.Status status;
+    public boolean loaded;
     public int ticksSinceStart;
 
     public BonziMinigame(int id, ServerWorld world, BlockPos startPos) {
@@ -65,9 +67,11 @@ public class BonziMinigame {
     }
 
     public void sendPacketToInvolvedPlayers(CustomPayload payload) {
-        getNearbyPlayers().forEach(player -> {
-            ServerPlayNetworking.send(player, payload);
-        });
+        for (ServerPlayerEntity player : players) {
+            if(player != null) {
+                ServerPlayNetworking.send(player, payload);
+            }
+        }
     }
 
     /**
@@ -99,12 +103,28 @@ public class BonziMinigame {
             return;
         }
 
+        if(!isLoaded()) {
+            return;
+        }
+
         ticksSinceStart++;
 
         if(ticksSinceStart % 20 == 0) {
             tickSecond();
         }
 
+    }
+
+    public boolean isLoaded() {
+        boolean wasLoaded = loaded;
+        this.loaded = world.isChunkLoaded(startPos);
+        if(!loaded) {
+            if(wasLoaded) {
+                sendRemoveMinigameHudPacket();
+            }
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -130,13 +150,15 @@ public class BonziMinigame {
     }
 
     public void addPlayer(ServerPlayerEntity player) {
-        players.add(player.getUuid());
+        players.add(player);
+        playersUuid.add(player.getUuid());
         MinigameHudUpdateS2C packet = new MinigameHudUpdateS2C(hudData, MinigameHudUpdateS2C.Action.ADD);
         ServerPlayNetworking.send(player, packet);
     }
 
     public void removePlayer(ServerPlayerEntity player) {
-        players.remove(player.getUuid());
+        players.remove(player);
+        playersUuid.remove(player.getUuid());
         MinigameHudUpdateS2C packet = new MinigameHudUpdateS2C(hudData, MinigameHudUpdateS2C.Action.REMOVE);
         ServerPlayNetworking.send(player, packet);
     }

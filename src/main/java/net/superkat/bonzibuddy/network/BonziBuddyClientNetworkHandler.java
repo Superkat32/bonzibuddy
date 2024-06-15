@@ -38,7 +38,7 @@ public class BonziBuddyClientNetworkHandler {
         int animationIndex = payload.bonziAnimationNumber();
         if(bonziBuddy != null && bonziBuddy.isAlive()) {
             BonziBuddyEntity.BonziAnimation animation = BonziBuddyEntity.BonziAnimation.getFromIndex(animationIndex);
-            bonziBuddy.playAnimation(animation);
+            bonziBuddy.playAnimation(bonziBuddy, animation);
         }
     }
 

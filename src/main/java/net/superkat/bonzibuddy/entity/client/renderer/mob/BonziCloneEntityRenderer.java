@@ -11,7 +11,7 @@ import net.superkat.bonzibuddy.entity.client.model.mob.BonziCloneEntityModel;
 import net.superkat.bonzibuddy.entity.mob.BonziCloneEntity;
 
 public class BonziCloneEntityRenderer extends MobEntityRenderer<BonziCloneEntity, BonziCloneEntityModel> {
-    private static final Identifier TEXTURE = Identifier.of(BonziBUDDY.MOD_ID, "textures/entity/bonzibuddy.png");
+    private static final Identifier TEXTURE = Identifier.of(BonziBUDDY.MOD_ID, "textures/entity/bonziclone.png");
     public BonziCloneEntityRenderer(EntityRendererFactory.Context context) {
         super(context, new BonziCloneEntityModel(context.getPart(BonziBuddyModelLayers.BONZI_BUDDY_LAYER)), 0.6f);
     }

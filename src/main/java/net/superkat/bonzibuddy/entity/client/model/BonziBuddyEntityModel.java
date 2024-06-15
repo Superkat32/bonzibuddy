@@ -56,7 +56,7 @@ public class BonziBuddyEntityModel extends SinglePartEntityModel<BonziBuddyEntit
 		ModelPartData bonzibuddy = modelPartData.addChild("bonzibuddy", ModelPartBuilder.create(), ModelTransform.pivot(0.0F, 24.0F, 0.0F));
 
 		ModelPartData body = bonzibuddy.addChild("body", ModelPartBuilder.create().uv(0, 0).cuboid(-4.0F, -7.5F, -1.75F, 8.0F, 8.0F, 4.0F, new Dilation(0.0F))
-		.uv(20, 12).cuboid(-4.0F, -5.5F, -2.75F, 8.0F, 6.0F, 1.0F, new Dilation(0.0F)), ModelTransform.pivot(0.0F, -4.5F, 1.75F));
+				.uv(20, 12).cuboid(-4.0F, -5.5F, -2.75F, 8.0F, 6.0F, 1.0F, new Dilation(0.0F)), ModelTransform.pivot(0.0F, -4.5F, 1.75F));
 
 		ModelPartData arms = body.addChild("arms", ModelPartBuilder.create(), ModelTransform.pivot(0.0F, 4.5F, -1.75F));
 
@@ -93,42 +93,43 @@ public class BonziBuddyEntityModel extends SinglePartEntityModel<BonziBuddyEntit
 		ModelPartData bone = spyglass.addChild("bone", ModelPartBuilder.create().uv(0, 47).cuboid(-1.0F, -2.0F, -10.0F, 2.0F, 2.0F, 6.0F, new Dilation(0.0F)), ModelTransform.pivot(0.0F, 1.0F, 1.5F));
 
 		ModelPartData head = body.addChild("head", ModelPartBuilder.create().uv(0, 12).cuboid(-3.0F, -7.0F, -1.875F, 6.0F, 7.0F, 4.0F, new Dilation(0.0F))
-		.uv(24, 5).cuboid(-3.0F, -3.0F, -2.875F, 6.0F, 3.0F, 1.0F, new Dilation(0.0F))
-		.uv(2, 0).cuboid(3.0F, -4.0F, -0.875F, 1.0F, 1.0F, 0.0F, new Dilation(0.0F))
-		.uv(0, 0).cuboid(-4.0F, -4.0F, -0.875F, 1.0F, 1.0F, 0.0F, new Dilation(0.0F)), ModelTransform.pivot(0.0F, -7.5F, 0.125F));
+				.uv(24, 5).cuboid(-3.0F, -3.0F, -2.875F, 6.0F, 3.0F, 1.0F, new Dilation(0.0F))
+				.uv(2, 0).cuboid(3.0F, -4.0F, -0.875F, 1.0F, 1.0F, 0.0F, new Dilation(0.0F))
+				.uv(0, 0).cuboid(-4.0F, -4.0F, -0.875F, 1.0F, 1.0F, 0.0F, new Dilation(0.0F)), ModelTransform.pivot(0.0F, -7.5F, 0.125F));
 
 		ModelPartData nose = head.addChild("nose", ModelPartBuilder.create().uv(20, 0).cuboid(-1.0F, -16.0F, -1.0F, 2.0F, 1.0F, 2.0F, new Dilation(0.0F)), ModelTransform.pivot(0.0F, 12.0F, -1.875F));
 
-		ModelPartData sunglasses = head.addChild("sunglasses", ModelPartBuilder.create().uv(1, 40).cuboid(-4.0F, -1.5F, -1.5F, 8.0F, 3.0F, 3.0F, new Dilation(0.0F)), ModelTransform.of(0.0F, 3.5F, 0.525F, 0.0F, 0.0F, -1.5708F));
+		ModelPartData sunglasses = head.addChild("sunglasses", ModelPartBuilder.create().uv(0, 40).cuboid(-4.0F, -1.5F, -1.5F, 8.0F, 3.0F, 3.0F, new Dilation(0.0F)), ModelTransform.of(0.0F, 3.5F, 0.525F, 0.0F, 0.0F, -1.5708F));
 
 		ModelPartData legs = bonzibuddy.addChild("legs", ModelPartBuilder.create(), ModelTransform.pivot(0.0F, 0.0F, 0.0F));
 
-		ModelPartData leftleg = legs.addChild("leftleg", ModelPartBuilder.create().uv(32, 19).cuboid(-1.25F, -1.5F, -1.5F, 2.0F, 4.0F, 2.0F, new Dilation(0.0F))
-		.uv(24, 0).cuboid(-1.25F, 1.5F, -5.5F, 3.0F, 1.0F, 4.0F, new Dilation(0.0F)), ModelTransform.pivot(-2.75F, -2.5F, 2.5F));
+		ModelPartData leftleg = legs.addChild("leftleg", ModelPartBuilder.create().uv(32, 19).cuboid(-1.25F, 0.0F, -0.9F, 2.0F, 4.0F, 2.0F, new Dilation(0.0F))
+				.uv(24, 0).cuboid(-1.25F, 3.0F, -4.9F, 3.0F, 1.0F, 4.0F, new Dilation(0.0F)), ModelTransform.pivot(-2.75F, -4.0F, 1.9F));
 
-		ModelPartData rightleg = legs.addChild("rightleg", ModelPartBuilder.create().uv(0, 32).cuboid(2.0F, -4.0F, 1.0F, 2.0F, 4.0F, 2.0F, new Dilation(0.0F))
-		.uv(0, 23).cuboid(1.0F, -1.0F, -3.0F, 3.0F, 1.0F, 4.0F, new Dilation(0.0F)), ModelTransform.pivot(0.0F, 0.0F, 0.0F));
+		ModelPartData rightleg = legs.addChild("rightleg", ModelPartBuilder.create().uv(0, 32).cuboid(-0.75F, 0.0F, -0.9F, 2.0F, 4.0F, 2.0F, new Dilation(0.0F))
+				.uv(0, 23).cuboid(-1.75F, 3.0F, -4.9F, 3.0F, 1.0F, 4.0F, new Dilation(0.0F)), ModelTransform.pivot(2.75F, -4.0F, 1.9F));
 		return TexturedModelData.of(modelData, 64, 64);
 	}
 	@Override
 	public void setAngles(BonziBuddyEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
 		//this line is so important otherwise Bonzi Buddy's model freaking dies and explodes
 		this.getPart().traverse().forEach(ModelPart::resetTransform);
-		if(entity.shouldTurnHead) {
+		if(entity.shouldTurnHead()) {
 			this.head.yaw = netHeadYaw * (float) (Math.PI / 180.0);
 			this.head.pitch = headPitch * (float) (Math.PI / 180.0);
 			this.items.visible = false; //workaround for hiding the items & sunglasses inside of Bonzi Buddy's model
-			this.sunglasses.visible = entity.showSunglasses;
+			this.sunglasses.visible = entity.showSunglasses();
 		} else {
 			this.items.visible = true;
 			this.sunglasses.visible = true;
 		}
 
-		this.updateAnimation(entity.idleAnimState, BonziBuddyAnimations.IDLE_MAIN, ageInTicks);
-		this.updateAnimation(entity.idleSunglassAnimState, BonziBuddyAnimations.IDLE_SUNGLASSES, ageInTicks);
-		this.updateAnimation(entity.idleGlobeAnimState, BonziBuddyAnimations.IDLE_GLOBE, ageInTicks);
-		this.updateAnimation(entity.idleSpyglassAnimState, BonziBuddyAnimations.IDLE_SPYGLASS, ageInTicks);
-		this.updateAnimation(entity.idleBananaAnimState, BonziBuddyAnimations.IDLE_BANANA, ageInTicks);
+		this.updateAnimation(entity.idleAnimState(), BonziBuddyAnimations.IDLE_MAIN, ageInTicks);
+		this.updateAnimation(entity.idleSunglassAnimState(), BonziBuddyAnimations.IDLE_SUNGLASSES, ageInTicks);
+		this.updateAnimation(entity.idleGlobeAnimState(), BonziBuddyAnimations.IDLE_GLOBE, ageInTicks);
+		this.updateAnimation(entity.idleSpyglassAnimState(), BonziBuddyAnimations.IDLE_SPYGLASS, ageInTicks);
+		this.updateAnimation(entity.idleBananaAnimState(), BonziBuddyAnimations.IDLE_BANANA, ageInTicks);
+		this.updateAnimation(entity.deathAnimState(), BonziBuddyAnimations.YIKES, ageInTicks);
 	}
 	@Override
 	public void render(MatrixStack matrices, VertexConsumer vertexConsumer, int light, int overlay, int color) {

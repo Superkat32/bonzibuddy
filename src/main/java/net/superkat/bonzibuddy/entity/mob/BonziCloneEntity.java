@@ -18,9 +18,9 @@ public class BonziCloneEntity extends AbstractBonziCloneEntity {
         super(entityType, world);
         this.scale = MathHelper.clamp(this.getRandom().nextBetween(1, 3) * this.getRandom().nextFloat(), 1, 3);
         this.color = new Color(
-                this.getRandom().nextBetween(0, 100),
-                this.getRandom().nextBetween(0, 70),
-                this.getRandom().nextBetween(0, 100),
+                255 - this.getRandom().nextBetween(0, 70),
+                255 - this.getRandom().nextBetween(0, 30),
+                255 - this.getRandom().nextBetween(0, 70),
                 255
         );
         Objects.requireNonNull(this.getAttributeInstance(EntityAttributes.GENERIC_SCALE)).setBaseValue(scale);

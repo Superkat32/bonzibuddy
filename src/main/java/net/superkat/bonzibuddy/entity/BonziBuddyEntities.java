@@ -7,7 +7,9 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.superkat.bonzibuddy.BonziBUDDY;
-import net.superkat.bonzibuddy.entity.mob.BonziCloneEntity;
+import net.superkat.bonzibuddy.entity.bonzi.BonziBuddyEntity;
+import net.superkat.bonzibuddy.entity.minigame.ProtectBonziEntity;
+import net.superkat.bonzibuddy.entity.minigame.mob.BonziCloneEntity;
 
 public class BonziBuddyEntities {
     public static final EntityType<BonziBuddyEntity> BONZI_BUDDY = Registry.register(

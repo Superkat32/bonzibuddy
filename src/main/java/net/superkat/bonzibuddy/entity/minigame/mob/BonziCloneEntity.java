@@ -1,10 +1,11 @@
-package net.superkat.bonzibuddy.entity.mob;
+package net.superkat.bonzibuddy.entity.minigame.mob;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.mob.HostileEntity;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
@@ -29,6 +30,12 @@ public class BonziCloneEntity extends AbstractBonziCloneEntity {
 
     public void setAttributesBasedOnScale() {
         
+    }
+
+    @Override
+    protected Box getAttackBox() {
+        Box box = super.getAttackBox();
+        return box.contract(0.75, 0, 0.75);
     }
 
     public static DefaultAttributeContainer.Builder createMobAttributes() {

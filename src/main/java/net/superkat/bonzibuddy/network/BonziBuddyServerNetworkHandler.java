@@ -6,7 +6,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.superkat.bonzibuddy.BonziBUDDY;
-import net.superkat.bonzibuddy.entity.BonziBuddyEntity;
+import net.superkat.bonzibuddy.entity.bonzi.BonziBuddyEntity;
 import net.superkat.bonzibuddy.minigame.BonziMinigame;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameApi;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;

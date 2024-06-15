@@ -1,6 +1,7 @@
-package net.superkat.bonzibuddy.entity;
+package net.superkat.bonzibuddy.entity.bonzi;
 
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.client.render.entity.model.SinglePartEntityModel;
 import net.minecraft.entity.AnimationState;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -58,7 +59,7 @@ public interface BonziLikeEntity {
             animationState.startIfNotRunning(bonziEntity.age);
         } else {
             syncAnimation(bonziEntity, bonziAnimation);
-            setTicksUntilNextIdleAnim(ticksUntilAnimDone() + bonziEntity.getRandom().nextBetween(100, 300));
+            setTicksUntilNextIdleAnim(ticksUntilAnimDone() + resetIdleAnimationTicks(bonziEntity));
             setReadyForIdleAnim(false);
         }
     }
@@ -72,6 +73,7 @@ public interface BonziLikeEntity {
             walkAnimState().stop();
             updateIdleAnimations(bonziEntity);
         } else {
+            stopIdleAnimations();
             if(bonziEntity.getWorld().isClient) {
                 walkAnimState().startIfNotRunning(bonziEntity.age);
             }
@@ -101,6 +103,10 @@ public interface BonziLikeEntity {
 
     default void playRandomIdleAnimation(LivingEntity bonziEntity) {
         playAnimation(bonziEntity, BonziAnimation.randomIdleAnimation());
+    }
+
+    default int resetIdleAnimationTicks(LivingEntity bonziEntity) {
+        return bonziEntity.getRandom().nextBetween(100, 300);
     }
 
     default void stopAnimations() {
@@ -138,6 +144,16 @@ public interface BonziLikeEntity {
         return state;
     }
 
+    /**
+     * Steps to add a new animation: <br> <br>
+     * 1. Export and add the animation to {@link net.superkat.bonzibuddy.entity.client.model.BonziBuddyAnimations}. <br> <br>
+     * 2. Add the enum to {@link BonziAnimation}. The time can be copy-pasted from the animation in the BonziBuddyAnimations class. <br> <br>
+     * 3. Create an AnimationState in here ({@link BonziLikeEntity#idleAnimState()}). Have all classes that implement BonziLikeEntity implement that new AnimationState. <br> <br>
+     * 4. Add the enum to {@link BonziLikeEntity#getAnimationStateFromAnimation(BonziAnimation)}. It should return the newly added AnimationState. <br> <br>
+     * 5. Add the animation to the {@link BonziLikeEntity#stopAnimations()} method. <br> <br>
+     * 6. Update the AnimationState in {@link net.superkat.bonzibuddy.entity.client.model.BonziLikeModel#updateAnimationStates(BonziLikeEntity, SinglePartEntityModel, float, float, float)}. The Animation should be the newly imported Animation in BonziBuddyAnimations. <br> <br>
+     * 7. Play the animation where you'd like!
+     */
     enum BonziAnimation {
         IDLE_MAIN(10.0417F),
         IDLE_SUNGLASSES(11.0F, true),

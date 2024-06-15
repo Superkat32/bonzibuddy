@@ -8,7 +8,7 @@ import net.minecraft.util.Identifier;
 import net.superkat.bonzibuddy.BonziBUDDY;
 import net.superkat.bonzibuddy.entity.client.BonziBuddyModelLayers;
 import net.superkat.bonzibuddy.entity.client.model.mob.BonziCloneEntityModel;
-import net.superkat.bonzibuddy.entity.mob.BonziCloneEntity;
+import net.superkat.bonzibuddy.entity.minigame.mob.BonziCloneEntity;
 
 public class BonziCloneEntityRenderer extends MobEntityRenderer<BonziCloneEntity, BonziCloneEntityModel> {
     private static final Identifier TEXTURE = Identifier.of(BonziBUDDY.MOD_ID, "textures/entity/bonziclone.png");

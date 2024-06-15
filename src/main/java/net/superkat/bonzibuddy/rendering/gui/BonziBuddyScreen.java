@@ -5,7 +5,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 import net.minecraft.world.World;
-import net.superkat.bonzibuddy.entity.BonziBuddyEntity;
+import net.superkat.bonzibuddy.entity.bonzi.BonziBuddyEntity;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
 import net.superkat.bonzibuddy.network.packets.BonziBuddyDoATrickC2S;
 import net.superkat.bonzibuddy.network.packets.minigame.RequestPlayMinigameC2S;

@@ -1,10 +1,9 @@
-package net.superkat.bonzibuddy.entity;
+package net.superkat.bonzibuddy.entity.bonzi;
 
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.AnimationState;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
-import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -43,14 +42,6 @@ public class BonziBuddyEntity extends PathAwareEntity implements BonziLikeEntity
             ServerPlayNetworking.send((ServerPlayerEntity) player, new OpenBonziBuddyScreenS2C(this.getId()));
         }
         return super.interactMob(player, hand);
-    }
-
-    @Override
-    public void onDeath(DamageSource damageSource) {
-//        if(this.getWorld().isClient) {
-//            playAnimation(this, BonziAnimation.DEATH);
-//        }
-        super.onDeath(damageSource);
     }
 
     @Override

@@ -4,7 +4,7 @@ import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.MobEntityRenderer;
 import net.minecraft.util.Identifier;
 import net.superkat.bonzibuddy.BonziBUDDY;
-import net.superkat.bonzibuddy.entity.BonziBuddyEntity;
+import net.superkat.bonzibuddy.entity.bonzi.BonziBuddyEntity;
 import net.superkat.bonzibuddy.entity.client.BonziBuddyModelLayers;
 import net.superkat.bonzibuddy.entity.client.model.BonziBuddyEntityModel;
 

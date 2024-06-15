@@ -7,7 +7,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.superkat.bonzibuddy.entity.BonziBuddyEntities;
-import net.superkat.bonzibuddy.entity.ProtectBonziEntity;
+import net.superkat.bonzibuddy.entity.minigame.ProtectBonziEntity;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
 import net.superkat.bonzibuddy.network.packets.minigame.MinigameHudUpdateS2C;
 import net.superkat.bonzibuddy.network.packets.minigame.WaitingForPlayersS2C;

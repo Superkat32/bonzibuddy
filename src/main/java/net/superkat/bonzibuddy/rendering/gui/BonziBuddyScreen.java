@@ -6,7 +6,9 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 import net.minecraft.world.World;
 import net.superkat.bonzibuddy.entity.BonziBuddyEntity;
+import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
 import net.superkat.bonzibuddy.network.packets.BonziBuddyDoATrickC2S;
+import net.superkat.bonzibuddy.network.packets.minigame.RequestPlayMinigameC2S;
 import org.jetbrains.annotations.Nullable;
 
 public class BonziBuddyScreen extends Screen {
@@ -23,17 +25,28 @@ public class BonziBuddyScreen extends Screen {
 
     @Override
     protected void init() {
+        //FIXME - translatable string
         ButtonWidget button = ButtonWidget.builder(Text.of("Do A Trick!"), (btn) -> {
             doATrick();
         }).dimensions(40, 40, 120, 20).build();
-
         this.addDrawableChild(button);
+
+        //FIXME - Allow player to choose teammates
+        ButtonWidget playCatastrophicClones = ButtonWidget.builder(Text.of("Play Catastrophic Clones!"), (btn) -> {
+            requestPlayCatastrophicClones();
+        }).dimensions(40, 64, 120, 20).build();
+        this.addDrawableChild(playCatastrophicClones);
     }
 
     public void doATrick() {
         if(bonziBuddyEntity != null) {
             ClientPlayNetworking.send(new BonziBuddyDoATrickC2S(bonziBuddyEntity.getId()));
         }
+    }
+
+    public void requestPlayCatastrophicClones() {
+        //Assumes all nearby players are entering
+        ClientPlayNetworking.send(new RequestPlayMinigameC2S(BonziMinigameType.CATASTROPHIC_CLONES));
     }
 
     @Override

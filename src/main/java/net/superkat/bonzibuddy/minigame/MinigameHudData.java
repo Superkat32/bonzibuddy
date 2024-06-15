@@ -16,15 +16,19 @@ public class MinigameHudData {
     public String name;
     public int time;
     public int wave;
+    public int gracePeriod;
     public boolean onePlayerLeft;
+    public String defeatedBoss;
 
-    public MinigameHudData(UUID uuid, BonziMinigameType type, String name, int time, int wave, boolean onePlayerLeft) {
+    public MinigameHudData(UUID uuid, BonziMinigameType type, String name, int time, int wave, int gracePeriod, boolean onePlayerLeft, String defeatedBoss) {
         this.uuid = uuid;
         this.type = type;
         this.name = name;
         this.time = time;
         this.wave = wave;
+        this.gracePeriod = gracePeriod;
         this.onePlayerLeft = onePlayerLeft;
+        this.defeatedBoss = defeatedBoss;
     }
     public MinigameHudData(MinigameHudUpdateS2C packet) {
         this.uuid = packet.uuid;
@@ -32,7 +36,9 @@ public class MinigameHudData {
         this.name = packet.name;
         this.time = packet.time;
         this.wave = packet.wave;
+        this.gracePeriod = packet.gracePeriod;
         this.onePlayerLeft = packet.onePlayerLeft;
+        this.defeatedBoss = packet.defeatedBoss;
     }
     public MinigameHudData(BonziMinigameType type, String name) {
         this.uuid = MathHelper.randomUuid();
@@ -40,7 +46,9 @@ public class MinigameHudData {
         this.name = name;
         this.time = 0;
         this.wave = 0;
-        this.onePlayerLeft= false;
+        this.gracePeriod = 0;
+        this.onePlayerLeft = false;
+        this.defeatedBoss = "";
     }
     public MinigameHudData() {
         this.uuid = MathHelper.randomUuid();
@@ -48,7 +56,9 @@ public class MinigameHudData {
         this.name = "Bonzi Minigame";
         this.time = 0;
         this.wave = 0;
+        this.gracePeriod = 0;
         this.onePlayerLeft = false;
+        this.defeatedBoss = "";
     }
 
     public void setType(BonziMinigameType type) {
@@ -67,8 +77,13 @@ public class MinigameHudData {
         this.wave = wave;
     }
 
+    public void setGracePeriod(int gracePeriod) {
+        this.gracePeriod = gracePeriod;
+    }
     public void setOnePlayerLeft(boolean onePlayerLeft) {
         this.onePlayerLeft = onePlayerLeft;
     }
+
+    public void setDefeatedBoss(String defeatedBoss) { this.defeatedBoss = defeatedBoss; }
 
 }

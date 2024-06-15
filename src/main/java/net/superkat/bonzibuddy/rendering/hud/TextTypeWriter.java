@@ -24,18 +24,19 @@ public class TextTypeWriter {
     public boolean readyForRemoval = false;
 
 
-    private int ticks = 0;
-    private float maxScale = 4f;
-    private float scale = maxScale;
-    private boolean fadeIn;
-    private int fadeInTicks;
-    private boolean fadeOut;
-    private int fadeOutTicks;
-    private int remainingFadeOutTicks;
-    private int totalFlashTicks;
-    private int flashTicks;
-    private boolean flashedColor = false;
-    public TextTypeWriter(UUID hudUuid, Text text, Color color, @Nullable Color flashColor, boolean bounceIn, boolean flash, boolean removeWhenDoneTyping, int fadeInTicks, int fadeOutTicks) {
+    protected int ticks = 0;
+    protected float maxScale = 4f;
+    protected float scale = maxScale;
+    protected boolean fadeIn;
+    protected int fadeInTicks;
+    protected boolean fadeOut;
+    protected int fadeOutTicks;
+    protected int remainingFadeOutTicks;
+    protected int totalFlashTicks;
+    protected int flashTicks;
+    protected boolean flashedColor = false;
+    protected int ticksAfterTyping;
+    public TextTypeWriter(UUID hudUuid, Text text, Color color, @Nullable Color flashColor, boolean bounceIn, boolean flash, boolean removeWhenDoneTyping, int fadeInTicks, int fadeOutTicks, int ticksAfterTyping) {
         this.hudUuid = hudUuid;
         this.text = text;
         this.color = color;
@@ -49,6 +50,7 @@ public class TextTypeWriter {
         this.fadeIn = true;
         this.fadeOut = false;
         this.totalFlashTicks = 50;
+        this.ticksAfterTyping = ticksAfterTyping;
     }
     public TextTypeWriter(UUID hudUuid, Text text, Color color, @Nullable Color flashColor, boolean bounceIn, boolean flash, boolean removeWhenDoneTyping) {
         this.hudUuid = hudUuid;
@@ -66,6 +68,7 @@ public class TextTypeWriter {
         this.fadeIn = true;
         this.fadeOut = false;
         this.totalFlashTicks = 50;
+        this.ticksAfterTyping = 60;
     }
 
 
@@ -90,9 +93,7 @@ public class TextTypeWriter {
                 fadeIn = false;
             }
             if(bounceIn) {
-                //this was way easier than I thought it would be - pretty shrimple really
-                float fadeAmount = (float) fadeInTicks / ticks + maxScale - 1;
-                this.scale = fadeAmount;
+                this.bounceIn();
             } else {
                 //this was way more difficult to make than it should have been
                 float fadeAmount = (float) ticks / fadeInTicks;
@@ -100,7 +101,6 @@ public class TextTypeWriter {
                 int scissorY = (int) ((height / 2) + y * (scale));
                 int scissorX2 = (int) (scissorX + textWidth * scale);
                 int scissorY2 = (int) (scissorY + textHeight * scale);
-//                context.fill(scissorX, scissorY, scissorX2, scissorY2, Color.white.getRGB());
                 context.enableScissor(scissorX, scissorY, (int) (scissorX2 * fadeAmount), scissorY2);
                 scissor = true;
             }
@@ -112,8 +112,7 @@ public class TextTypeWriter {
             }
 
             if(bounceIn) {
-                float fadeAmount = maxScale / remainingFadeOutTicks + maxScale;
-                this.scale = fadeAmount;
+                this.bounceOut();
             } else {
                 float fadeAmount = (float) remainingFadeOutTicks / fadeOutTicks;
                 int scissorX = (int) ((width / 2) + x * (scale));
@@ -125,7 +124,7 @@ public class TextTypeWriter {
             }
         } else {
             //3 seconds between fade in and out
-            if(removeWhenDoneTyping && ticks == fadeInTicks + 60) {
+            if(removeWhenDoneTyping && ticks == fadeInTicks + ticksAfterTyping) {
                 end();
             }
 
@@ -141,10 +140,7 @@ public class TextTypeWriter {
         }
 
 
-        //make the text bigger and more dramatic
-        context.getMatrices().translate(width / 2f, height / 2f, 0);
-        context.getMatrices().scale(scale, scale, scale);
-        context.drawTextWithShadow(client.textRenderer, this.text, x, y, textColor.getRGB());
+        drawText(context, x, y, width, height, textColor);
         if(scissor) {
             context.disableScissor();
         }
@@ -154,6 +150,24 @@ public class TextTypeWriter {
 
     public void end() {
         fadeOut = true;
+    }
+
+    protected void drawText(DrawContext context, int x, int y, int width, int height, Color textColor) {
+        //make the text bigger and more dramatic
+        context.getMatrices().translate(width / 2f, height / 2f, 0);
+        context.getMatrices().scale(scale, scale, scale);
+        context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, this.text, x, y, textColor.getRGB());
+    }
+
+    protected void bounceIn() {
+        //this was way easier than I thought it would be - pretty shrimple really
+        float fadeAmount = (float) fadeInTicks / ticks + maxScale - 1;
+        this.scale = fadeAmount;
+    }
+
+    protected void bounceOut() {
+        float fadeAmount = maxScale / remainingFadeOutTicks + maxScale;
+        this.scale = fadeAmount;
     }
 
     private Color transitionColor(Color original, Color fadeTo, int fadeTick, int fadeTicks) {

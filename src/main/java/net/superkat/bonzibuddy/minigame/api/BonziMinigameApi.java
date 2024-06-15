@@ -20,17 +20,24 @@ import java.util.List;
  */
 public class BonziMinigameApi {
 
+    public static final int STRUCTURE_SPACING = 112;
+    public static final int STRUCTURE_PLATFORM_Y = 37;
+    public static final int STRUCTURE_SPAWN_Y = STRUCTURE_PLATFORM_Y + 3;
+
     /**
      * Start a Bonzi Minigame of a specific type at a specific position.
      *
      * @param minigame The minigame type to start.
      * @param world The world to start in.
      * @param startingPos The minigame's starting position.
+     *
+     * @return The started Bonzi Minigame.
      */
-    public static void startBonziMinigame(BonziMinigameType minigame, ServerWorld world, BlockPos startingPos) {
+    public static BonziMinigame startBonziMinigame(BonziMinigameType minigame, ServerWorld world, BlockPos startingPos) {
         BonziMinigame bonziMinigame = createBonziMinigame(minigame, world, startingPos);
         BonziBUDDY.LOGGER.info("Starting new Bonzi Minigame");
         bonziMinigame.start();
+        return bonziMinigame;
     }
 
     /**
@@ -87,6 +94,40 @@ public class BonziMinigameApi {
             return true;
         }
         return false;
+    }
+
+    public static BlockPos getAvailableMinigameBlockpos(ServerWorld world) {
+        BonziMinigameManager minigameManager = getMinigameManager(world);
+        int totalMinigames = minigameManager.getAllMinigames().size();
+        if(totalMinigames == 0) {
+            return findStructureCenterOffset(world, 0, STRUCTURE_PLATFORM_Y, 0);
+        } else {
+            return findStructureCenterOffset(world, totalMinigames * STRUCTURE_SPACING, STRUCTURE_PLATFORM_Y, 0);
+        }
+    }
+
+    private static BlockPos findStructureCenterOffset(ServerWorld world, int x, int y, int z) {
+        BlockPos searchPos = new BlockPos(x, y, z);
+        if(!world.getBlockState(searchPos.add(24, 0, 24)).isAir()) {
+            return new BlockPos(searchPos).add(24, 0, 24);
+        } else if (!world.getBlockState(searchPos.add(24, 0, -24)).isAir()) {
+            return new BlockPos(searchPos).add(24, 0, -24);
+        } else if (!world.getBlockState(searchPos.add(-24, 0, -24)).isAir()) {
+            return new BlockPos(searchPos).add(-24, 0, -24);
+        } else if(!world.getBlockState(searchPos.add(-24, 0, 24)).isAir()) {
+            return new BlockPos(searchPos).add(-24, 0, 24);
+        } else {
+            BonziBUDDY.LOGGER.warn("Couldn't find the center of the structure! Teleporting to backup location!");
+            return searchPos;
+        }
+    }
+
+    public static void teleportPlayersToMinigame(BonziMinigame minigame, List<ServerPlayerEntity> players) {
+        ServerWorld world = minigame.getWorld();
+        BlockPos minigameStartPos = minigame.getStartPos();
+        players.forEach(player ->  {
+            player.teleport(world, minigameStartPos.getX(), minigameStartPos.getY() + 3, minigameStartPos.getZ(), 0f, 0f);
+        });
     }
 
     /**

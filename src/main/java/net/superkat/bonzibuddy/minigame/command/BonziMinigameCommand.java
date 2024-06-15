@@ -54,7 +54,11 @@ public class BonziMinigameCommand {
                                         .executes(context -> executeHud(context.getSource()))
                                         .then(CommandManager.literal("delete").executes(context -> removeHud(context.getSource()))
                                         ).then(CommandManager.literal("onePlayerLeft").executes(context -> onePlayerLeft(context.getSource()))
-                                        ).then(CommandManager.literal("wave").executes(context -> waveUpdate(context.getSource())))
+                                        ).then(CommandManager.literal("bossDefeated").executes(context -> bossDefeated(context.getSource()))
+                                        ).then(CommandManager.literal("wave").executes(context -> waveUpdate(context.getSource()))
+                                        ).then(CommandManager.literal("victory").executes(context -> victory(context.getSource()))
+                                        ).then(CommandManager.literal("defeat").executes(context -> defeat(context.getSource()))
+                                        ).then(CommandManager.literal("graceperiod").executes(context -> gracePeriod(context.getSource())))
                             ).then(CommandManager.literal("test")
                                 .then(CommandManager.literal("teleportPlayerToRespawn")
                                         .executes(context -> executeTpRespawn(context.getSource()))
@@ -178,12 +182,69 @@ public class BonziMinigameCommand {
         return -1;
     }
 
+    private static int bossDefeated(ServerCommandSource source) throws CommandSyntaxException {
+        ServerPlayerEntity player = source.getPlayerOrThrow();
+        ServerWorld world = source.getWorld();
+        if(world != null) {
+            String bossDefeated = "Blue Bonzi Buddy";
+            hudData.setDefeatedBoss(bossDefeated);
+            MinigameHudUpdateS2C packet = new MinigameHudUpdateS2C(hudData, MinigameHudUpdateS2C.Action.BOSS_DEFEATED);
+            ServerPlayNetworking.send(player, packet);
+            source.sendFeedback(() -> Text.literal("Updated placeholder hud!"), false);
+            return 1;
+        }
+        return -1;
+    }
+
+    private static int victory(ServerCommandSource source) throws CommandSyntaxException {
+        ServerPlayerEntity player = source.getPlayerOrThrow();
+        ServerWorld world = source.getWorld();
+        if(world != null) {
+            MinigameHudUpdateS2C packet = new MinigameHudUpdateS2C(hudData, MinigameHudUpdateS2C.Action.VICTORY);
+            ServerPlayNetworking.send(player, packet);
+            source.sendFeedback(() -> Text.literal("Updated placeholder hud!"), false);
+            return 1;
+        }
+        return -1;
+    }
+
+    private static int defeat(ServerCommandSource source) throws CommandSyntaxException {
+        ServerPlayerEntity player = source.getPlayerOrThrow();
+        ServerWorld world = source.getWorld();
+        if(world != null) {
+            MinigameHudUpdateS2C packet = new MinigameHudUpdateS2C(hudData, MinigameHudUpdateS2C.Action.DEFEAT);
+            ServerPlayNetworking.send(player, packet);
+            source.sendFeedback(() -> Text.literal("Updated placeholder hud!"), false);
+            return 1;
+        }
+        return -1;
+    }
+
     private static int waveUpdate(ServerCommandSource source) throws CommandSyntaxException {
         ServerPlayerEntity player = source.getPlayerOrThrow();
         ServerWorld world = source.getWorld();
         if(world != null) {
+            MinigameHudUpdateS2C packet = new MinigameHudUpdateS2C(hudData, MinigameHudUpdateS2C.Action.WAVE_CLEAR);
+            ServerPlayNetworking.send(player, packet);
             hudData.wave++;
-            MinigameHudUpdateS2C packet = new MinigameHudUpdateS2C(hudData, MinigameHudUpdateS2C.Action.UPDATE_WAVE);
+            MinigameHudUpdateS2C packet2 = new MinigameHudUpdateS2C(hudData, MinigameHudUpdateS2C.Action.UPDATE_WAVE);
+            ServerPlayNetworking.send(player, packet2);
+            source.sendFeedback(() -> Text.literal("Updated placeholder hud!"), false);
+            return 1;
+        }
+        return -1;
+    }
+
+    private static int gracePeriod(ServerCommandSource source) throws CommandSyntaxException {
+        ServerPlayerEntity player = source.getPlayerOrThrow();
+        ServerWorld world = source.getWorld();
+        if(world != null) {
+            if(hudData.gracePeriod <= 0) {
+                hudData.gracePeriod = 10;
+            } else {
+                hudData.gracePeriod--;
+            }
+            MinigameHudUpdateS2C packet = new MinigameHudUpdateS2C(hudData, MinigameHudUpdateS2C.Action.UPDATE_GRACE_PERIOD);
             ServerPlayNetworking.send(player, packet);
             source.sendFeedback(() -> Text.literal("Updated placeholder hud!"), false);
             return 1;
@@ -192,7 +253,7 @@ public class BonziMinigameCommand {
     }
 
     private static MinigameHudData placeholderHudData() {
-        return new MinigameHudData(MathHelper.randomUuid(), BonziMinigameType.CATASTROPHIC_CLONES, "Bonzi Minigame", 70, 1, false);
+        return new MinigameHudData(MathHelper.randomUuid(), BonziMinigameType.CATASTROPHIC_CLONES, "Bonzi Minigame", 70, 1, 0, false, "");
     }
 
     private static int executeTpRespawn(ServerCommandSource source) throws CommandSyntaxException {

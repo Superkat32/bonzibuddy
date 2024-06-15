@@ -24,6 +24,11 @@ public class BonziCloneEntity extends AbstractBonziCloneEntity {
                 255
         );
         Objects.requireNonNull(this.getAttributeInstance(EntityAttributes.GENERIC_SCALE)).setBaseValue(scale);
+        setAttributesBasedOnScale();
+    }
+
+    public void setAttributesBasedOnScale() {
+        
     }
 
     public static DefaultAttributeContainer.Builder createMobAttributes() {

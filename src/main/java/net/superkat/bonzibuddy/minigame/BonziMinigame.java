@@ -8,6 +8,8 @@ import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.superkat.bonzibuddy.BonziBUDDY;
+import net.superkat.bonzibuddy.minigame.api.BonziMinigameApi;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
 import net.superkat.bonzibuddy.network.packets.minigame.MinigameHudUpdateS2C;
 
@@ -23,16 +25,18 @@ import java.util.UUID;
  * @see BonziMinigameManager
  */
 public class BonziMinigame {
-    private final Set<ServerPlayerEntity> players = Sets.newHashSet();
-    private final Set<UUID> playersUuid = Sets.newHashSet();
-    private final int id;
-    private final ServerWorld world;
-    private final BlockPos startPos;
+    protected final Set<ServerPlayerEntity> players = Sets.newHashSet();
+    protected final Set<UUID> playersUuid = Sets.newHashSet();
+    protected final int id;
+    protected final ServerWorld world;
+    protected final BlockPos startPos;
 
     public MinigameHudData hudData = createHudData();
-    private BonziMinigame.Status status;
+    protected BonziMinigame.Status status;
     public boolean loaded;
     public int ticksSinceStart;
+    public int gracePeriodTicks;
+    public int gracePeriodSeconds;
 
     public BonziMinigame(int id, ServerWorld world, BlockPos startPos) {
         this.id = id;
@@ -107,11 +111,26 @@ public class BonziMinigame {
             return;
         }
 
-        ticksSinceStart++;
+        if(gracePeriod()) {
+            if(gracePeriodTicks <= 0) {
+                this.status = Status.ONGOING;
+                return;
+            }
 
-        if(ticksSinceStart % 20 == 0) {
-            tickSecond();
+            gracePeriodTicks--;
+            if(gracePeriodTicks % 20 == 0) {
+                gracePeriodSeconds--;
+                gracePeriodTickSecond();
+            }
+
+        } else if(onGoing()) {
+            ticksSinceStart++;
+
+            if(ticksSinceStart % 20 == 0) {
+                tickSecond();
+            }
         }
+
 
     }
 
@@ -134,6 +153,16 @@ public class BonziMinigame {
         updateInvolvedPlayers();
     }
 
+    public void gracePeriodTickSecond() {
+        updateInvolvedPlayers();
+    }
+
+    public void startGracePeriod() {
+        gracePeriodTicks = gracePeriodSeconds * 20;
+        this.status = Status.GRACE_PERIOD;
+        updateInvolvedPlayers();
+    }
+
     /**
      * @return If the minigame should be ready to end. May not end the game right away, as a winning or losing event may be played first.
      */
@@ -146,7 +175,10 @@ public class BonziMinigame {
      */
     public void start() {
         ticksSinceStart = 0;
-        sendCreateMinigameHudPacket();
+        startGracePeriod();
+        if(this.getMinigameType() == BonziMinigameType.ABSTRACT) {
+            sendCreateMinigameHudPacket();
+        }
     }
 
     public void addPlayer(ServerPlayerEntity player) {
@@ -194,6 +226,19 @@ public class BonziMinigame {
         return 48;
     }
 
+    public void win() {
+        this.status = Status.VICTORY;
+        sendUpdateMinigameHudPacket(MinigameHudUpdateS2C.Action.VICTORY);
+    }
+
+    public void lose() {
+        this.status = Status.LOSS;
+        sendUpdateMinigameHudPacket(MinigameHudUpdateS2C.Action.DEFEAT);
+    }
+
+    /**
+     * Called when the minigame is ready to be won or lost.
+     */
     public void end() {
         invalidate();
     }
@@ -204,8 +249,18 @@ public class BonziMinigame {
     public void invalidate() {
         this.status = Status.STOPPED;
         sendRemoveMinigameHudPacket();
+        if(this.world.getRegistryKey() == BonziBUDDY.PROTECT_BONZIBUDDY) {
+            BonziMinigameApi.teleportPlayersToRespawn(this.players.stream().toList());
+        }
     }
 
+    public boolean gracePeriod() {
+        return this.status == Status.GRACE_PERIOD;
+    }
+
+    public boolean onGoing() {
+        return this.status == Status.ONGOING;
+    }
     /**
      * @return If the Minigame has stopped and is ready to be removed.
      */
@@ -213,6 +268,17 @@ public class BonziMinigame {
         return this.status == Status.STOPPED;
     }
 
+    public boolean hasWon() {
+        return this.status == Status.VICTORY;
+    }
+
+    public boolean hasLost() {
+        return this.status == Status.LOSS;
+    }
+
+    public ServerWorld getWorld() {
+        return world;
+    }
     public BlockPos getStartPos() {
         return startPos;
     }
@@ -266,7 +332,7 @@ public class BonziMinigame {
     static enum Status {
         STARTING,
         ONGOING,
-        WAVE_CLEAR,
+        GRACE_PERIOD,
         VICTORY,
         LOSS,
         STOPPED;

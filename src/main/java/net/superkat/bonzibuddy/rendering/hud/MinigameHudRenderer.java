@@ -43,7 +43,21 @@ public class MinigameHudRenderer {
         MinigameHudData hudData = getHudFromUuid(uuid);
         if(hudData != null) {
             hudData.setWave(wave);
-            createWaveClearWriter(uuid, wave - 1);
+        }
+    }
+
+    public static void waveClear(UUID uuid) {
+        MinigameHudData hudData = getHudFromUuid(uuid);
+        if(hudData != null) {
+            createWaveClearWriter(uuid, hudData.wave);
+        }
+    }
+
+    public static void updateGracePeriod(UUID uuid, int gracePeriod) {
+        MinigameHudData hudData = getHudFromUuid(uuid);
+        if(hudData != null) {
+            hudData.setGracePeriod(gracePeriod);
+            createGracePeriodWriter(uuid, gracePeriod);
         }
     }
 
@@ -64,6 +78,30 @@ public class MinigameHudRenderer {
                     textTypeWriter.end();
                 }
             }
+        }
+    }
+
+    public static void updateDefeatedBoss(UUID uuid, String defeatedBoss) {
+        MinigameHudData hudData = getHudFromUuid(uuid);
+        if(hudData != null) {
+            hudData.setDefeatedBoss(defeatedBoss);
+            if (!defeatedBoss.isEmpty()) {
+                createDefeatedBossWriter(uuid, defeatedBoss);
+            }
+        }
+    }
+
+    public static void victory(UUID uuid) {
+        MinigameHudData hudData = getHudFromUuid(uuid);
+        if(hudData != null) {
+            createVictoryTypeWriter(uuid);
+        }
+    }
+
+    public static void defeat(UUID uuid) {
+        MinigameHudData hudData = getHudFromUuid(uuid);
+        if(hudData != null) {
+            createDefeatTypeWriter(uuid);
         }
     }
 
@@ -158,8 +196,22 @@ public class MinigameHudRenderer {
     private static void createWaveClearWriter(UUID uuid, int wave) {
         textTypeWriters.put(uuid, new TextTypeWriter(uuid, Text.translatable("bonzibuddy.minigame.waveclear", wave), new Color(154, 108, 246, 255), null, false, false, true));
     }
+    private static void createGracePeriodWriter(UUID uuid, int gracePeriod) {
+        boolean go = gracePeriod <= 0;
+        Text text = go ? Text.translatable("bonzibuddy.minigame.go") : Text.of(String.valueOf(gracePeriod));
+        textTypeWriters.put(uuid, new GracePeriodTextTypeWriter(uuid, text, new Color(143, 108, 246, 255), go));
+    }
     private static void createOnePlayerLeftWriter(UUID uuid) {
          textTypeWriters.put(uuid, new TextTypeWriter(uuid, Text.translatable("bonzibuddy.minigame.oneplayer"), new Color(255, 91, 84, 255), new Color(213, 25, 17, 255), true, true, false));
+    }
+    private static void createDefeatedBossWriter(UUID uuid, String bossDefeated) {
+        textTypeWriters.put(uuid, new ActionTextTypeWriter(uuid, Text.translatable("bonzibuddy.minigame.bossdefetaed", bossDefeated), new Color(255, 212, 0, 255), new Color(255, 166, 0, 255), true));
+    }
+    private static void createVictoryTypeWriter(UUID uuid) {
+        textTypeWriters.put(uuid, new TextTypeWriter(uuid, Text.translatable("bonzibuddy.minigame.victory"), new Color(130, 73, 243, 255), new Color(154, 108, 246, 255), true, true, true, 60, 10, 300));
+    }
+    private static void createDefeatTypeWriter(UUID uuid) {
+        textTypeWriters.put(uuid, new DefeatTextTypeWriter(uuid, Text.translatable("bonzibuddy.minigame.defeat"), new Color(213, 25, 17, 255), null, true, false, true));
     }
 
 }

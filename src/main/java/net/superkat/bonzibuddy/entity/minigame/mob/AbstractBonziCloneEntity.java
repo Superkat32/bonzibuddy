@@ -24,6 +24,7 @@ public abstract class AbstractBonziCloneEntity extends HostileEntity implements 
     public final AnimationState idleBananaAnimState = new AnimationState();
     public final AnimationState walkAnimState = new AnimationState();
     public final AnimationState attackAnimState = new AnimationState();
+    public final AnimationState victorySunglassesAnimState = new AnimationState();
     public final AnimationState deathAnimState = new AnimationState();
     boolean shouldTurnHead = true;
     boolean showSunglasses = false;
@@ -31,6 +32,7 @@ public abstract class AbstractBonziCloneEntity extends HostileEntity implements 
     public int ticksSinceIdleAnim = 0;
     public int ticksUntilAnimDone = 0;
     public boolean readyForIdleAnim = false;
+    public boolean victorySunglasses = false;
     public AbstractBonziCloneEntity(EntityType<? extends HostileEntity> entityType, World world) {
         super(entityType, world);
     }
@@ -41,7 +43,7 @@ public abstract class AbstractBonziCloneEntity extends HostileEntity implements 
         this.goalSelector.add(3, new LookAtEntityGoal(this, PlayerEntity.class, 8f, 0.5f));
         this.goalSelector.add(3, new LookAtEntityGoal(this, ProtectBonziEntity.class, 16f, 0.5f));
         this.targetSelector.add(1, new ActiveTargetGoal<>(this, PlayerEntity.class, true));
-        this.targetSelector.add(1, new ActiveTargetGoal<>(this, ProtectBonziEntity.class, false));
+        this.targetSelector.add(2, new ActiveTargetGoal<>(this, ProtectBonziEntity.class, false));
     }
 
     @Override
@@ -88,6 +90,11 @@ public abstract class AbstractBonziCloneEntity extends HostileEntity implements 
     }
 
     @Override
+    public boolean showDeathPose() {
+        return false;
+    }
+
+    @Override
     public boolean readyForIdleAnim() {
         return readyForIdleAnim;
     }
@@ -128,6 +135,16 @@ public abstract class AbstractBonziCloneEntity extends HostileEntity implements 
     }
 
     @Override
+    public boolean victorySunglasses() {
+        return this.victorySunglasses;
+    }
+
+    @Override
+    public void setVictorySunglasses(boolean victorySunglasses) {
+        this.victorySunglasses = victorySunglasses;
+    }
+
+    @Override
     public AnimationState idleAnimState() {
         return idleAnimState;
     }
@@ -160,6 +177,11 @@ public abstract class AbstractBonziCloneEntity extends HostileEntity implements 
     @Override
     public AnimationState attackAnimState() {
         return attackAnimState;
+    }
+
+    @Override
+    public AnimationState victorySunglassesAnimState() {
+        return victorySunglassesAnimState;
     }
 
     @Override

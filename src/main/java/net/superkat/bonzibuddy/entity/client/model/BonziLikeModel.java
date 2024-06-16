@@ -28,6 +28,7 @@ public interface BonziLikeModel {
         updateIdleAnimationStates(entity, ageInTicks);
         updateBonziAnimation(entity.walkAnimState(), BonziBuddyAnimations.CLONE_WALK, ageInTicks);
         updateBonziAnimation(entity.attackAnimState(), BonziBuddyAnimations.CLONE_ATTACK, ageInTicks);
+        updateBonziAnimation(entity.victorySunglassesAnimState(), BonziBuddyAnimations.IDLE_SUNGLASSES, ageInTicks);
         updateBonziAnimation(entity.deathAnimState(), BonziBuddyAnimations.YIKES, ageInTicks);
     }
     default void updateIdleAnimationStates(BonziLikeEntity entity, float ageInTicks) {

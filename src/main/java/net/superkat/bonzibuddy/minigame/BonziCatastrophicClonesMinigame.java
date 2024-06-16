@@ -1,13 +1,19 @@
 package net.superkat.bonzibuddy.minigame;
 
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.superkat.bonzibuddy.entity.BonziBuddyEntities;
+import net.superkat.bonzibuddy.entity.bonzi.BonziLikeEntity;
 import net.superkat.bonzibuddy.entity.minigame.ProtectBonziEntity;
+import net.superkat.bonzibuddy.entity.minigame.mob.BonziCloneEntity;
+import net.superkat.bonzibuddy.minigame.api.BonziMinigameApi;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
 import net.superkat.bonzibuddy.network.packets.minigame.MinigameHudUpdateS2C;
 import net.superkat.bonzibuddy.network.packets.minigame.WaitingForPlayersS2C;
@@ -19,10 +25,17 @@ public class BonziCatastrophicClonesMinigame extends BonziMinigame {
     public int maxWaves;
     public int ticksUntilNextWave;
     public ProtectBonziEntity protectBonziEntity = null;
-    public int ticksUntilInvalidate;
+    public int ticksUntilEnemy;
+    public int maxTicksUntilEnemy;
+    public int minTicksUntilEnemy;
+    public BlockPos currentEnemySpawnPos;
+    public int ticksUntilNewEnemySpawnPos;
+
     public BonziCatastrophicClonesMinigame(int id, ServerWorld world, BlockPos startPos) {
         super(id, world, startPos);
         this.maxWaves = 3;
+        maxTicksUntilEnemy = 30;
+        minTicksUntilEnemy = 10;
     }
 
     public BonziCatastrophicClonesMinigame(ServerWorld world, NbtCompound nbt) {
@@ -33,7 +46,17 @@ public class BonziCatastrophicClonesMinigame extends BonziMinigame {
     public void tick() {
         super.tick();
 
+        if(gracePeriodSeconds > 13 && wave == 1) {
+            if(gracePeriodTicks % 5 == 0) { //clear previous minigame entities in case of error
+                BonziMinigameApi.clearAnyEntities(world, startPos, 30);
+            }
+        }
+
         if(!isLoaded()) {
+            ticksUntilInvalidate--;
+            if(ticksUntilInvalidate <= 0) {
+                invalidate();
+            }
             return;
         }
 
@@ -46,6 +69,16 @@ public class BonziCatastrophicClonesMinigame extends BonziMinigame {
                 }
             } else {
                 ticksUntilWaveEnd--;
+
+                ticksUntilEnemy--;
+                if(ticksUntilEnemy <= 0) {
+                    spawnClone();
+                }
+
+                ticksUntilNewEnemySpawnPos--;
+                if(ticksUntilNewEnemySpawnPos <= 0) {
+                    newEnemySpawnPos();
+                }
             }
         } else if (hasWon() || hasLost()) {
             ticksUntilInvalidate--;
@@ -87,13 +120,22 @@ public class BonziCatastrophicClonesMinigame extends BonziMinigame {
 
     @Override
     public boolean checkForGameEnd() {
-        return (ticksUntilWaveEnd <= 0 || bonziDefeated()) && !hasLost() && !hasWon() && !gracePeriod() && ticksUntilNextWave <= 0;
+        boolean playersDefeated;
+        if(multiplayer()) {
+            playersDefeated = playersAlive() <= 0;
+        } else {
+            int playerLives = 3;
+            playersDefeated = playerLives <= 0;
+        }
+        return (ticksUntilWaveEnd <= 0 || bonziDefeated() || playersDefeated) && !hasLost() && !hasWon() && !gracePeriod() && ticksUntilNextWave <= 0;
     }
 
     public boolean bonziDefeated() {
         boolean bonziDefeated = protectBonziEntity == null;
         if(!bonziDefeated) {
-            bonziDefeated = !protectBonziEntity.isAlive();
+            if(protectBonziEntity.getRemovalReason() != Entity.RemovalReason.UNLOADED_TO_CHUNK) {
+                bonziDefeated = !protectBonziEntity.isAlive();
+            }
         }
         return bonziDefeated;
     }
@@ -113,6 +155,9 @@ public class BonziCatastrophicClonesMinigame extends BonziMinigame {
         startNextWave();
         hudData.setTime(secondsUntilWaveEnd);
         hudData.setWave(this.wave);
+
+        newEnemySpawnPos();
+        ticksUntilNewEnemySpawnPos = 100;
 
         super.start();
     }
@@ -136,9 +181,32 @@ public class BonziCatastrophicClonesMinigame extends BonziMinigame {
     }
 
     @Override
+    public void lose() {
+        super.lose();
+        //1 in 100 chance of all of the alive enemies wearing sunglasses upon player defeat :-]
+        int wearSunglasses = this.world.random.nextInt(100);
+        if(wearSunglasses == 0) {
+            this.enemies.forEach(enemy -> {
+                if(enemy instanceof BonziLikeEntity bonziLikeEntity) {
+                    bonziLikeEntity.playAnimation(enemy, BonziLikeEntity.BonziAnimation.VICTORY_GLASSES);
+                }
+            });
+        }
+    }
+
+    @Override
     public void invalidate() {
-        if(this.protectBonziEntity != null) {
-            this.protectBonziEntity.kill();
+        if(isLoaded()) {
+            if(this.protectBonziEntity != null) {
+                this.protectBonziEntity.kill();
+            }
+            this.enemies.forEach(LivingEntity::kill);
+        } else {
+            //this really doesn't do anything I don't think
+            if(this.protectBonziEntity != null) {
+                this.protectBonziEntity.remove(Entity.RemovalReason.DISCARDED);
+            }
+            this.enemies.forEach(Entity::discard);
         }
         super.invalidate();
     }
@@ -149,6 +217,10 @@ public class BonziCatastrophicClonesMinigame extends BonziMinigame {
         secondsUntilWaveEnd = ticksUntilWaveEnd / 20;
         hudData.setTime(secondsUntilWaveEnd);
         hudData.setWave(this.wave);
+
+        ticksUntilEnemy = 20;
+        newEnemySpawnPos();
+        ticksUntilNewEnemySpawnPos = 100;
 
         players.forEach(player -> {
             player.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 200, 3));
@@ -166,9 +238,34 @@ public class BonziCatastrophicClonesMinigame extends BonziMinigame {
         sendUpdateMinigameHudPacket(MinigameHudUpdateS2C.Action.WAVE_CLEAR);
     }
 
+    public void spawnClone() {
+        if(currentEnemySpawnPos != null && enemies.size() < maxEnemies) {
+            BonziCloneEntity clone = BonziBuddyEntities.BONZI_CLONE.create(world);
+            clone.setPos(currentEnemySpawnPos.getX(), currentEnemySpawnPos.getY(), currentEnemySpawnPos.getZ());
+            clone.initialize(world, world.getLocalDifficulty(currentEnemySpawnPos), SpawnReason.EVENT, null);
+            world.spawnEntity(clone);
+            addEnemy(clone);
+        }
+
+        ticksUntilEnemy = world.random.nextBetween(minTicksUntilEnemy, maxTicksUntilEnemy);
+    }
+
+    public void addEnemy(MobEntity enemy) {
+        super.addEnemy(enemy);
+        enemy.setTarget(protectBonziEntity);
+    }
+
+    public void newEnemySpawnPos() {
+        BlockPos newPos = BonziMinigameApi.getEnemySpawnPos(world, startPos, 1, 20);
+        if(newPos != null) {
+            this.currentEnemySpawnPos = newPos;
+        }
+        ticksUntilNewEnemySpawnPos = world.random.nextBetween(140, 300);
+    }
+
     private void spawnProtectableBonziBuddy() {
         protectBonziEntity = BonziBuddyEntities.PROTECTABLE_BONZI_BUDDY.create(world);
-        protectBonziEntity.setPos(this.startPos.getX(), this.startPos.getY() + 7, this.startPos.getZ());
+        protectBonziEntity.setPos(this.startPos.getX(), this.startPos.getY() + 3, this.startPos.getZ());
         protectBonziEntity.initialize(world, world.getLocalDifficulty(this.startPos), SpawnReason.EVENT, null);
         world.spawnEntity(protectBonziEntity);
     }

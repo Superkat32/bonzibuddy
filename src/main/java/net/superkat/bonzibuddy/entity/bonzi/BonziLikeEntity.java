@@ -17,6 +17,9 @@ public interface BonziLikeEntity {
     boolean showSunglasses();
     void setShouldTurnHead(boolean shouldTurnHead);
     void setShowSunglasses(boolean showSunglasses);
+    default boolean showDeathPose() {
+        return true;
+    }
 
     boolean readyForIdleAnim();
     void setReadyForIdleAnim(boolean readyForIdleAnim);
@@ -26,6 +29,8 @@ public interface BonziLikeEntity {
     void setTicksUntilAnimDone(int ticksUntilAnimDone);
     void setTicksSinceIdleAnim(int ticksSinceIdleAnim);
     void setTicksUntilNextIdleAnim(int ticksUntilNextIdleAnim);
+    boolean victorySunglasses();
+    void setVictorySunglasses(boolean victorySunglasses);
 
     AnimationState idleAnimState();
     AnimationState idleSunglassAnimState();
@@ -34,12 +39,13 @@ public interface BonziLikeEntity {
     AnimationState idleBananaAnimState();
     AnimationState walkAnimState();
     AnimationState attackAnimState();
+    AnimationState victorySunglassesAnimState();
     AnimationState deathAnimState();
 
     boolean isIdle();
     default void syncAnimation(LivingEntity bonziEntity, BonziAnimation bonziAnimation) {
         ServerWorld world = (ServerWorld) bonziEntity.getWorld();
-        List<ServerPlayerEntity> players = world.getPlayers(player -> player.squaredDistanceTo(bonziEntity) <= 16);
+        List<ServerPlayerEntity> players = world.getPlayers(player -> player.squaredDistanceTo(bonziEntity) <= 144);
         players.forEach(player -> sendAnimationPacket(player, bonziEntity, bonziAnimation));
     }
 
@@ -65,7 +71,7 @@ public interface BonziLikeEntity {
     }
 
     default void updateAnimations(LivingEntity bonziEntity) {
-        if(!bonziEntity.isAlive()) {
+        if(!bonziEntity.isAlive() && showDeathPose()) {
             deathAnimState().startIfNotRunning(bonziEntity.age);
         } else if(isIdle()) {
             //for some reason the death animation kept activating while idle, so this fixes that bug
@@ -76,6 +82,9 @@ public interface BonziLikeEntity {
             stopIdleAnimations();
             if(bonziEntity.getWorld().isClient) {
                 walkAnimState().startIfNotRunning(bonziEntity.age);
+                if(victorySunglasses()) {
+                    victorySunglassesAnimState().startIfNotRunning(bonziEntity.age);
+                }
             }
         }
     }
@@ -114,6 +123,7 @@ public interface BonziLikeEntity {
         deathAnimState().stop();
         walkAnimState().stop();
         attackAnimState().stop();
+        victorySunglassesAnimState().stop();
     }
 
     default void stopIdleAnimations() {
@@ -139,7 +149,12 @@ public interface BonziLikeEntity {
             case 4 -> state = idleBananaAnimState();
             case 5 -> state = walkAnimState();
             case 6 -> state = attackAnimState();
-            case 7 -> state = deathAnimState();
+            case 7 -> {
+                state = victorySunglassesAnimState();
+                setShowSunglasses(true);
+                setVictorySunglasses(true);
+            }
+            case 8 -> state = deathAnimState();
         }
         return state;
     }
@@ -152,7 +167,7 @@ public interface BonziLikeEntity {
      * 4. Add the enum to {@link BonziLikeEntity#getAnimationStateFromAnimation(BonziAnimation)}. It should return the newly added AnimationState. <br> <br>
      * 5. Add the animation to the {@link BonziLikeEntity#stopAnimations()} method. <br> <br>
      * 6. Update the AnimationState in {@link net.superkat.bonzibuddy.entity.client.model.BonziLikeModel#updateAnimationStates(BonziLikeEntity, SinglePartEntityModel, float, float, float)}. The Animation should be the newly imported Animation in BonziBuddyAnimations. <br> <br>
-     * 7. Play the animation where you'd like!
+     * 7. Play the animation where you'd like! Be careful though, as another animation may accidentally take priority over the animation. Add methods as needed.
      */
     enum BonziAnimation {
         IDLE_MAIN(10.0417F),
@@ -162,6 +177,7 @@ public interface BonziLikeEntity {
         IDLE_BANANA(2.5F),
         WALK(0.5F, true),
         ATTACK(0.625F, true),
+        VICTORY_GLASSES(6.875F),
         DEATH(0.5F);
 
         private final int ticks;

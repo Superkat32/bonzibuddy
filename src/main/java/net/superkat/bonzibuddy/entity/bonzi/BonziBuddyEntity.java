@@ -20,6 +20,7 @@ public class BonziBuddyEntity extends PathAwareEntity implements BonziLikeEntity
     public final AnimationState idleBananaAnimState = new AnimationState();
     public final AnimationState walkAnimState = new AnimationState();
     public final AnimationState attackAnimState = new AnimationState();
+    public final AnimationState victorySunglassesAnimState = new AnimationState();
     public final AnimationState deathAnimState = new AnimationState();
     boolean shouldTurnHead = true;
     boolean showSunglasses = false;
@@ -27,6 +28,7 @@ public class BonziBuddyEntity extends PathAwareEntity implements BonziLikeEntity
     public int ticksSinceIdleAnim = 0;
     public int ticksUntilAnimDone = 0;
     public boolean readyForIdleAnim = false;
+    public boolean victorySunglasses = false;
     public BonziBuddyEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
         super(entityType, world);
     }
@@ -121,6 +123,16 @@ public class BonziBuddyEntity extends PathAwareEntity implements BonziLikeEntity
     }
 
     @Override
+    public boolean victorySunglasses() {
+        return this.victorySunglasses;
+    }
+
+    @Override
+    public void setVictorySunglasses(boolean victorySunglasses) {
+        this.victorySunglasses = victorySunglasses;
+    }
+
+    @Override
     public AnimationState idleAnimState() {
         return idleAnimState;
     }
@@ -153,6 +165,11 @@ public class BonziBuddyEntity extends PathAwareEntity implements BonziLikeEntity
     @Override
     public AnimationState attackAnimState() {
         return attackAnimState;
+    }
+
+    @Override
+    public AnimationState victorySunglassesAnimState() {
+        return victorySunglassesAnimState;
     }
 
     @Override

@@ -3,6 +3,7 @@ package net.superkat.bonzibuddy.minigame;
 import com.google.common.collect.Sets;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -37,13 +38,16 @@ public class BonziMinigame {
     public int ticksSinceStart;
     public int gracePeriodTicks;
     public int gracePeriodSeconds;
-
+    public Set<MobEntity> enemies = Sets.newHashSet();
+    public int maxEnemies;
+    public int ticksUntilInvalidate;
     public BonziMinigame(int id, ServerWorld world, BlockPos startPos) {
         this.id = id;
         this.world = world;
         this.startPos = startPos;
 
         this.status = Status.STARTING;
+        this.maxEnemies = 48;
     }
 
     //Minigame from NBT
@@ -140,6 +144,7 @@ public class BonziMinigame {
         if(!loaded) {
             if(wasLoaded) {
                 sendRemoveMinigameHudPacket();
+                ticksUntilInvalidate = 300;
             }
             return false;
         }
@@ -179,6 +184,10 @@ public class BonziMinigame {
         if(this.getMinigameType() == BonziMinigameType.ABSTRACT) {
             sendCreateMinigameHudPacket();
         }
+    }
+
+    public void addEnemy(MobEntity enemy) {
+        enemies.add(enemy);
     }
 
     public void addPlayer(ServerPlayerEntity player) {
@@ -252,6 +261,7 @@ public class BonziMinigame {
         if(this.world.getRegistryKey() == BonziBUDDY.PROTECT_BONZIBUDDY) {
             BonziMinigameApi.teleportPlayersToRespawn(this.players.stream().toList());
         }
+        BonziBUDDY.LOGGER.info("Bonzi Minigame " + getId() + " (" + getMinigameType().getName() + ") has finished!");
     }
 
     public boolean gracePeriod() {

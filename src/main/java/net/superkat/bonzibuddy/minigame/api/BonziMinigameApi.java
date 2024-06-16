@@ -1,11 +1,19 @@
 package net.superkat.bonzibuddy.minigame.api;
 
+import net.minecraft.block.Blocks;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.SpawnLocation;
+import net.minecraft.entity.SpawnRestriction;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.Heightmap;
 import net.minecraft.world.TeleportTarget;
 import net.superkat.bonzibuddy.BonziBUDDY;
+import net.superkat.bonzibuddy.entity.BonziBuddyEntities;
 import net.superkat.bonzibuddy.minigame.BonziCatastrophicClonesMinigame;
 import net.superkat.bonzibuddy.minigame.BonziMinigame;
 import net.superkat.bonzibuddy.minigame.BonziMinigameManager;
@@ -20,7 +28,8 @@ import java.util.List;
  */
 public class BonziMinigameApi {
 
-    public static final int STRUCTURE_SPACING = 112;
+    //The structure spacing times 16
+    public static final int STRUCTURE_SPACING = 256;
     public static final int STRUCTURE_PLATFORM_Y = 37;
     public static final int STRUCTURE_SPAWN_Y = STRUCTURE_PLATFORM_Y + 3;
 
@@ -35,7 +44,7 @@ public class BonziMinigameApi {
      */
     public static BonziMinigame startBonziMinigame(BonziMinigameType minigame, ServerWorld world, BlockPos startingPos) {
         BonziMinigame bonziMinigame = createBonziMinigame(minigame, world, startingPos);
-        BonziBUDDY.LOGGER.info("Starting new Bonzi Minigame");
+        BonziBUDDY.LOGGER.info("Starting Bonzi Minigame " + bonziMinigame.getId() + " (" + bonziMinigame.getMinigameType().getName() + ")!");
         bonziMinigame.start();
         return bonziMinigame;
     }
@@ -94,6 +103,42 @@ public class BonziMinigameApi {
             return true;
         }
         return false;
+   }
+
+   public static void clearAnyEntities(ServerWorld world, BlockPos pos, int radius) {
+       List<? extends LivingEntity> enemies = world.getEntitiesByType(BonziBuddyEntities.BONZI_CLONE, entity -> entity.squaredDistanceTo(pos.getX(), pos.getY(), pos.getZ()) <= radius * radius);
+       enemies.forEach(LivingEntity::discard);
+
+       List<? extends LivingEntity> protectBonziEntities = world.getEntitiesByType(BonziBuddyEntities.PROTECTABLE_BONZI_BUDDY, entity -> entity.squaredDistanceTo(pos.getX(), pos.getY(), pos.getZ()) <= radius * radius);
+       protectBonziEntities.forEach(LivingEntity::discard);
+   }
+
+    public static BlockPos getEnemySpawnPos(ServerWorld world, BlockPos minigamePos, int proximity, int tries) {
+        //confusion - stolen from Raid
+        int i = proximity == 0 ? 2 : 2 - proximity;
+        BlockPos.Mutable mutable = new BlockPos.Mutable();
+        SpawnLocation spawnLocation = SpawnRestriction.getLocation(EntityType.RAVAGER);
+        float radius = 20;
+
+        for(int j = 0; j < tries; ++j) {
+            float f = world.random.nextFloat() * (float) (Math.PI * 2);
+            int k = minigamePos.getX() + MathHelper.floor(MathHelper.cos(f) * radius * (float)i) + world.random.nextInt(5);
+            int l = minigamePos.getZ() + MathHelper.floor(MathHelper.sin(f) * radius * (float)i) + world.random.nextInt(5);
+            int m = world.getTopY(Heightmap.Type.WORLD_SURFACE, k, l);
+            mutable.set(k, m, l);
+            if (!world.isNearOccupiedPointOfInterest(mutable) || proximity >= 2) {
+                int n = 10;
+                if (world.isRegionLoaded(mutable.getX() - n, mutable.getZ() - n, mutable.getX() + n, mutable.getZ() + n)
+                        && world.shouldTickEntity(mutable)
+                        && (
+                        spawnLocation.isSpawnPositionOk(world, mutable, EntityType.RAVAGER)
+                                || world.getBlockState(mutable.down()).isOf(Blocks.SNOW) && world.getBlockState(mutable).isAir()
+                )) {
+                    return mutable.add(0, 1, 0);
+                }
+            }
+        }
+        return null;
     }
 
     public static BlockPos getAvailableMinigameBlockpos(ServerWorld world) {
@@ -108,14 +153,15 @@ public class BonziMinigameApi {
 
     private static BlockPos findStructureCenterOffset(ServerWorld world, int x, int y, int z) {
         BlockPos searchPos = new BlockPos(x, y, z);
-        if(!world.getBlockState(searchPos.add(24, 0, 24)).isAir()) {
-            return new BlockPos(searchPos).add(24, 0, 24);
-        } else if (!world.getBlockState(searchPos.add(24, 0, -24)).isAir()) {
-            return new BlockPos(searchPos).add(24, 0, -24);
-        } else if (!world.getBlockState(searchPos.add(-24, 0, -24)).isAir()) {
-            return new BlockPos(searchPos).add(-24, 0, -24);
-        } else if(!world.getBlockState(searchPos.add(-24, 0, 24)).isAir()) {
-            return new BlockPos(searchPos).add(-24, 0, 24);
+        int s = 23; //search
+        if(!world.getBlockState(searchPos.add(s, 0, s)).isAir()) {
+            return new BlockPos(searchPos).add(s + 1, 0, s + 1);
+        } else if (!world.getBlockState(searchPos.add(s, 0, -s)).isAir()) {
+            return new BlockPos(searchPos).add(s, 0, -s);
+        } else if (!world.getBlockState(searchPos.add(-s, 0, -s)).isAir()) {
+            return new BlockPos(searchPos).add(-s, 0, -s);
+        } else if(!world.getBlockState(searchPos.add(-s, 0, s)).isAir()) {
+            return new BlockPos(searchPos).add(-s, 0, s + 1);
         } else {
             BonziBUDDY.LOGGER.warn("Couldn't find the center of the structure! Teleporting to backup location!");
             return searchPos;

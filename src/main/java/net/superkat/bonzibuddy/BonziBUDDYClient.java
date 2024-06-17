@@ -15,9 +15,11 @@ public class BonziBUDDYClient implements ClientModInitializer {
         //Registers Bonzi Buddy Entity model and renderer
         BonziBuddyModelLayers.registerModelLayers();
         EntityRendererRegistry.register(BonziBuddyEntities.BONZI_BUDDY, BonziBuddyEntityRenderer::new);
+//        EntityRendererRegistry.register(BonziBuddyEntities.BONZI_BUDDY, BonziBuddyEntityRenderer::new);
 
         EntityRendererRegistry.register(BonziBuddyEntities.PROTECTABLE_BONZI_BUDDY, BonziBuddyEntityRenderer::new);
         EntityRendererRegistry.register(BonziBuddyEntities.BONZI_CLONE, BonziCloneEntityRenderer::new);
+
 
         //Packets
         BonziBuddyClientNetworkHandler.registerClientPackets();

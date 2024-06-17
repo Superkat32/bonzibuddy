@@ -4,9 +4,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.text.Text;
-import net.superkat.bonzibuddy.entity.bonzi.BonziLikeEntity;
 import net.superkat.bonzibuddy.minigame.MinigameHudData;
 import net.superkat.bonzibuddy.network.packets.BonziBuddySyncAnimationS2C;
 import net.superkat.bonzibuddy.network.packets.OpenBonziBuddyScreenS2C;
@@ -34,13 +32,13 @@ public class BonziBuddyClientNetworkHandler {
     }
 
     public static void onBonziBuddySyncAnimation(BonziBuddySyncAnimationS2C payload, ClientPlayNetworking.Context context) {
-        MinecraftClient client = context.client();
-        LivingEntity entity = (LivingEntity) client.world.getEntityById(payload.bonziBuddyId());
-        int animationIndex = payload.bonziAnimationNumber();
-        if(entity != null && entity.isAlive() && entity instanceof BonziLikeEntity bonziEntity) {
-            BonziLikeEntity.BonziAnimation animation = BonziLikeEntity.BonziAnimation.getFromIndex(animationIndex);
-            bonziEntity.playAnimation(entity, animation);
-        }
+//        MinecraftClient client = context.client();
+//        LivingEntity entity = (LivingEntity) client.world.getEntityById(payload.bonziBuddyId());
+//        int animationIndex = payload.bonziAnimationNumber();
+//        if(entity != null && entity.isAlive() && entity instanceof BonziLikeEntity bonziEntity) {
+//            BonziLikeEntity.BonziAnimation animation = BonziLikeEntity.BonziAnimation.getFromIndex(animationIndex);
+//            bonziEntity.playAnimation(entity, animation);
+//        }
     }
 
     public static void onWaitingForPlayers(WaitingForPlayersS2C payload, ClientPlayNetworking.Context context) {

@@ -1,7 +1,6 @@
 package net.superkat.bonzibuddy.entity.bonzi;
 
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.entity.AnimationState;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.mob.PathAwareEntity;
@@ -11,17 +10,15 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.world.World;
 import net.superkat.bonzibuddy.network.packets.OpenBonziBuddyScreenS2C;
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
-public class BonziBuddyEntity extends PathAwareEntity implements BonziLikeEntity {
-    public final AnimationState idleAnimState = new AnimationState();
-    public final AnimationState idleSunglassAnimState = new AnimationState();
-    public final AnimationState idleGlobeAnimState = new AnimationState();
-    public final AnimationState idleSpyglassAnimState = new AnimationState();
-    public final AnimationState idleBananaAnimState = new AnimationState();
-    public final AnimationState walkAnimState = new AnimationState();
-    public final AnimationState attackAnimState = new AnimationState();
-    public final AnimationState victorySunglassesAnimState = new AnimationState();
-    public final AnimationState deathAnimState = new AnimationState();
+public class BonziBuddyEntity extends PathAwareEntity implements GeoEntity, BonziLikeEntity {
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     boolean shouldTurnHead = true;
     boolean showSunglasses = false;
     public int ticksUntilNextIdleAnim = 100;
@@ -46,134 +43,31 @@ public class BonziBuddyEntity extends PathAwareEntity implements BonziLikeEntity
         return super.interactMob(player, hand);
     }
 
-    @Override
-    public void tick() {
-        updateAnimations(this);
-        super.tick();
+    public void playRandomIdleAnimation() {
+        int i = this.getWorld().random.nextInt(idleAnimations().size());
+        RawAnimation anim = idleAnimations().get(i);
+        triggerAnim("controller", getAnimString(anim));
     }
 
     public void doATrick() {
-        playRandomIdleAnimation(this);
-    }
-
-
-
-    public boolean isIdle() {
-        return this.getVelocity().length() <= 0.1;
+        playRandomIdleAnimation();
     }
 
     @Override
-    public boolean shouldTurnHead() {
-        return shouldTurnHead;
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, animControllerName, 5, this::animController)
+                .triggerableAnim(getAnimString(IDLE_SUNGLASSES), IDLE_SUNGLASSES)
+                .triggerableAnim(getAnimString(IDLE_GLOBE), IDLE_GLOBE)
+                .triggerableAnim(getAnimString(IDLE_SPYGLASS), IDLE_SPYGLASS)
+                .triggerableAnim(getAnimString(IDLE_BANANA), IDLE_BANANA)
+        );
+        controllers.add(new AnimationController<>(this, attackAnimControllerName, 5, this::attackAnimController)
+                .triggerableAnim(getAnimString(ATTACK_ANIM), ATTACK_ANIM)
+        );
     }
 
     @Override
-    public boolean showSunglasses() {
-        return showSunglasses;
-    }
-
-    @Override
-    public void setShouldTurnHead(boolean shouldTurnHead) {
-        this.shouldTurnHead = shouldTurnHead;
-    }
-
-    @Override
-    public void setShowSunglasses(boolean showSunglasses) {
-        this.showSunglasses = showSunglasses;
-    }
-
-    @Override
-    public boolean readyForIdleAnim() {
-        return readyForIdleAnim;
-    }
-
-    @Override
-    public void setReadyForIdleAnim(boolean readyForIdleAnim) {
-        this.readyForIdleAnim = readyForIdleAnim;
-    }
-
-    @Override
-    public int ticksUntilAnimDone() {
-        return ticksUntilAnimDone;
-    }
-
-    @Override
-    public int ticksSinceIdleAnim() {
-        return ticksSinceIdleAnim;
-    }
-
-    @Override
-    public int ticksUntilNextIdleAnim() {
-        return ticksUntilNextIdleAnim;
-    }
-
-    @Override
-    public void setTicksUntilAnimDone(int ticksUntilAnimDone) {
-        this.ticksUntilAnimDone = ticksUntilAnimDone;
-    }
-
-    @Override
-    public void setTicksSinceIdleAnim(int ticksSinceIdleAnim) {
-        this.ticksSinceIdleAnim = ticksSinceIdleAnim;
-    }
-
-    @Override
-    public void setTicksUntilNextIdleAnim(int ticksUntilNextIdleAnim) {
-        this.ticksUntilNextIdleAnim = ticksUntilNextIdleAnim;
-    }
-
-    @Override
-    public boolean victorySunglasses() {
-        return this.victorySunglasses;
-    }
-
-    @Override
-    public void setVictorySunglasses(boolean victorySunglasses) {
-        this.victorySunglasses = victorySunglasses;
-    }
-
-    @Override
-    public AnimationState idleAnimState() {
-        return idleAnimState;
-    }
-
-    @Override
-    public AnimationState idleSunglassAnimState() {
-        return idleSunglassAnimState;
-    }
-
-    @Override
-    public AnimationState idleGlobeAnimState() {
-        return idleGlobeAnimState;
-    }
-
-    @Override
-    public AnimationState idleSpyglassAnimState() {
-        return idleSpyglassAnimState;
-    }
-
-    @Override
-    public AnimationState idleBananaAnimState() {
-        return idleBananaAnimState;
-    }
-
-    @Override
-    public AnimationState walkAnimState() {
-        return walkAnimState;
-    }
-
-    @Override
-    public AnimationState attackAnimState() {
-        return attackAnimState;
-    }
-
-    @Override
-    public AnimationState victorySunglassesAnimState() {
-        return victorySunglassesAnimState;
-    }
-
-    @Override
-    public AnimationState deathAnimState() {
-        return deathAnimState;
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return cache;
     }
 }

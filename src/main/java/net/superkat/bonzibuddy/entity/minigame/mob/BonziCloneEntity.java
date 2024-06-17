@@ -8,11 +8,12 @@ import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import software.bernie.geckolib.animatable.GeoAnimatable;
 
 import java.awt.*;
 import java.util.Objects;
 
-public class BonziCloneEntity extends AbstractBonziCloneEntity {
+public class BonziCloneEntity extends AbstractBonziCloneEntity implements GeoAnimatable {
     public double scale;
     public Color color;
     public BonziCloneEntity(EntityType<? extends HostileEntity> entityType, World world) {

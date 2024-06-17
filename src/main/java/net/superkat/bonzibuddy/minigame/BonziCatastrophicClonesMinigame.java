@@ -188,7 +188,7 @@ public class BonziCatastrophicClonesMinigame extends BonziMinigame {
         if(wearSunglasses == 0) {
             this.enemies.forEach(enemy -> {
                 if(enemy instanceof BonziLikeEntity bonziLikeEntity) {
-                    bonziLikeEntity.playAnimation(enemy, BonziLikeEntity.BonziAnimation.VICTORY_GLASSES);
+//                    bonziLikeEntity.playAnimation(enemy, BonziLikeEntity.BonziAnimation.VICTORY_GLASSES);
                 }
             });
         }

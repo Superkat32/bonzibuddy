@@ -1,4 +1,4 @@
-package net.superkat.bonzibuddy.entity.minigame.mob;
+package net.superkat.bonzibuddy.entity.bonzi.minigame.mob;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -14,7 +14,7 @@ import java.awt.*;
 import java.util.Objects;
 
 public class BonziCloneEntity extends AbstractBonziCloneEntity implements GeoAnimatable {
-    public double scale;
+    public float scale;
     public Color color;
     public BonziCloneEntity(EntityType<? extends HostileEntity> entityType, World world) {
         super(entityType, world);

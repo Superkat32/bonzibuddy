@@ -17,6 +17,7 @@ import net.superkat.bonzibuddy.entity.BonziBuddyEntities;
 import net.superkat.bonzibuddy.minigame.BonziCatastrophicClonesMinigame;
 import net.superkat.bonzibuddy.minigame.BonziMinigame;
 import net.superkat.bonzibuddy.minigame.BonziMinigameManager;
+import net.superkat.bonzibuddy.minigame.TripleChaosMinigame;
 
 import java.util.List;
 
@@ -68,6 +69,7 @@ public class BonziMinigameApi {
         switch (minigameType) {
             default -> bonziMinigame = new BonziMinigame(id, world, startingPos);
             case CATASTROPHIC_CLONES -> bonziMinigame = new BonziCatastrophicClonesMinigame(id, world, startingPos);
+            case TRIPLE_CHAOS -> bonziMinigame = new TripleChaosMinigame(id, world, startingPos);
         }
         return bonziMinigame;
     }
@@ -141,6 +143,63 @@ public class BonziMinigameApi {
         return null;
     }
 
+//    /**
+//     * Force load chunks around a Bonzi Minigame. Helpful for removing entities if the area has been unloaded.
+//     *
+//     * @param world The world to force load the chunks in.
+//     * @param minigameStartPos The minigame's starting position.
+//     * @param radius The square(I think?) radius of chunks to load.
+//     * @param forceload Should the chunks be forced loaded?
+//     */
+//    public static void forceloadMinigameChunks(ServerWorld world, BlockPos minigameStartPos, int radius, boolean forceload) {
+//        radius *= 16;
+//        ColumnPos from = new ColumnPos(minigameStartPos.getX() + radius, minigameStartPos.getZ() + radius);
+//        ColumnPos to = new ColumnPos(minigameStartPos.getX() - radius, minigameStartPos.getZ() - radius);
+//        confusion(world, from, to, forceload);
+//    }
+//
+//
+//    /**
+//     * <s>Stolen</s> Borrowed from {@link net.minecraft.server.command.ForceLoadCommand}. I have no clue how it works.
+//     */
+//    private static void confusion(ServerWorld world, ColumnPos from, ColumnPos to, boolean forceLoaded) {
+//        int i = Math.min(from.x(), to.x());
+//        int j = Math.min(from.z(), to.z());
+//        int k = Math.max(from.x(), to.x());
+//        int l = Math.max(from.z(), to.z());
+//        if (i >= -30000000 && j >= -30000000 && k < 30000000 && l < 30000000) {
+//            int m = ChunkSectionPos.getSectionCoord(i);
+//            int n = ChunkSectionPos.getSectionCoord(j);
+//            int o = ChunkSectionPos.getSectionCoord(k);
+//            int p = ChunkSectionPos.getSectionCoord(l);
+//            long q = ((long)(o - m) + 1L) * ((long)(p - n) + 1L);
+//            if (q > 256L) {
+//                BonziBUDDY.LOGGER.warn("Attempted chunks to force load were too big! This may cause entities to still be around...");
+//            } else {
+//                ChunkPos chunkPos = null;
+//                int chunksLoaded = 0;
+//
+//                for(int s = m; s <= o; ++s) {
+//                    for(int t = n; t <= p; ++t) {
+//                        boolean bl = world.setChunkForced(s, t, forceLoaded);
+//                        if (bl) {
+//                            chunksLoaded++;
+//                            if (chunkPos == null) {
+//                                chunkPos = new ChunkPos(s, t);
+//                            }
+//                        }
+//                    }
+//                }
+//
+//                if(forceLoaded) {
+//                    BonziBUDDY.LOGGER.info("Forced loaded " + chunksLoaded + " chunks because of a minigame's invalidation.");
+//                } else {
+//                    BonziBUDDY.LOGGER.info("Unloaded " + chunksLoaded + " chunks because of a minigame's invalidation.");
+//                }
+//            }
+//        }
+//    }
+
     public static BlockPos getAvailableMinigameBlockpos(ServerWorld world) {
         BonziMinigameManager minigameManager = getMinigameManager(world);
         int totalMinigames = minigameManager.getAllMinigames().size();
@@ -153,17 +212,17 @@ public class BonziMinigameApi {
 
     private static BlockPos findStructureCenterOffset(ServerWorld world, int x, int y, int z) {
         BlockPos searchPos = new BlockPos(x, y, z);
-        int s = 23; //search
-        if(!world.getBlockState(searchPos.add(s, 0, s)).isAir()) {
-            return new BlockPos(searchPos).add(s + 1, 0, s + 1);
-        } else if (!world.getBlockState(searchPos.add(s, 0, -s)).isAir()) {
-            return new BlockPos(searchPos).add(s, 0, -s);
-        } else if (!world.getBlockState(searchPos.add(-s, 0, -s)).isAir()) {
-            return new BlockPos(searchPos).add(-s, 0, -s);
-        } else if(!world.getBlockState(searchPos.add(-s, 0, s)).isAir()) {
-            return new BlockPos(searchPos).add(-s, 0, s + 1);
+        int s = 25; //search
+        if(!world.getBlockState(searchPos.add(0, 0, s)).isAir()) {
+            return new BlockPos(searchPos).add(0, 0, s);
+        } else if (!world.getBlockState(searchPos.add(0, 0, -s)).isAir()) {
+            return new BlockPos(searchPos).add(0, 0, -s);
+        } else if (!world.getBlockState(searchPos.add(-s, 0, 0)).isAir()) {
+            return new BlockPos(searchPos).add(-s, 0, 0);
+        } else if(!world.getBlockState(searchPos.add(s, 0, 0)).isAir()) {
+            return new BlockPos(searchPos).add(s, 0, 0);
         } else {
-            BonziBUDDY.LOGGER.warn("Couldn't find the center of the structure! Teleporting to backup location!");
+            BonziBUDDY.LOGGER.warn("Couldn't find the center of the structure! Preforming detailed search...");
             return searchPos;
         }
     }

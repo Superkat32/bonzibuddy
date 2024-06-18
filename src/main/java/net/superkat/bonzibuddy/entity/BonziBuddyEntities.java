@@ -8,8 +8,9 @@ import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.superkat.bonzibuddy.BonziBUDDY;
 import net.superkat.bonzibuddy.entity.bonzi.BonziBuddyEntity;
-import net.superkat.bonzibuddy.entity.minigame.ProtectBonziEntity;
-import net.superkat.bonzibuddy.entity.minigame.mob.BonziCloneEntity;
+import net.superkat.bonzibuddy.entity.bonzi.minigame.ProtectBonziEntity;
+import net.superkat.bonzibuddy.entity.bonzi.minigame.mob.BonziBossEntity;
+import net.superkat.bonzibuddy.entity.bonzi.minigame.mob.BonziCloneEntity;
 
 public class BonziBuddyEntities {
     public static final EntityType<BonziBuddyEntity> BONZI_BUDDY = Registry.register(
@@ -30,6 +31,12 @@ public class BonziBuddyEntities {
             EntityType.Builder.create(BonziCloneEntity::new, SpawnGroup.CREATURE).dimensions(0.75f, 1.0f).build()
     );
 
+    public static final EntityType<BonziBossEntity> BONZI_BOSS = Registry.register(
+            Registries.ENTITY_TYPE,
+            Identifier.of(BonziBUDDY.MOD_ID, "bonziboss"),
+            EntityType.Builder.create(BonziBossEntity::new, SpawnGroup.CREATURE).dimensions(0.75f, 1.0f).build()
+    );
+
     public static void registerEntities() {
         //Bonzi Buddy Entity
         FabricDefaultAttributeRegistry.register(BONZI_BUDDY, BonziBuddyEntity.createMobAttributes());
@@ -38,5 +45,6 @@ public class BonziBuddyEntities {
         FabricDefaultAttributeRegistry.register(PROTECTABLE_BONZI_BUDDY, ProtectBonziEntity.createMobAttributes());
 
         FabricDefaultAttributeRegistry.register(BONZI_CLONE, BonziCloneEntity.createMobAttributes());
+        FabricDefaultAttributeRegistry.register(BONZI_BOSS, BonziBossEntity.createMobAttributes());
     }
 }

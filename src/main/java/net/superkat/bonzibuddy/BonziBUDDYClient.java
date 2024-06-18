@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.superkat.bonzibuddy.entity.BonziBuddyEntities;
 import net.superkat.bonzibuddy.entity.client.BonziBuddyModelLayers;
 import net.superkat.bonzibuddy.entity.client.renderer.BonziBuddyEntityRenderer;
+import net.superkat.bonzibuddy.entity.client.renderer.mob.BonziBossEntityRenderer;
 import net.superkat.bonzibuddy.entity.client.renderer.mob.BonziCloneEntityRenderer;
 import net.superkat.bonzibuddy.network.BonziBuddyClientNetworkHandler;
 import net.superkat.bonzibuddy.rendering.hud.MinigameHudRenderer;
@@ -19,6 +20,7 @@ public class BonziBUDDYClient implements ClientModInitializer {
 
         EntityRendererRegistry.register(BonziBuddyEntities.PROTECTABLE_BONZI_BUDDY, BonziBuddyEntityRenderer::new);
         EntityRendererRegistry.register(BonziBuddyEntities.BONZI_CLONE, BonziCloneEntityRenderer::new);
+        EntityRendererRegistry.register(BonziBuddyEntities.BONZI_BOSS, BonziBossEntityRenderer::new);
 
 
         //Packets

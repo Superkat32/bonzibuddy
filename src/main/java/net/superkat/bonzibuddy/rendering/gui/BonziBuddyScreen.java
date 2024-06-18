@@ -46,7 +46,7 @@ public class BonziBuddyScreen extends Screen {
 
     public void requestPlayCatastrophicClones() {
         //Assumes all nearby players are entering
-        ClientPlayNetworking.send(new RequestPlayMinigameC2S(BonziMinigameType.CATASTROPHIC_CLONES));
+        ClientPlayNetworking.send(new RequestPlayMinigameC2S(BonziMinigameType.TRIPLE_CHAOS));
     }
 
     @Override

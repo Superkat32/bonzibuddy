@@ -4,7 +4,8 @@ import java.util.Locale;
 
 public enum BonziMinigameType {
     ABSTRACT,
-    CATASTROPHIC_CLONES;
+    CATASTROPHIC_CLONES,
+    TRIPLE_CHAOS;
     private static final BonziMinigameType[] VALUES = values();
     public static BonziMinigameType fromName(String name) {
         for (BonziMinigameType type : VALUES) {

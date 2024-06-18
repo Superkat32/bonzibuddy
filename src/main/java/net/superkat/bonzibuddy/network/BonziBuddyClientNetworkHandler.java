@@ -8,6 +8,7 @@ import net.minecraft.text.Text;
 import net.superkat.bonzibuddy.minigame.MinigameHudData;
 import net.superkat.bonzibuddy.network.packets.BonziBuddySyncAnimationS2C;
 import net.superkat.bonzibuddy.network.packets.OpenBonziBuddyScreenS2C;
+import net.superkat.bonzibuddy.network.packets.minigame.BonziBossBarUpdateS2C;
 import net.superkat.bonzibuddy.network.packets.minigame.MinigameHudUpdateS2C;
 import net.superkat.bonzibuddy.network.packets.minigame.WaitingForPlayersS2C;
 import net.superkat.bonzibuddy.rendering.gui.BonziBuddyScreen;
@@ -23,6 +24,7 @@ public class BonziBuddyClientNetworkHandler {
         ClientPlayNetworking.registerGlobalReceiver(BonziBuddySyncAnimationS2C.ID, BonziBuddyClientNetworkHandler::onBonziBuddySyncAnimation);
         
         ClientPlayNetworking.registerGlobalReceiver(MinigameHudUpdateS2C.ID, BonziBuddyClientNetworkHandler::oneMinigameHudUpdate);
+        ClientPlayNetworking.registerGlobalReceiver(BonziBossBarUpdateS2C.ID, BonziBuddyClientNetworkHandler::onBonziBossbarUpdate);
         ClientPlayNetworking.registerGlobalReceiver(WaitingForPlayersS2C.ID, BonziBuddyClientNetworkHandler::onWaitingForPlayers);
     }
 
@@ -44,6 +46,14 @@ public class BonziBuddyClientNetworkHandler {
     public static void onWaitingForPlayers(WaitingForPlayersS2C payload, ClientPlayNetworking.Context context) {
         MinecraftClient client = context.client();
         client.inGameHud.setOverlayMessage(Text.translatable("bonzibuddy.minigame.waitingforplayers"), false);
+    }
+
+    public static void onBonziBossbarUpdate(BonziBossBarUpdateS2C payload, ClientPlayNetworking.Context context) {
+        MinecraftClient client = context.client();
+        UUID hudUuid = payload.hudUuid();
+        float percent = payload.percent();
+        BonziBossBarUpdateS2C.BonziBoss type = payload.bonziBoss();
+        MinigameHudRenderer.updateBossPercent(hudUuid, percent, type);
     }
     
     public static void oneMinigameHudUpdate(MinigameHudUpdateS2C payload, ClientPlayNetworking.Context context) {

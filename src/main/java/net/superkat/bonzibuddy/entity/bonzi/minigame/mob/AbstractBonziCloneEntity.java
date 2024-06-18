@@ -1,4 +1,4 @@
-package net.superkat.bonzibuddy.entity.minigame.mob;
+package net.superkat.bonzibuddy.entity.bonzi.minigame.mob;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -9,7 +9,7 @@ import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.world.World;
 import net.superkat.bonzibuddy.entity.bonzi.BonziLikeEntity;
-import net.superkat.bonzibuddy.entity.minigame.ProtectBonziEntity;
+import net.superkat.bonzibuddy.entity.bonzi.minigame.ProtectBonziEntity;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.AnimatableManager;
@@ -43,7 +43,6 @@ public abstract class AbstractBonziCloneEntity extends HostileEntity implements 
 
     @Override
     public void tick() {
-//        updateAnimations(this);
         super.tick();
     }
 

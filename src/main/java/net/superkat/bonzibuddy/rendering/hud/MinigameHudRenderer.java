@@ -5,10 +5,12 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderTickCounter;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.superkat.bonzibuddy.BonziBUDDY;
 import net.superkat.bonzibuddy.minigame.MinigameHudData;
+import net.superkat.bonzibuddy.network.packets.minigame.BonziBossBarUpdateS2C;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
@@ -87,6 +89,11 @@ public class MinigameHudRenderer {
             hudData.setDefeatedBoss(defeatedBoss);
             if (!defeatedBoss.isEmpty()) {
                 createDefeatedBossWriter(uuid, defeatedBoss);
+                MinecraftClient client = MinecraftClient.getInstance();
+                client.player.playSound(SoundEvents.ITEM_TRIDENT_THUNDER.value(), 1f, 1.5f);
+                client.player.playSound(SoundEvents.ENTITY_ENDER_DRAGON_HURT, 1f, 1.25f);
+                client.player.playSound(SoundEvents.ENTITY_WARDEN_DEATH, 1f, 1.7f);
+                client.player.playSound(SoundEvents.ENTITY_ENDER_DRAGON_HURT, 1f, 1.7f);
             }
         }
     }
@@ -105,13 +112,24 @@ public class MinigameHudRenderer {
         }
     }
 
+    public static void updateBossPercent(UUID uuid, float percent, BonziBossBarUpdateS2C.BonziBoss type) {
+        MinigameHudData hudData = getHudFromUuid(uuid);
+        if(hudData != null) {
+            switch (type) {
+                case RED -> hudData.setRedBonziPercent(percent);
+                case GREEN -> hudData.setGreenBonziPercent(percent);
+                case BLUE -> hudData.setBlueBonziPercent(percent);
+            }
+        }
+    }
+
     @Nullable
     public static MinigameHudData getHudFromUuid(UUID uuid) {
         return minigameHuds.get(uuid);
     }
 
     public static void renderMinigameHuds(DrawContext context, RenderTickCounter tickCounter) {
-        int y = 6;
+        int y = 8;
         for (MinigameHudData minigameHud : minigameHuds.values()) {
             renderMinigameHud(context, tickCounter, minigameHud, y);
             y += 36;
@@ -127,7 +145,7 @@ public class MinigameHudRenderer {
         int width = 172;
         //I'm really pushing the height here to be as small as possible,
         //but it can really help in crucial gameplay moments having the extra room to see
-        int height = 32;
+        int height = 41;
         int gradientX = windowWidth / 2 - width / 2;
 
         int nameWidth = client.textRenderer.getWidth(String.valueOf(minigameHud.name));
@@ -141,23 +159,23 @@ public class MinigameHudRenderer {
         //draw name
         context.drawTextWithShadow(client.textRenderer, String.valueOf(minigameHud.name), nameX, nameY, Color.WHITE.getRGB());
 
-        //draw wave number
-        Text waveText = Text.translatable("bonzibuddy.minigame.wave", minigameHud.wave);
-        int waveWidth = client.textRenderer.getWidth(waveText);
-        int waveX = windowWidth / 2 - waveWidth / 2 - 40;
-        y += 8;
-        context.drawTextWithShadow(client.textRenderer, waveText, waveX, y, Color.WHITE.getRGB());
-
-        //draw time
-        //Add a Win98 themed clock icon?
-        int timeWidth = client.textRenderer.getWidth(String.valueOf(minigameHud.time));
-        int timeX = windowWidth / 2 - timeWidth / 2 + 40;
-//        y += 10;
-        context.drawTextWithShadow(client.textRenderer, String.valueOf(minigameHud.time), timeX, y, Color.WHITE.getRGB());
-
         //draw objective
         switch (minigameHud.type) {
             case CATASTROPHIC_CLONES -> {
+
+                //draw wave number
+                Text waveText = Text.translatable("bonzibuddy.minigame.wave", minigameHud.wave);
+                int waveWidth = client.textRenderer.getWidth(waveText);
+                int waveX = windowWidth / 2 - waveWidth / 2 - 40;
+                y += 8;
+                context.drawTextWithShadow(client.textRenderer, waveText, waveX, y, Color.WHITE.getRGB());
+
+                //draw time
+                //Add a Win98 themed clock icon?
+                int timeWidth = client.textRenderer.getWidth(String.valueOf(minigameHud.time));
+                int timeX = windowWidth / 2 - timeWidth / 2 + 40;
+                context.drawTextWithShadow(client.textRenderer, String.valueOf(minigameHud.time), timeX, y, Color.WHITE.getRGB());
+
                 //draw bonzi's face
                 int bonziWidth = 16;
                 int bonziHeight = 16;
@@ -181,6 +199,19 @@ public class MinigameHudRenderer {
                 context.drawGuiTexture(GRADIENT, healthX, gradientY, healthWidth, healthHeight);
                 //TODO - add me
             }
+            case TRIPLE_CHAOS -> {
+                //draw time - Win98 themed clock icon?
+                int timeWidth = client.textRenderer.getWidth(String.valueOf(minigameHud.time));
+                int timeX = windowWidth / 2 - timeWidth / 2 + 40;
+                context.drawTextWithShadow(client.textRenderer, String.valueOf(minigameHud.time), timeX, nameY, Color.WHITE.getRGB());
+
+                y += 6;
+                drawHealthBar(context, BONZI_BUDDY, gradientX, y, 8, 8, width, minigameHud.redBonziPercent);
+                y += 11;
+                drawHealthBar(context, BONZI_BUDDY, gradientX, y, 8, 8, width, minigameHud.greenBonziPercent);
+                y += 11;
+                drawHealthBar(context, BONZI_BUDDY, gradientX, y, 8, 8, width, minigameHud.blueBonziPercent);
+            }
         }
 
         //check for TextTypeWriter
@@ -191,6 +222,36 @@ public class MinigameHudRenderer {
                 textTypeWriters.remove(textTypeWriter.hudUuid);
             }
         }
+    }
+
+    private static void drawHealthBar(DrawContext context, Identifier icon, int x, int y, int iconWidth, int iconHeight, int width, float percent) {
+        Color outlineColor;
+        if(percent <= 0) {
+            outlineColor = Color.black;
+        } else {
+            //turn more red as the boss' health goes down
+            outlineColor = new Color(255, (int) (255 * percent), (int) (255 * percent));
+        }
+
+        //draw bonzi's face
+        int padding = 2; //padding from edge of icon
+        int iconX = x + padding + 4;
+        //outline
+        int outlineWidth = 1;
+        context.fill(iconX - outlineWidth, y - outlineWidth, iconX + iconWidth + outlineWidth, y + iconHeight + outlineWidth, outlineColor.getRGB());
+        context.drawGuiTexture(icon, iconX, y, iconWidth, iconHeight);
+
+        //draw bonzi's health - idk it just sorta works
+        int healthX = iconX + iconWidth + padding * 2;
+        int healthWidth = width - iconWidth - padding * 4 - 8;
+        int healthHeight = 4;
+        int gradientY = y + 2;
+        context.fill(healthX - outlineWidth, gradientY - outlineWidth, healthX + healthWidth + outlineWidth, gradientY + healthHeight + outlineWidth, outlineColor.getRGB());
+        context.drawGuiTexture(GRADIENT, healthX, gradientY, healthWidth, healthHeight);
+
+        int percentX2 = healthX + healthWidth;
+        int percentX = (int) (healthX + (healthWidth * percent));
+        context.fill(percentX, gradientY, percentX2, gradientY + healthHeight, new Color(19, 12, 15).getRGB());
     }
 
     private static void createWaveClearWriter(UUID uuid, int wave) {
@@ -205,7 +266,7 @@ public class MinigameHudRenderer {
          textTypeWriters.put(uuid, new TextTypeWriter(uuid, Text.translatable("bonzibuddy.minigame.oneplayer"), new Color(255, 91, 84, 255), new Color(213, 25, 17, 255), true, true, false));
     }
     private static void createDefeatedBossWriter(UUID uuid, String bossDefeated) {
-        textTypeWriters.put(uuid, new ActionTextTypeWriter(uuid, Text.translatable("bonzibuddy.minigame.bossdefetaed", bossDefeated), new Color(255, 212, 0, 255), new Color(255, 166, 0, 255), true));
+        textTypeWriters.put(uuid, new ActionTextTypeWriter(uuid, Text.translatable("bonzibuddy.minigame.bossdefeated", bossDefeated), new Color(255, 212, 0, 255), new Color(255, 166, 0, 255), true));
     }
     private static void createVictoryTypeWriter(UUID uuid) {
         textTypeWriters.put(uuid, new TextTypeWriter(uuid, Text.translatable("bonzibuddy.minigame.victory"), new Color(130, 73, 243, 255), new Color(154, 108, 246, 255), true, true, true, 60, 10, 300));

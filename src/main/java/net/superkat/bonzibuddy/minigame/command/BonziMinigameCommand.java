@@ -30,7 +30,7 @@ public class BonziMinigameCommand {
     public static final SuggestionProvider<ServerCommandSource> BONZI_MINIGAMES = SuggestionProviders.register(
             Identifier.of(BonziBUDDY.MOD_ID, "bonzi_minigames"),
             (context, builder) -> CommandSource.suggestMatching(
-                    new String[]{"abstract", "catastrophic_clones"}, builder
+                    new String[]{"abstract", "catastrophic_clones", "triple_chaos"}, builder
             )
     );
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
@@ -80,6 +80,7 @@ public class BonziMinigameCommand {
                 }
                 case "abstract" -> minigameType = BonziMinigameType.ABSTRACT;
                 case "catastrophic_clones" -> minigameType = BonziMinigameType.CATASTROPHIC_CLONES;
+                case "triple_chaos" -> minigameType = BonziMinigameType.TRIPLE_CHAOS;
             }
             BonziMinigameApi.startBonziMinigame(minigameType, world, player.getBlockPos());
             source.sendFeedback(() -> Text.literal("Not a problem. Starting new Bonzi Minigame. Type: " + type.replace("_", " ")), false);
@@ -253,7 +254,7 @@ public class BonziMinigameCommand {
     }
 
     private static MinigameHudData placeholderHudData() {
-        return new MinigameHudData(MathHelper.randomUuid(), BonziMinigameType.CATASTROPHIC_CLONES, "Bonzi Minigame", 70, 1, 0, false, "");
+        return new MinigameHudData(MathHelper.randomUuid(), BonziMinigameType.TRIPLE_CHAOS, "Bonzi Minigame", 70, 1, 0, false, "", 1f, 1f, 1f);
     }
 
     private static int executeTpRespawn(ServerCommandSource source) throws CommandSyntaxException {

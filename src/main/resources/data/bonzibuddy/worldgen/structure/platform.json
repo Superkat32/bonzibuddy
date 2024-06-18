@@ -4,8 +4,8 @@
   "step": "surface_structures",
   "spawn_overrides": {},
   "terrain_adaptation": "beard_thin",
-  "start_pool": "bonzibuddy:platform",
-  "size": 1,
+  "start_pool": "bonzibuddy:tripleplatformpool_one",
+  "size": 2,
   "start_height": {
     "absolute": 32
   },

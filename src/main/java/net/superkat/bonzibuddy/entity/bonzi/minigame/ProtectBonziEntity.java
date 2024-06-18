@@ -1,4 +1,4 @@
-package net.superkat.bonzibuddy.entity.minigame;
+package net.superkat.bonzibuddy.entity.bonzi.minigame;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityStatuses;

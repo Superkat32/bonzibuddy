@@ -96,7 +96,7 @@ public class BonziMinigame {
         }
 
         for (ServerPlayerEntity player : inRangePlayers) {
-            if(!players.contains(player.getUuid())) {
+            if(!playersUuid.contains(player.getUuid())) {
                 addPlayer(player);
             }
         }
@@ -107,7 +107,14 @@ public class BonziMinigame {
      */
     public void tick() {
         if(checkForGameEnd()) {
-            this.end();
+            if(this.onGoing()) {
+                this.end();
+            } else if (hasWon() || hasLost()) {
+                ticksUntilInvalidate--;
+                if (ticksUntilInvalidate <= 0) {
+                    invalidate();
+                }
+            }
             return;
         }
 

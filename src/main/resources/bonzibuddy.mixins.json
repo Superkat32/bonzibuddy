@@ -3,7 +3,6 @@
   "package": "net.superkat.bonzibuddy.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "ExampleMixin",
     "PlayerEntityMixin",
     "ServerPlayerEntityMixin",
     "ServerWorldMixin",

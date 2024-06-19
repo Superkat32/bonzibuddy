@@ -222,7 +222,7 @@ public class BonziCatastrophicClonesMinigame extends BonziMinigame {
         newEnemySpawnPos();
         ticksUntilNewEnemySpawnPos = 100;
 
-        players.forEach(player -> {
+        players().forEach(player -> {
             player.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 200, 3));
             player.addStatusEffect(new StatusEffectInstance(StatusEffects.SATURATION, 200, 2));
         });

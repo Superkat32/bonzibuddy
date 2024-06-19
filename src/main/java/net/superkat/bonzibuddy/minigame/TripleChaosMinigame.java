@@ -5,6 +5,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
@@ -51,6 +52,14 @@ public class TripleChaosMinigame extends BonziMinigame {
     public void tick() {
         super.tick();
 
+        for (ServerPlayerEntity player : players()) {
+            if(player == null) return;
+            if(player.getY() < (double)(this.getWorld().getBottomY())) {
+                //if the player falls into the void - doesn't kill them because bugs'o'plenty
+                player.teleport(this.world, this.startPos.getX(), this.startPos.getY() + 2, this.startPos.getZ(), 0f, 0f);
+            }
+        }
+
         if(onGoing()) {
             if(redBonzi == null || greenBonzi == null || blueBonzi == null) {
                 spawnBonziBuddies();
@@ -84,6 +93,7 @@ public class TripleChaosMinigame extends BonziMinigame {
             lose();
             ticksUntilInvalidate = 140;
         }
+        discardAllEnemies();
     }
 
     @Override

@@ -7,7 +7,7 @@
   "start_pool": "bonzibuddy:tripleplatformpool_one",
   "size": 2,
   "start_height": {
-    "absolute": 32
+    "absolute": 8
   },
   "max_distance_from_center": 80,
   "use_expansion_hack": false

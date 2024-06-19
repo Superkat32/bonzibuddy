@@ -50,4 +50,9 @@ public class BonziBossEntity extends AbstractBonziCloneEntity {
             tripleChaosMinigame.bossDefeated(this);
         }
     }
+
+    @Override
+    protected void tickInVoid() {
+        this.kill();
+    }
 }

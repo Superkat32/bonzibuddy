@@ -18,6 +18,7 @@ import net.superkat.bonzibuddy.minigame.BonziCatastrophicClonesMinigame;
 import net.superkat.bonzibuddy.minigame.BonziMinigame;
 import net.superkat.bonzibuddy.minigame.BonziMinigameManager;
 import net.superkat.bonzibuddy.minigame.TripleChaosMinigame;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -31,7 +32,7 @@ public class BonziMinigameApi {
 
     //The structure spacing times 16
     public static final int STRUCTURE_SPACING = 256;
-    public static final int STRUCTURE_PLATFORM_Y = 37;
+    public static final int STRUCTURE_PLATFORM_Y = 13;
     public static final int STRUCTURE_SPAWN_Y = STRUCTURE_PLATFORM_Y + 3;
 
     /**
@@ -91,6 +92,33 @@ public class BonziMinigameApi {
     public static List<BonziMinigame> getAllMinigames(ServerWorld world) {
         BonziMinigameManager minigameManager = getMinigameManager(world);
         return minigameManager.getAllMinigames();
+    }
+
+    public static boolean playerInMinigame(ServerPlayerEntity player) {
+        ServerWorld world = (ServerWorld) player.getWorld();
+        if(getAllMinigames(world).isEmpty()) { //quick check
+            return false;
+        } else return getMinigameAt(world, player.getBlockPos()) != null;
+    }
+
+    @Nullable
+    public static BonziMinigame getMinigameAt(ServerWorld world, BlockPos pos) {
+        return getMinigameAt(world, pos, 48);
+    }
+
+    @Nullable
+    public static BonziMinigame getMinigameAt(ServerWorld world, BlockPos pos, int searchDistance) {
+        BonziMinigame minigame = null;
+        double distance = searchDistance * searchDistance;
+
+        for (BonziMinigame searchedMinigame : getAllMinigames(world)) {
+            double searchDistanceSquared = searchedMinigame.getStartPos().getSquaredDistance(pos);
+            if(searchDistanceSquared < distance) {
+                minigame = searchedMinigame;
+                distance = searchDistanceSquared;
+            }
+        }
+        return minigame;
     }
 
     public static void removeBonziMinigame(BonziMinigame minigame) {
@@ -245,7 +273,12 @@ public class BonziMinigameApi {
         return ((BonziMinigameWorld) world).bonzibuddy$getMinigameManager();
     }
 
+    public static boolean isBonziBuddyWorld(ServerWorld world) {
+        return world.getRegistryKey() == BonziBUDDY.PROTECT_BONZIBUDDY;
+    }
+
     public static void teleportPlayersToRespawn(List<ServerPlayerEntity> players) {
+        if(players.isEmpty()) return;
         players.forEach(player -> {
             TeleportTarget teleportTarget = player.getRespawnTarget(false, TeleportTarget.NO_OP);
             player.teleportTo(teleportTarget);

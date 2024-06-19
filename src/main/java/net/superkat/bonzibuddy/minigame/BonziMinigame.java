@@ -13,6 +13,7 @@ import net.superkat.bonzibuddy.BonziBUDDY;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameApi;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
 import net.superkat.bonzibuddy.network.packets.minigame.MinigameHudUpdateS2C;
+import org.apache.commons.compress.utils.Lists;
 
 import java.util.List;
 import java.util.Locale;
@@ -26,7 +27,6 @@ import java.util.UUID;
  * @see BonziMinigameManager
  */
 public class BonziMinigame {
-    protected final Set<ServerPlayerEntity> players = Sets.newHashSet();
     protected final Set<UUID> playersUuid = Sets.newHashSet();
     protected final int id;
     protected final ServerWorld world;
@@ -75,7 +75,7 @@ public class BonziMinigame {
     }
 
     public void sendPacketToInvolvedPlayers(CustomPayload payload) {
-        for (ServerPlayerEntity player : players) {
+        for (ServerPlayerEntity player : players()) {
             if(player != null) {
                 ServerPlayNetworking.send(player, payload);
             }
@@ -90,7 +90,7 @@ public class BonziMinigame {
         List<ServerPlayerEntity> inRangePlayers = getNearbyPlayers();
 
         for (ServerPlayerEntity player : allPlayers) {
-            if(!inRangePlayers.contains(player) && players.contains(player.getUuid())) {
+            if(!inRangePlayers.contains(player) && players().contains(player)) {
                 removePlayer(player);
             }
         }
@@ -100,6 +100,17 @@ public class BonziMinigame {
                 addPlayer(player);
             }
         }
+    }
+
+    public List<ServerPlayerEntity> players() {
+        List<ServerPlayerEntity> players = Lists.newArrayList();
+        playersUuid.forEach(uuid -> {
+            ServerPlayerEntity player = (ServerPlayerEntity) this.world.getPlayerByUuid(uuid);
+            if(player != null) {
+                players.add(player);
+            }
+        });
+        return players;
     }
 
     /**
@@ -198,14 +209,14 @@ public class BonziMinigame {
     }
 
     public void addPlayer(ServerPlayerEntity player) {
-        players.add(player);
+//        players.add(player);
         playersUuid.add(player.getUuid());
         MinigameHudUpdateS2C packet = new MinigameHudUpdateS2C(hudData, MinigameHudUpdateS2C.Action.ADD);
         ServerPlayNetworking.send(player, packet);
     }
 
     public void removePlayer(ServerPlayerEntity player) {
-        players.remove(player);
+//        players.remove(player);
         playersUuid.remove(player.getUuid());
         MinigameHudUpdateS2C packet = new MinigameHudUpdateS2C(hudData, MinigameHudUpdateS2C.Action.REMOVE);
         ServerPlayNetworking.send(player, packet);
@@ -228,7 +239,7 @@ public class BonziMinigame {
      * @return If the minigame is multiplayer, NOT the world/server!!!
      */
     public boolean multiplayer() {
-        return this.players.size() >= 2;
+        return this.players().size() >= 2;
     }
 
     /**
@@ -265,8 +276,8 @@ public class BonziMinigame {
     public void invalidate() {
         this.status = Status.STOPPED;
         sendRemoveMinigameHudPacket();
-        if(this.world.getRegistryKey() == BonziBUDDY.PROTECT_BONZIBUDDY) {
-            BonziMinigameApi.teleportPlayersToRespawn(this.players.stream().toList());
+        if(BonziMinigameApi.isBonziBuddyWorld(this.world)) {
+            BonziMinigameApi.teleportPlayersToRespawn(this.players());
         }
         BonziBUDDY.LOGGER.info("Bonzi Minigame " + getId() + " (" + getMinigameType().getName() + ") has finished!");
     }

@@ -32,10 +32,12 @@ public class BonziBuddyScreen extends Screen {
         this.addDrawableChild(button);
 
         //FIXME - Allow player to choose teammates
-        ButtonWidget playCatastrophicClones = ButtonWidget.builder(Text.of("Play Catastrophic Clones!"), (btn) -> {
-            requestPlayCatastrophicClones();
+        ButtonWidget playCatastrophicClones = ButtonWidget.builder(Text.of("Play Triple Chaos!"), (btn) -> {
+            requestPlayTripleChaos();
         }).dimensions(40, 64, 120, 20).build();
         this.addDrawableChild(playCatastrophicClones);
+
+        //TODO - email animation
     }
 
     public void doATrick() {
@@ -44,7 +46,7 @@ public class BonziBuddyScreen extends Screen {
         }
     }
 
-    public void requestPlayCatastrophicClones() {
+    public void requestPlayTripleChaos() {
         //Assumes all nearby players are entering
         ClientPlayNetworking.send(new RequestPlayMinigameC2S(BonziMinigameType.TRIPLE_CHAOS));
     }

@@ -5,11 +5,16 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.world.World;
+import net.superkat.bonzibuddy.entity.BonziBuddyEntities;
 import net.superkat.bonzibuddy.entity.bonzi.BonziLikeEntity;
 import net.superkat.bonzibuddy.entity.bonzi.minigame.ProtectBonziEntity;
+import net.superkat.bonzibuddy.minigame.TripleChaosMinigame;
+import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.AnimatableManager;
@@ -21,13 +26,8 @@ import software.bernie.geckolib.util.GeckoLibUtil;
  */
 public abstract class AbstractBonziCloneEntity extends HostileEntity implements GeoEntity, BonziLikeEntity {
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
-    boolean shouldTurnHead = true;
-    boolean showSunglasses = false;
-    public int ticksUntilNextIdleAnim = 100;
-    public int ticksSinceIdleAnim = 0;
-    public int ticksUntilAnimDone = 0;
-    public boolean readyForIdleAnim = false;
-    public boolean victorySunglasses = false;
+    @Nullable
+    public TripleChaosMinigame tripleChaosMinigame = null;
     public AbstractBonziCloneEntity(EntityType<? extends HostileEntity> entityType, World world) {
         super(entityType, world);
     }
@@ -42,16 +42,24 @@ public abstract class AbstractBonziCloneEntity extends HostileEntity implements 
     }
 
     @Override
-    public void tick() {
-        super.tick();
-    }
-
-    @Override
     public boolean tryAttack(Entity target) {
         if(!this.getWorld().isClient) {
             triggerAnim(attackAnimControllerName, getAnimString(ATTACK_ANIM));
         }
         return super.tryAttack(target);
+    }
+
+    @Override
+    public void onDamaged(DamageSource damageSource) {
+        if (damageSource.isOf(BonziBuddyEntities.BANANA_DAMAGE)) {
+            for (int i = 0; i < 20; i++) {
+                float velX = (float) (this.random.nextFloat() * 2.0 - 1.0);
+                float velY = (float) ((this.random.nextFloat() * 2.0 - 1.0) + 0.2);
+                float velZ = (float) (this.random.nextFloat() * 2.0 - 1.0);
+                this.getWorld().addParticle(ParticleTypes.TOTEM_OF_UNDYING, this.getX(), this.getEyeY(), this.getZ(), velX, velY, velZ);
+            }
+        }
+        super.onDamaged(damageSource);
     }
 
     @Override
@@ -65,6 +73,14 @@ public abstract class AbstractBonziCloneEntity extends HostileEntity implements 
         controllers.add(new AnimationController<>(this, attackAnimControllerName, 5, this::attackAnimController)
                 .triggerableAnim(getAnimString(ATTACK_ANIM), ATTACK_ANIM)
         );
+    }
+
+    public void setTripleChaosMinigame(@Nullable TripleChaosMinigame minigame) {
+        this.tripleChaosMinigame = minigame;
+    }
+
+    public boolean inMinigame() {
+        return tripleChaosMinigame != null && tripleChaosMinigame.isLoaded() && tripleChaosMinigame.onGoing();
     }
 
     @Override

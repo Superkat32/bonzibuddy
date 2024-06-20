@@ -1,7 +1,6 @@
 package net.superkat.bonzibuddy.entity.client.model.mob;
 
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.MathHelper;
 import net.superkat.bonzibuddy.BonziBUDDY;
 import net.superkat.bonzibuddy.entity.bonzi.minigame.mob.BonziBossEntity;
 import net.superkat.bonzibuddy.entity.client.model.BonziLikeModel;
@@ -25,8 +24,8 @@ public class BonziBossEntityModel extends DefaultedEntityGeoModel<BonziBossEntit
         if (head != null) {
             EntityModelData entityData = animationState.getData(DataTickets.ENTITY_MODEL_DATA);
 
-            head.setRotX(head.getRotX() + entityData.headPitch() * MathHelper.RADIANS_PER_DEGREE);
-            head.setRotY(head.getRotY() + entityData.netHeadYaw() * MathHelper.RADIANS_PER_DEGREE);
+            turnHead(animatable, entityData, head, instanceId);
+            handleItemsVisibility(animatable, instanceId);
         }
     }
 }

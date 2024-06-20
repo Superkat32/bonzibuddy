@@ -5,9 +5,11 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.Difficulty;
 import net.superkat.bonzibuddy.BonziBUDDY;
 import net.superkat.bonzibuddy.entity.bonzi.BonziBuddyEntity;
 import net.superkat.bonzibuddy.minigame.BonziMinigame;
+import net.superkat.bonzibuddy.minigame.TripleChaosMinigame;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameApi;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
 import net.superkat.bonzibuddy.network.packets.BonziBuddyDoATrickC2S;
@@ -38,14 +40,22 @@ public class BonziBuddyServerNetworkHandler {
             ServerWorld world = context.player().getServerWorld();
             ServerWorld bonziWorld = Objects.requireNonNull(context.player().getServer()).getWorld(BonziBUDDY.PROTECT_BONZIBUDDY);
             if(bonziWorld != null) {
-                Vec3d playerPos = context.player().getPos();
-                //FIXME - Allow the starting player to choose the players to play with
-                List<ServerPlayerEntity> players = world.getPlayers(player -> player.squaredDistanceTo(playerPos) <= 100);
+                Difficulty worldDifficulty = bonziWorld.getDifficulty();
+                if(worldDifficulty != Difficulty.PEACEFUL) {
+                    Vec3d playerPos = context.player().getPos();
+                    //FIXME - Allow the starting player to choose the players to play with
+                    List<ServerPlayerEntity> players = world.getPlayers(player -> player.squaredDistanceTo(playerPos) <= 100);
 
-                BlockPos startPos = BonziMinigameApi.getAvailableMinigameBlockpos(bonziWorld);
-                BonziMinigame startedBonziMinigame = BonziMinigameApi.startBonziMinigame(type, bonziWorld, startPos);
+                    BlockPos startPos = BonziMinigameApi.getAvailableMinigameBlockpos(bonziWorld);
+                    BonziMinigame startedBonziMinigame = BonziMinigameApi.startBonziMinigame(type, bonziWorld, startPos);
+                    if(startedBonziMinigame instanceof TripleChaosMinigame chaosMinigame) {
+                        chaosMinigame.setDifficultyLevel(worldDifficulty.ordinal());
+                    }
 
-                BonziMinigameApi.teleportPlayersToMinigame(startedBonziMinigame, players);
+                    BonziMinigameApi.teleportPlayersToMinigame(startedBonziMinigame, players);
+                } else {
+                    BonziBUDDY.LOGGER.warn("Can't start Bonz Minigame! The difficulty is in peaceful!");
+                }
             }
         }
     }

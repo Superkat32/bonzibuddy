@@ -14,6 +14,7 @@ import net.superkat.bonzibuddy.minigame.api.BonziMinigameApi;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
 import net.superkat.bonzibuddy.network.packets.minigame.MinigameHudUpdateS2C;
 import org.apache.commons.compress.utils.Lists;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Locale;
@@ -111,6 +112,17 @@ public class BonziMinigame {
             }
         });
         return players;
+    }
+
+    @Nullable
+    public ServerPlayerEntity randomPlayer() {
+        int players = players().size();
+        if(players > 0) { //haha learned my lesson last modfest
+            int player = this.world.random.nextInt(players);
+            return players().get(player);
+        } else {
+            return null;
+        }
     }
 
     /**

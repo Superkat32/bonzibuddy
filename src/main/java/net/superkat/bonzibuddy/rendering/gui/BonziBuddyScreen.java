@@ -6,9 +6,7 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 import net.minecraft.world.World;
 import net.superkat.bonzibuddy.entity.bonzi.BonziBuddyEntity;
-import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
 import net.superkat.bonzibuddy.network.packets.BonziBuddyDoATrickC2S;
-import net.superkat.bonzibuddy.network.packets.minigame.RequestPlayMinigameC2S;
 import org.jetbrains.annotations.Nullable;
 
 public class BonziBuddyScreen extends Screen {
@@ -33,7 +31,7 @@ public class BonziBuddyScreen extends Screen {
 
         //FIXME - Allow player to choose teammates
         ButtonWidget playCatastrophicClones = ButtonWidget.builder(Text.of("Play Triple Chaos!"), (btn) -> {
-            requestPlayTripleChaos();
+            openPrepMinigameScreen();
         }).dimensions(40, 64, 120, 20).build();
         this.addDrawableChild(playCatastrophicClones);
 
@@ -46,9 +44,8 @@ public class BonziBuddyScreen extends Screen {
         }
     }
 
-    public void requestPlayTripleChaos() {
-        //Assumes all nearby players are entering
-        ClientPlayNetworking.send(new RequestPlayMinigameC2S(BonziMinigameType.TRIPLE_CHAOS));
+    public void openPrepMinigameScreen() {
+        this.client.setScreen(new PrepBonziMinigameScreen(Text.of("Prep screen")));
     }
 
     @Override

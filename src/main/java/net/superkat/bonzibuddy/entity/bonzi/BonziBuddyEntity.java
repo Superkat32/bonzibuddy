@@ -46,11 +46,20 @@ public class BonziBuddyEntity extends PathAwareEntity implements GeoEntity, Bonz
     public void playRandomIdleAnimation() {
         int i = this.getWorld().random.nextInt(idleAnimations().size());
         RawAnimation anim = idleAnimations().get(i);
-        triggerAnim("controller", getAnimString(anim));
+        triggerAnim(animControllerName, getAnimString(anim));
     }
 
     public void doATrick() {
-        playRandomIdleAnimation();
+        int i = this.getWorld().random.nextInt(trickAnimations.size());
+        RawAnimation anim = trickAnimations.get(i);
+        if(anim == BonziLikeEntity.DEATH_ANIM) {
+            //reroll making the odds of this animation much less likely
+            //With 2 other trick animations, the odds are 1/9 (1 in 3^3), or 0.11% chances
+            //The goal is to have at least 5 trick animations, making this a 1/25, or 0.04% chance.
+            i = this.getWorld().random.nextInt(idleAnimations().size());
+            anim = idleAnimations().get(i);
+        }
+        triggerAnim(animControllerName, getAnimString(anim));
     }
 
     @Override
@@ -60,6 +69,7 @@ public class BonziBuddyEntity extends PathAwareEntity implements GeoEntity, Bonz
                 .triggerableAnim(getAnimString(IDLE_GLOBE), IDLE_GLOBE)
                 .triggerableAnim(getAnimString(IDLE_SPYGLASS), IDLE_SPYGLASS)
                 .triggerableAnim(getAnimString(IDLE_BANANA), IDLE_BANANA)
+                .triggerableAnim(getAnimString(DEATH_ANIM), DEATH_ANIM)
         );
         controllers.add(new AnimationController<>(this, attackAnimControllerName, 5, this::attackAnimController)
                 .triggerableAnim(getAnimString(ATTACK_ANIM), ATTACK_ANIM)

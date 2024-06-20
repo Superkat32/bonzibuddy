@@ -12,14 +12,14 @@ import java.util.Locale;
 public interface BonziLikeEntity {
     RawAnimation WALK_ANIM = RawAnimation.begin().thenLoop("CLONE_WALK");
     RawAnimation ATTACK_ANIM = RawAnimation.begin().thenPlay("CLONE_ATTACK");
-    RawAnimation IDLE_ANIM = RawAnimation.begin().thenLoop("IDLE_MAIN");
-    RawAnimation IDLE_SUNGLASSES = RawAnimation.begin().thenLoop("IDLE_SUNGLASSES");
-    RawAnimation IDLE_GLOBE = RawAnimation.begin().thenLoop("IDLE_GLOBE");
-    RawAnimation IDLE_SPYGLASS = RawAnimation.begin().thenLoop("IDLE_SPYGLASS");
-    RawAnimation IDLE_BANANA = RawAnimation.begin().thenLoop("IDLE_BANANA");
-    RawAnimation DEATH_ANIM = RawAnimation.begin().thenLoop("YIKES");
+    RawAnimation IDLE_ANIM = RawAnimation.begin().thenPlay("IDLE_MAIN");
+    RawAnimation IDLE_SUNGLASSES = RawAnimation.begin().thenPlay("IDLE_SUNGLASSES");
+    RawAnimation IDLE_GLOBE = RawAnimation.begin().thenPlay("IDLE_GLOBE");
+    RawAnimation IDLE_SPYGLASS = RawAnimation.begin().thenPlay("IDLE_SPYGLASS");
+    RawAnimation IDLE_BANANA = RawAnimation.begin().thenPlay("IDLE_BANANA");
+    RawAnimation DEATH_ANIM = RawAnimation.begin().thenPlay("YIKES");
     default List<RawAnimation> idleAnimations() {
-        return List.of(IDLE_SUNGLASSES, IDLE_GLOBE, IDLE_SPYGLASS, IDLE_BANANA);
+        return List.of(IDLE_ANIM, IDLE_SUNGLASSES, IDLE_GLOBE, IDLE_SPYGLASS, IDLE_BANANA);
     }
     List<RawAnimation> trickAnimations = List.of(IDLE_SUNGLASSES, IDLE_GLOBE, DEATH_ANIM);
 
@@ -28,7 +28,7 @@ public interface BonziLikeEntity {
         if (state.isMoving()) {
             return state.setAndContinue(WALK_ANIM);
         } else {
-            return state.setAndContinue(IDLE_ANIM);
+            return PlayState.STOP;
         }
     }
 
@@ -43,6 +43,10 @@ public interface BonziLikeEntity {
 
     default String getAnimString(RawAnimation anim) {
         //I think setting the language to english here will help?
+        return BonziLikeEntity.animString(anim);
+    }
+
+    static String animString(RawAnimation anim) {
         return anim.toString().toLowerCase(Locale.ENGLISH);
     }
 }

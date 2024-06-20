@@ -10,6 +10,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.chunk.placement.StructurePlacementType;
 import net.superkat.bonzibuddy.entity.BonziBuddyEntities;
+import net.superkat.bonzibuddy.item.BonziItems;
 import net.superkat.bonzibuddy.minigame.command.BonziMinigameCommand;
 import net.superkat.bonzibuddy.network.BonziBuddyServerNetworkHandler;
 import net.superkat.bonzibuddy.worldgen.ConstantSpreadStructurePlacement;
@@ -27,7 +28,10 @@ public class BonziBUDDY implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		LOGGER.info("Hello Fabric world!");
+		//custom bonzi buddy hello/welcome message?
+//		LOGGER.info("Hello Fabric world!");
+
+		BonziItems.registerItems();
 
 		BonziBuddyEntities.registerEntities();
 

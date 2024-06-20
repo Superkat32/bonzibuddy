@@ -1,17 +1,22 @@
 package net.superkat.bonzibuddy.minigame;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.Difficulty;
 import net.superkat.bonzibuddy.entity.BonziBuddyEntities;
+import net.superkat.bonzibuddy.entity.bonzi.minigame.mob.AbstractBonziCloneEntity;
 import net.superkat.bonzibuddy.entity.bonzi.minigame.mob.BonziBossEntity;
+import net.superkat.bonzibuddy.entity.bonzi.minigame.mob.BonziCloneEntity;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameApi;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
 import net.superkat.bonzibuddy.network.packets.minigame.BonziBossBarUpdateS2C;
@@ -21,19 +26,66 @@ import net.superkat.bonzibuddy.network.packets.minigame.WaitingForPlayersS2C;
 public class TripleChaosMinigame extends BonziMinigame {
     public int ticksLeft;
     public int secondsLeft;
+    public BlockPos currentEnemySpawnPos;
+    public int ticksUntilEnemy;
+    private int enemiesToSpawn = 3;
+    private int maxEnemiesToSpawn;
+    public int minTicksUntilEnemy; //should be adjusted based on difficulty but may not have time for balancing that
+    public int maxTicksUntilEnemy;
+    public int maxWaitTicksAfterNewEnemyPos = 300;
+    public int ticksUntilNewEnemyPos;
+
+    public int difficultyLevel = 1;
 
     public BonziBossEntity redBonzi = null;
     public BonziBossEntity greenBonzi = null;
     public BonziBossEntity blueBonzi = null;
-    public float redBonziPercent = 100f;
-    public float greenBonziPercent = 100f;
-    public float blueBonziPercent = 100f;
+    //percents are from 0f to 1f, with 0.5f = 50%
+    public float redBonziPercent = 1f;
+    public float greenBonziPercent = 1f;
+    public float blueBonziPercent = 1f;
+    public float redBonziInitHealth = 400f;
+    public float greenBonziInitHealth = 550f;
+    public float blueBonziInitHealth = 650f;
 
     public TripleChaosMinigame(int id, ServerWorld world, BlockPos startPos) {
         super(id, world, startPos);
+        maxTicksUntilEnemy = 30;
+        minTicksUntilEnemy = 10;
+        maxEnemiesToSpawn = 3;
     }
     public TripleChaosMinigame(ServerWorld world, NbtCompound nbt) {
         super(world, nbt);
+        maxTicksUntilEnemy = 30;
+        minTicksUntilEnemy = 10;
+        maxEnemiesToSpawn = 3;
+    }
+
+    /**
+     * Set the difficulty of the Minigame, not necessary related to the world's Difficulty. This should be adjusted based on the world's Difficulty AND the amount of joining players, OR be allowed to be overridden by the starting player.
+     *
+     * @param difficulty The difficulty level. For example, 1 should be easy mode, 3 should be hard mode, and higher numbers can be given if there are more players.
+     */
+    public void setDifficultyLevel(int difficulty) {
+        this.difficultyLevel = difficulty;
+    }
+
+    public void scaleFromDifficulty() {
+        //yeah good luck lol
+        this.redBonziInitHealth = (float) (280 + 0.005 * (difficultyLevel * 100) * 400);
+        this.greenBonziInitHealth = (float) (385 + 0.005 * (difficultyLevel * 100) * 550);
+        this.blueBonziInitHealth = (float) (455 + 0.005 * (difficultyLevel * 100) * 650);
+
+        if(difficultyLevel < 3) {
+            maxTicksUntilEnemy = 37 - difficultyLevel * 2;
+            minTicksUntilEnemy = 10 + difficultyLevel * 2;
+        } else {
+            maxTicksUntilEnemy = 31 - difficultyLevel / 3;
+            minTicksUntilEnemy = MathHelper.clamp(10 - difficultyLevel, 7, 10);
+        }
+        maxEnemiesToSpawn = (int) Math.ceil(difficultyLevel * 1.5);
+
+        maxWaitTicksAfterNewEnemyPos = (int) (double) (300 - difficultyLevel * difficultyLevel * 5);
     }
 
     @Override
@@ -62,9 +114,20 @@ public class TripleChaosMinigame extends BonziMinigame {
 
         if(onGoing()) {
             if(redBonzi == null || greenBonzi == null || blueBonzi == null) {
+                scaleFromDifficulty();
                 spawnBonziBuddies();
             }
             ticksLeft--;
+
+            ticksUntilEnemy--;
+            if(ticksUntilEnemy <= 0) {
+                spawnClone();
+            }
+
+            ticksUntilNewEnemyPos--;
+            if(ticksUntilNewEnemyPos <= 0) {
+                newEnemySpawnPos();
+            }
         }
     }
 
@@ -124,11 +187,63 @@ public class TripleChaosMinigame extends BonziMinigame {
 
     public void spawnBonziBuddies() {
         this.redBonzi = (BonziBossEntity) spawnEntity(BonziBuddyEntities.BONZI_BOSS);
+        this.redBonzi.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(redBonziInitHealth);
         this.redBonzi.setTripleChaosMinigame(this);
+
         this.greenBonzi = (BonziBossEntity) spawnEntity(BonziBuddyEntities.BONZI_BOSS);
+        this.greenBonzi.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(greenBonziInitHealth);
         this.greenBonzi.setTripleChaosMinigame(this);
+
         this.blueBonzi = (BonziBossEntity) spawnEntity(BonziBuddyEntities.BONZI_BOSS);
+        this.blueBonzi.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(blueBonziInitHealth);
         this.blueBonzi.setTripleChaosMinigame(this);
+    }
+
+    public void spawnClone() {
+        ticksUntilEnemy = world.random.nextBetween(minTicksUntilEnemy, maxTicksUntilEnemy);
+        enemiesToSpawn--;
+
+        if(currentEnemySpawnPos != null && enemies.size() < maxEnemies) {
+            BonziCloneEntity clone = BonziBuddyEntities.BONZI_CLONE.create(world);
+            clone.setPos(currentEnemySpawnPos.getX(), currentEnemySpawnPos.getY(), currentEnemySpawnPos.getZ());
+            clone.initialize(world, world.getLocalDifficulty(currentEnemySpawnPos), SpawnReason.EVENT, null);
+            world.spawnEntity(clone);
+
+            //more banana blasters on higher difficulty
+            //also guarantees at least one clone spawns that can drop the banana blaster
+            if(enemiesToSpawn <= 0 || (this.difficultyLevel >= 3 && this.world.random.nextBetween(1, Math.max(25 / difficultyLevel, 3)) == 1)) {
+                if(clone.scale < 2f) {
+                    clone.setScale(MathHelper.nextFloat(this.world.random, 2f, 3f));
+                }
+            }
+
+            addEnemy(clone);
+        }
+
+        if(enemiesToSpawn <= 0) {
+            enemiesToSpawn = this.world.random.nextBetween(1, maxEnemiesToSpawn);
+            //at least 5 seconds, at most 12 seconds
+            ticksUntilEnemy = MathHelper.clamp(ticksUntilEnemy * 4, 100, maxWaitTicksAfterNewEnemyPos);
+        }
+    }
+
+    public void addEnemy(MobEntity enemy) {
+        super.addEnemy(enemy);
+        if(enemy instanceof AbstractBonziCloneEntity clone) {
+            clone.setTripleChaosMinigame(this);
+        }
+        ServerPlayerEntity target = randomPlayer();
+        if(target != null) {
+            enemy.setTarget(target);
+        }
+    }
+
+    public void newEnemySpawnPos() {
+        BlockPos newPos = BonziMinigameApi.getEnemySpawnPos(world, startPos, 1, 20);
+        if(newPos != null) {
+            this.currentEnemySpawnPos = newPos;
+        }
+        ticksUntilNewEnemyPos = world.random.nextBetween(140, 300);
     }
 
     public void discardAllEnemies() {
@@ -143,6 +258,8 @@ public class TripleChaosMinigame extends BonziMinigame {
         if(this.blueBonzi != null) {
             this.blueBonzi.discard();
         }
+
+        this.enemies.forEach(Entity::discard);
     }
     
     public void updateBossHealth(BonziBossEntity boss) {

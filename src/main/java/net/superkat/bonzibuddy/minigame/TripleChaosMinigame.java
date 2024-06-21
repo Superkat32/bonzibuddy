@@ -5,6 +5,8 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -188,14 +190,17 @@ public class TripleChaosMinigame extends BonziMinigame {
     public void spawnBonziBuddies() {
         this.redBonzi = (BonziBossEntity) spawnEntity(BonziBuddyEntities.BONZI_BOSS);
         this.redBonzi.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(redBonziInitHealth);
+        this.redBonzi.setIsRed(true);
         this.redBonzi.setTripleChaosMinigame(this);
 
         this.greenBonzi = (BonziBossEntity) spawnEntity(BonziBuddyEntities.BONZI_BOSS);
         this.greenBonzi.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(greenBonziInitHealth);
+        this.greenBonzi.setIsGreen(true);
         this.greenBonzi.setTripleChaosMinigame(this);
 
         this.blueBonzi = (BonziBossEntity) spawnEntity(BonziBuddyEntities.BONZI_BOSS);
         this.blueBonzi.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(blueBonziInitHealth);
+        this.blueBonzi.setIsBlue(true);
         this.blueBonzi.setTripleChaosMinigame(this);
     }
 
@@ -301,6 +306,12 @@ public class TripleChaosMinigame extends BonziMinigame {
         if(sendPacket) {
             this.sendUpdateMinigameHudPacket(MinigameHudUpdateS2C.Action.BOSS_DEFEATED);
         }
+
+        //little bonus :)
+        players().forEach(player -> {
+            player.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 60, 1));
+            player.addStatusEffect(new StatusEffectInstance(StatusEffects.SATURATION, 60, 1));
+        });
     }
 
     private LivingEntity spawnEntity(EntityType<? extends MobEntity> type) {
@@ -317,7 +328,7 @@ public class TripleChaosMinigame extends BonziMinigame {
 
     @Override
     public boolean checkForGameEnd() {
-        return (ticksLeft <= 0 || playersAlive() <= 0 || bonziBuddiesDefeated() || !onGoing()) && !gracePeriod();
+        return (ticksLeft <= -19 || playersAlive() <= 0 || bonziBuddiesDefeated() || !onGoing()) && !gracePeriod();
     }
 
     public boolean bonziBuddiesDefeated() {

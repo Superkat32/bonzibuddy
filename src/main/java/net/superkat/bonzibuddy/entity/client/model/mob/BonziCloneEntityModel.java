@@ -11,9 +11,18 @@ import software.bernie.geckolib.model.DefaultedEntityGeoModel;
 import software.bernie.geckolib.model.data.EntityModelData;
 
 public class BonziCloneEntityModel extends DefaultedEntityGeoModel<BonziCloneEntity> implements BonziLikeModel {
+    private final Identifier bananaBlasterDroppableTexture = buildFormattedTexturePath(Identifier.of(BonziBUDDY.MOD_ID, "bonzibananaclone"));
     public BonziCloneEntityModel() {
         super(Identifier.of(BonziBUDDY.MOD_ID, "bonzibuddy"), false);
         withAltTexture(Identifier.of(BonziBUDDY.MOD_ID, "bonziclone"));
+    }
+
+    @Override
+    public Identifier getTextureResource(BonziCloneEntity animatable) {
+        if(animatable.scale >= 2) {
+            return bananaBlasterDroppableTexture;
+        }
+        return super.getTextureResource(animatable);
     }
 
     @Override

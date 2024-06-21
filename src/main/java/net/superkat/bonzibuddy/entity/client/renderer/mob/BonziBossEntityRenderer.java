@@ -13,10 +13,16 @@ public class BonziBossEntityRenderer extends GeoEntityRenderer<BonziBossEntity> 
         super(renderManager, new BonziBossEntityModel());
     }
 
+    public BonziBossEntityRenderer(EntityRendererFactory.Context renderManager, BonziBossEntityModel model) {
+        super(renderManager, model);
+    }
+
     @Override
     public void scaleModelForRender(float widthScale, float heightScale, MatrixStack poseStack, BonziBossEntity animatable, BakedGeoModel model, boolean isReRender, float partialTick, int packedLight, int packedOverlay) {
         float scale = (float) animatable.getAttributes().getValue(EntityAttributes.GENERIC_SCALE);
         poseStack.scale(scale, scale, scale);
         super.scaleModelForRender(widthScale, heightScale, poseStack, animatable, model, isReRender, partialTick, packedLight, packedOverlay);
     }
+
+
 }

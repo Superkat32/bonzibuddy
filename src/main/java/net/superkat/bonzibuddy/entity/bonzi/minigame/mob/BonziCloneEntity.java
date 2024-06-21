@@ -39,7 +39,7 @@ public class BonziCloneEntity extends AbstractBonziCloneEntity implements GeoAni
 
     public void setAttributesBasedOnScale() {
         this.scale = (float) this.getAttributeValue(EntityAttributes.GENERIC_SCALE);
-        this.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(20 * (scale / 2.5));
+        this.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(scale < 2 ? 5 * scale : 10 * scale);
         this.getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE).setBaseValue(3 + scale);
         this.getAttributeInstance(EntityAttributes.GENERIC_ATTACK_KNOCKBACK).setBaseValue(0.35 * scale);
         this.getAttributeInstance(EntityAttributes.PLAYER_SWEEPING_DAMAGE_RATIO).setBaseValue(1 / scale);

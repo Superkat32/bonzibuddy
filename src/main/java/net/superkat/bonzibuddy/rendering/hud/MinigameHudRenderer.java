@@ -11,12 +11,12 @@ import net.minecraft.util.Identifier;
 import net.superkat.bonzibuddy.BonziBUDDY;
 import net.superkat.bonzibuddy.minigame.MinigameHudData;
 import net.superkat.bonzibuddy.network.packets.minigame.BonziBossBarUpdateS2C;
+import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.List;
+import java.util.*;
 
 /**
  * The client-side renderer of MinigameHudData.
@@ -25,10 +25,14 @@ import java.util.UUID;
 public class MinigameHudRenderer {
     private static final Identifier GRADIENT = Identifier.of(BonziBUDDY.MOD_ID, "minigame/gradient");
     private static final Identifier BONZI_BUDDY = Identifier.of(BonziBUDDY.MOD_ID, "minigame/bonzibuddy");
+    private static final Identifier RED_BONZI_BUDDY = Identifier.of(BonziBUDDY.MOD_ID, "minigame/redbonzibuddy");
+    private static final Identifier GREEN_BONZI_BUDDY = Identifier.of(BonziBUDDY.MOD_ID, "minigame/greenbonzibuddy");
+    private static final Identifier BLUE_BONZI_BUDDY = Identifier.of(BonziBUDDY.MOD_ID, "minigame/bluebonzibuddy");
     private static final Identifier HEALTH_BAR = Identifier.of(BonziBUDDY.MOD_ID, "minigame/healthbar");
     private static final Identifier BACKGROUND = Identifier.of(BonziBUDDY.MOD_ID, "minigame/background");
     public static final Map<UUID, MinigameHudData> minigameHuds = Maps.newLinkedHashMap();
-    public static final Map<UUID, TextTypeWriter> textTypeWriters = Maps.newLinkedHashMap();
+//    public static final Map<UUID, TextTypeWriter> textTypeWriters = Maps.newLinkedHashMap();
+    public static final Map<UUID, List<TextTypeWriter>> textTypeWriters = Maps.newLinkedHashMap();
 
     public static void registerHudRenderEvents() {
         HudRenderCallback.EVENT.register(MinigameHudRenderer::renderMinigameHuds);
@@ -66,11 +70,21 @@ public class MinigameHudRenderer {
     public static void updateOnePlayerLeft(UUID uuid, boolean onePlayerLeft) {
         MinigameHudData hudData = getHudFromUuid(uuid);
         if(hudData != null) {
-            TextTypeWriter textTypeWriter = textTypeWriters.get(uuid);
+            List<TextTypeWriter> typeWriters = textTypeWriters.get(uuid);
+            TextTypeWriter textTypeWriter = null;
+
+            for (TextTypeWriter typeWriter : typeWriters) {
+                if(typeWriter != null) {
+                    if(Objects.equals(typeWriter.text, Text.translatable("bonzibuddy.minigame.oneplayer"))) {
+                        textTypeWriter = typeWriter;
+                        break;
+                    }
+                }
+            }
             //Checks if typewriter exists AND is the one player typewriter.
             //This is done because 1) the one player left packet gets sent every second,
             //and 2) the typewriter can be overridden by another packet, like the wave clear packet
-            boolean typeWriterExist = textTypeWriter != null && Objects.equals(textTypeWriter.text, Text.translatable("bonzibuddy.minigame.oneplayer"));
+            boolean typeWriterExist = textTypeWriter != null;
 
             hudData.setOnePlayerLeft(onePlayerLeft);
             if (onePlayerLeft && !typeWriterExist) {
@@ -162,7 +176,6 @@ public class MinigameHudRenderer {
         //draw objective
         switch (minigameHud.type) {
             case CATASTROPHIC_CLONES -> {
-
                 //draw wave number
                 Text waveText = Text.translatable("bonzibuddy.minigame.wave", minigameHud.wave);
                 int waveWidth = client.textRenderer.getWidth(waveText);
@@ -205,23 +218,47 @@ public class MinigameHudRenderer {
                 int timeX = windowWidth / 2 - timeWidth / 2 + 40;
                 context.drawTextWithShadow(client.textRenderer, String.valueOf(minigameHud.time), timeX, nameY, Color.WHITE.getRGB());
 
+
+
                 y += 6;
-                drawHealthBar(context, BONZI_BUDDY, gradientX, y, 8, 8, width, minigameHud.redBonziPercent);
+                drawHealthBar(context, RED_BONZI_BUDDY, gradientX, y, 8, 8, width, minigameHud.redBonziPercent);
                 y += 11;
-                drawHealthBar(context, BONZI_BUDDY, gradientX, y, 8, 8, width, minigameHud.greenBonziPercent);
+                drawHealthBar(context, GREEN_BONZI_BUDDY, gradientX, y, 8, 8, width, minigameHud.greenBonziPercent);
                 y += 11;
-                drawHealthBar(context, BONZI_BUDDY, gradientX, y, 8, 8, width, minigameHud.blueBonziPercent);
+                drawHealthBar(context, BLUE_BONZI_BUDDY, gradientX, y, 8, 8, width, minigameHud.blueBonziPercent);
             }
         }
 
         //check for TextTypeWriter
-        TextTypeWriter textTypeWriter = textTypeWriters.get(minigameHud.uuid);
-        if(textTypeWriter != null) {
-            textTypeWriter.tick(context);
-            if(textTypeWriter.readyForRemoval) {
-                textTypeWriters.remove(textTypeWriter.hudUuid);
+        textTypeWriters.computeIfAbsent(minigameHud.uuid, list -> Lists.newArrayList());
+        List<TextTypeWriter> typeWriters = textTypeWriters.get(minigameHud.uuid);
+        boolean shouldScale = typeWriters.size() > 1;
+        Iterator<TextTypeWriter> typeWriterIterator = typeWriters.iterator();
+
+        context.getMatrices().push();
+        if(shouldScale) {
+            context.getMatrices().translate(windowWidth / 4f, height / 2f + 8, 0);
+            context.getMatrices().scale(0.5f, 0.5f, 0.5f);
+        }
+
+        while (typeWriterIterator.hasNext()) {
+            TextTypeWriter typeWriter = typeWriterIterator.next();
+
+            if(typeWriter != null) {
+                if(shouldScale && typeWriter instanceof DefeatTextTypeWriter) {
+                    //couldn't be bothered to fix the math on the background scaling
+                    ((DefeatTextTypeWriter) typeWriter).renderBackground = false;
+                }
+
+                typeWriter.tick(context);
+                context.getMatrices().translate(0, 32, 0);
+
+                if(typeWriter.readyForRemoval) {
+                    typeWriterIterator.remove();
+                }
             }
         }
+        context.getMatrices().pop();
     }
 
     private static void drawHealthBar(DrawContext context, Identifier icon, int x, int y, int iconWidth, int iconHeight, int width, float percent) {
@@ -254,25 +291,33 @@ public class MinigameHudRenderer {
         context.fill(percentX, gradientY, percentX2, gradientY + healthHeight, new Color(19, 12, 15).getRGB());
     }
 
+    private static void addTypeWriter(UUID uuid, TextTypeWriter typeWriter) {
+        textTypeWriters.get(uuid).add(typeWriter);
+    }
+
+    private static void addTypeWriter(UUID uuid, TextTypeWriter typeWriter, int index) {
+        textTypeWriters.get(uuid).add(index, typeWriter);
+    }
+
     private static void createWaveClearWriter(UUID uuid, int wave) {
-        textTypeWriters.put(uuid, new TextTypeWriter(uuid, Text.translatable("bonzibuddy.minigame.waveclear", wave), new Color(154, 108, 246, 255), null, false, false, true));
+        addTypeWriter(uuid, new TextTypeWriter(uuid, Text.translatable("bonzibuddy.minigame.waveclear", wave), new Color(154, 108, 246, 255), null, false, false, true));
     }
     private static void createGracePeriodWriter(UUID uuid, int gracePeriod) {
         boolean go = gracePeriod <= 0;
         Text text = go ? Text.translatable("bonzibuddy.minigame.go") : Text.of(String.valueOf(gracePeriod));
-        textTypeWriters.put(uuid, new GracePeriodTextTypeWriter(uuid, text, new Color(143, 108, 246, 255), go));
+        addTypeWriter(uuid, new GracePeriodTextTypeWriter(uuid, text, new Color(143, 108, 246, 255), go));
     }
     private static void createOnePlayerLeftWriter(UUID uuid) {
-         textTypeWriters.put(uuid, new TextTypeWriter(uuid, Text.translatable("bonzibuddy.minigame.oneplayer"), new Color(255, 91, 84, 255), new Color(213, 25, 17, 255), true, true, false));
+        addTypeWriter(uuid, new TextTypeWriter(uuid, Text.translatable("bonzibuddy.minigame.oneplayer"), new Color(255, 91, 84, 255), new Color(213, 25, 17, 255), true, true, false));
     }
     private static void createDefeatedBossWriter(UUID uuid, String bossDefeated) {
-        textTypeWriters.put(uuid, new ActionTextTypeWriter(uuid, Text.translatable("bonzibuddy.minigame.bossdefeated", bossDefeated), new Color(255, 212, 0, 255), new Color(255, 166, 0, 255), true));
+        addTypeWriter(uuid, new ActionTextTypeWriter(uuid, Text.translatable("bonzibuddy.minigame.bossdefeated", bossDefeated), new Color(255, 212, 0, 255), new Color(255, 166, 0, 255), true));
     }
     private static void createVictoryTypeWriter(UUID uuid) {
-        textTypeWriters.put(uuid, new TextTypeWriter(uuid, Text.translatable("bonzibuddy.minigame.victory"), new Color(130, 73, 243, 255), new Color(154, 108, 246, 255), true, true, true, 60, 10, 300));
+        addTypeWriter(uuid, new TextTypeWriter(uuid, Text.translatable("bonzibuddy.minigame.victory"), new Color(130, 73, 243, 255), new Color(154, 108, 246, 255), true, true, true, 60, 10, 300), 0);
     }
     private static void createDefeatTypeWriter(UUID uuid) {
-        textTypeWriters.put(uuid, new DefeatTextTypeWriter(uuid, Text.translatable("bonzibuddy.minigame.defeat"), new Color(213, 25, 17, 255), null, true, false, true));
+        addTypeWriter(uuid, new DefeatTextTypeWriter(uuid, Text.translatable("bonzibuddy.minigame.defeat"), new Color(213, 25, 17, 255), null, true, false, true), 0);
     }
 
 }

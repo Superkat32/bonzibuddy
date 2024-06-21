@@ -24,7 +24,6 @@ public class BonziBUDDYClient implements ClientModInitializer {
         EntityRendererRegistry.register(BonziBuddyEntities.BONZI_BOSS, BonziBossEntityRenderer::new);
         EntityRendererRegistry.register(BonziBuddyEntities.BANANA_BLASTER_PROJECTILE, BananaBlasterEntityRenderer::new);
 
-
         //Packets
         BonziBuddyClientNetworkHandler.registerClientPackets();
 

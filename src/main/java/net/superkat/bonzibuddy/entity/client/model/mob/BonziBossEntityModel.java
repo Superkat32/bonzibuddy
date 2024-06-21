@@ -11,9 +11,24 @@ import software.bernie.geckolib.model.DefaultedEntityGeoModel;
 import software.bernie.geckolib.model.data.EntityModelData;
 
 public class BonziBossEntityModel extends DefaultedEntityGeoModel<BonziBossEntity> implements BonziLikeModel {
+    private final Identifier redBonziBossTexture = buildFormattedTexturePath(Identifier.of(BonziBUDDY.MOD_ID, "redbonziboss"));
+    private final Identifier greenBonziBossTexture = buildFormattedTexturePath(Identifier.of(BonziBUDDY.MOD_ID, "greenbonziboss"));
+    private final Identifier blueBonziBossTexture = buildFormattedTexturePath(Identifier.of(BonziBUDDY.MOD_ID, "bluebonziboss"));
     public BonziBossEntityModel() {
         super(Identifier.of(BonziBUDDY.MOD_ID, "bonzibuddy"), false);
         withAltTexture(Identifier.of(BonziBUDDY.MOD_ID, "bonziclone"));
+    }
+
+    @Override
+    public Identifier getTextureResource(BonziBossEntity animatable) {
+        if(animatable.isRed()) {
+            return redBonziBossTexture;
+        } else if (animatable.isGreen()) {
+            return greenBonziBossTexture;
+        } else if (animatable.isBlue()) {
+            return blueBonziBossTexture;
+        }
+        return super.getTextureResource(animatable);
     }
 
     @Override

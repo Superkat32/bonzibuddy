@@ -11,6 +11,8 @@ import java.awt.*;
 import java.util.UUID;
 
 public class DefeatTextTypeWriter extends TextTypeWriter {
+    public boolean renderBackground = true;
+
     public DefeatTextTypeWriter(UUID hudUuid, Text text, Color color, @Nullable Color flashColor, boolean bounceIn, boolean flash, boolean removeWhenDoneTyping) {
         super(hudUuid, text, color, flashColor, bounceIn, flash, removeWhenDoneTyping);
         this.ticksAfterTyping = 120;
@@ -26,9 +28,12 @@ public class DefeatTextTypeWriter extends TextTypeWriter {
         } else if (fadeOut) {
             fadeAmount = (float) remainingFadeOutTicks / fadeOutTicks;
         }
-        context.setShaderColor(1f, 1f, 1f, MathHelper.clamp(fadeAmount, 0f, 1.0f));
-        context.drawTexture(Identifier.ofVanilla("textures/gui/inworld_menu_background.png"), 0, 0, 0, 0, 0, context.getScaledWindowWidth(), context.getScaledWindowHeight(), 32, 32);
-        context.setShaderColor(1f, 1f, 1f, 1f);
+
+        if(renderBackground) {
+            context.setShaderColor(1f, 1f, 1f, MathHelper.clamp(fadeAmount, 0f, 1.0f));
+            context.drawTexture(Identifier.ofVanilla("textures/gui/inworld_menu_background.png"), 0, 0, 0, 0, 0, context.getScaledWindowWidth(), context.getScaledWindowHeight() + 8, 32, 32);
+            context.setShaderColor(1f, 1f, 1f, 1f);
+        }
         RenderSystem.disableDepthTest();
         RenderSystem.disableBlend();
         super.drawText(context, x, y, width, height, textColor);

@@ -280,6 +280,7 @@ public class BonziMinigameApi {
     public static void teleportPlayersToRespawn(List<ServerPlayerEntity> players) {
         if(players.isEmpty()) return;
         players.forEach(player -> {
+            if(player == null) return;
             TeleportTarget teleportTarget = player.getRespawnTarget(false, TeleportTarget.NO_OP);
             player.teleportTo(teleportTarget);
         });

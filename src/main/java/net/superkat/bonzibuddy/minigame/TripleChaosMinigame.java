@@ -1,5 +1,6 @@
 package net.superkat.bonzibuddy.minigame;
 
+import com.google.common.collect.Sets;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -26,9 +27,8 @@ import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
 import net.superkat.bonzibuddy.network.packets.minigame.BonziBossBarUpdateS2C;
 import net.superkat.bonzibuddy.network.packets.minigame.MinigameHudUpdateS2C;
 import net.superkat.bonzibuddy.network.packets.minigame.WaitingForPlayersS2C;
-import org.apache.commons.compress.utils.Lists;
 
-import java.util.List;
+import java.util.Set;
 
 public class TripleChaosMinigame extends BonziMinigame {
     public int ticksLeft;
@@ -55,7 +55,8 @@ public class TripleChaosMinigame extends BonziMinigame {
     public float greenBonziInitHealth = 550f;
     public float blueBonziInitHealth = 650f;
 
-    public List<Item> hatsToReward = Lists.newArrayList();
+//    public List<Item> hatsToReward = Lists.newArrayList();
+    public Set<Item> hatsToReward = Sets.newHashSet();
 
     public TripleChaosMinigame(int id, ServerWorld world, BlockPos startPos) {
         super(id, world, startPos);
@@ -318,6 +319,7 @@ public class TripleChaosMinigame extends BonziMinigame {
 
         //little bonus :)
         players().forEach(player -> {
+            if(player == null) return;
             player.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 60, 1));
             player.addStatusEffect(new StatusEffectInstance(StatusEffects.SATURATION, 60, 1));
         });
@@ -397,6 +399,7 @@ public class TripleChaosMinigame extends BonziMinigame {
         if(this.hatsToReward.isEmpty()) return;
 
         this.players().forEach(player -> {
+            if(player == null) return;
             this.hatsToReward.forEach(item -> {
                player.giveItemStack(item.getDefaultStack());
             });

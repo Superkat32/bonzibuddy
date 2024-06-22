@@ -30,7 +30,7 @@ public class BonziBUDDY implements ModInitializer {
 	public void onInitialize() {
 		//TODO
 		/*
-		Test and fix in multiplayer
+		Test and fix in multiplayer - Enemy health and damage needs buffing while in multiplayer
 		Mod icon
 		MIT license
 		Bonzi buddy screen

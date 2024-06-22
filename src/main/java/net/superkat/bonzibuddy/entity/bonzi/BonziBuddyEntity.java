@@ -39,7 +39,8 @@ public class BonziBuddyEntity extends PathAwareEntity implements GeoEntity, Bonz
     public void playRandomIdleAnimation() {
         int i = this.getWorld().random.nextInt(idleAnimations().size());
         RawAnimation anim = idleAnimations().get(i);
-        triggerAnim(animControllerName, getAnimString(anim));
+//        triggerAnim(animControllerName, getAnimString(anim));
+        syncTrigAnim(animControllerName, getAnimString(anim));
     }
 
     public void doATrick() {
@@ -51,7 +52,8 @@ public class BonziBuddyEntity extends PathAwareEntity implements GeoEntity, Bonz
             i = this.getWorld().random.nextInt(idleAnimations().size());
             anim = idleAnimations().get(i);
         }
-        triggerAnim(animControllerName, getAnimString(anim));
+//        triggerAnim(animControllerName, getAnimString(anim));
+        syncTrigAnim(animControllerName, getAnimString(anim));
     }
 
     @Override

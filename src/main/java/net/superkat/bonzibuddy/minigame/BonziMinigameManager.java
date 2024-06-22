@@ -11,7 +11,6 @@ import net.minecraft.world.PersistentState;
 import net.superkat.bonzibuddy.BonziBUDDY;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameApi;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
-import org.apache.commons.compress.utils.Lists;
 
 import java.util.Iterator;
 import java.util.List;
@@ -81,9 +80,7 @@ public class BonziMinigameManager extends PersistentState {
     }
 
     public List<BonziMinigame> getAllMinigames() {
-        List<BonziMinigame> allMinigames = Lists.newArrayList();
-        allMinigames.addAll(this.minigames.values());
-        return allMinigames;
+        return minigames.values().stream().toList();
     }
 
     private int nextId() {

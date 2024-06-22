@@ -14,7 +14,6 @@ import net.superkat.bonzibuddy.minigame.api.BonziMinigameApi;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
 import net.superkat.bonzibuddy.network.packets.minigame.MinigameHudUpdateS2C;
 import net.superkat.bonzibuddy.network.packets.minigame.PlayerInMinigameUpdateS2C;
-import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -92,7 +91,7 @@ public class BonziMinigame {
         List<ServerPlayerEntity> inRangePlayers = getNearbyPlayers();
 
         for (ServerPlayerEntity player : allPlayers) {
-            if(!inRangePlayers.contains(player) && players().contains(player)) {
+            if(!inRangePlayers.contains(player)) {
                 removePlayer(player);
             }
         }
@@ -105,14 +104,7 @@ public class BonziMinigame {
     }
 
     public List<ServerPlayerEntity> players() {
-        List<ServerPlayerEntity> players = Lists.newArrayList();
-        playersUuid.forEach(uuid -> {
-            ServerPlayerEntity player = (ServerPlayerEntity) this.world.getPlayerByUuid(uuid);
-            if(player != null) {
-                players.add(player);
-            }
-        });
-        return players;
+        return playersUuid.stream().map(uuid -> (ServerPlayerEntity) this.world.getPlayerByUuid(uuid)).toList();
     }
 
     @Nullable

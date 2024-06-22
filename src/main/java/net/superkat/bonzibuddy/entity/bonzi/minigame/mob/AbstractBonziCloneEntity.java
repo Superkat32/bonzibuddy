@@ -44,7 +44,8 @@ public abstract class AbstractBonziCloneEntity extends HostileEntity implements 
     @Override
     public boolean tryAttack(Entity target) {
         if(!this.getWorld().isClient) {
-            triggerAnim(attackAnimControllerName, getAnimString(ATTACK_ANIM));
+//            triggerAnim(attackAnimControllerName, getAnimString(ATTACK_ANIM));
+            syncTrigAnim(attackAnimControllerName, getAnimString(ATTACK_ANIM));
         }
         return super.tryAttack(target);
     }

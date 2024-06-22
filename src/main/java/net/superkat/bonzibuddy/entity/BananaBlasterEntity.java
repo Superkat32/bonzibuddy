@@ -68,21 +68,23 @@ public class BananaBlasterEntity extends AbstractWindChargeEntity {
 
     @Override
     protected void onEntityHit(EntityHitResult entityHitResult) {
-        Entity source = this.getOwner();
-        LivingEntity attacker = source instanceof LivingEntity livingEntity ? livingEntity : null;
-        Entity hitEntity = entityHitResult.getEntity();
-        if (attacker != null) {
-            attacker.onAttacking(hitEntity);
-        }
+        if(!this.getWorld().isClient) {
+            Entity source = this.getOwner();
+            LivingEntity attacker = source instanceof LivingEntity livingEntity ? livingEntity : null;
+            Entity hitEntity = entityHitResult.getEntity();
+            if (attacker != null) {
+                attacker.onAttacking(hitEntity);
+            }
 
-        float damageAmount = 1.0f;
-        if(hitEntity instanceof AbstractBonziCloneEntity) {
-            damageAmount = 50f;
-        }
+            float damageAmount = 1.0f;
+            if(hitEntity instanceof AbstractBonziCloneEntity) {
+                damageAmount = 50f;
+            }
 
-        DamageSource damageSource = BonziBuddyEntities.bananaDamageSource(this, attacker);
-        if (hitEntity.damage(damageSource, damageAmount) && hitEntity instanceof LivingEntity livingEntity3) {
-            EnchantmentHelper.onTargetDamaged((ServerWorld)this.getWorld(), livingEntity3, damageSource);
+            DamageSource damageSource = BonziBuddyEntities.bananaDamageSource(this, attacker);
+            if (hitEntity.damage(damageSource, damageAmount) && hitEntity instanceof LivingEntity livingEntity3) {
+                EnchantmentHelper.onTargetDamaged((ServerWorld)this.getWorld(), livingEntity3, damageSource);
+            }
         }
 
         this.getWorld().playSound(

@@ -4,18 +4,22 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
+import net.superkat.bonzibuddy.entity.bonzi.BonziLikeEntity;
 import net.superkat.bonzibuddy.minigame.MinigameHudData;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigamePlayer;
 import net.superkat.bonzibuddy.network.packets.BonziBuddySyncAnimationS2C;
 import net.superkat.bonzibuddy.network.packets.OpenBonziBuddyScreenS2C;
+import net.superkat.bonzibuddy.network.packets.TriggeredAnimSyncWorkaroundS2C;
 import net.superkat.bonzibuddy.network.packets.minigame.BonziBossBarUpdateS2C;
 import net.superkat.bonzibuddy.network.packets.minigame.MinigameHudUpdateS2C;
 import net.superkat.bonzibuddy.network.packets.minigame.PlayerInMinigameUpdateS2C;
 import net.superkat.bonzibuddy.network.packets.minigame.WaitingForPlayersS2C;
 import net.superkat.bonzibuddy.rendering.gui.BonziBuddyScreen;
 import net.superkat.bonzibuddy.rendering.hud.MinigameHudRenderer;
+import software.bernie.geckolib.animatable.GeoEntity;
 
 import java.util.UUID;
 
@@ -30,6 +34,18 @@ public class BonziBuddyClientNetworkHandler {
         ClientPlayNetworking.registerGlobalReceiver(BonziBossBarUpdateS2C.ID, BonziBuddyClientNetworkHandler::onBonziBossbarUpdate);
         ClientPlayNetworking.registerGlobalReceiver(WaitingForPlayersS2C.ID, BonziBuddyClientNetworkHandler::onWaitingForPlayers);
         ClientPlayNetworking.registerGlobalReceiver(PlayerInMinigameUpdateS2C.ID, BonziBuddyClientNetworkHandler::onInMinigameUpdate);
+
+        ClientPlayNetworking.registerGlobalReceiver(TriggeredAnimSyncWorkaroundS2C.ID, BonziBuddyClientNetworkHandler::animSync);
+    }
+
+    public static void animSync(TriggeredAnimSyncWorkaroundS2C payload, ClientPlayNetworking.Context context) {
+        MinecraftClient client = context.client();
+        LivingEntity entity = (LivingEntity) client.world.getEntityById(payload.entityid());
+        if(entity != null && entity instanceof BonziLikeEntity) {
+            if(entity instanceof GeoEntity geoEntity) {
+                geoEntity.triggerAnim(payload.controller(), payload.anim());
+            }
+        }
     }
 
     public static void onBonziBuddyScreen(OpenBonziBuddyScreenS2C payload, ClientPlayNetworking.Context context) {

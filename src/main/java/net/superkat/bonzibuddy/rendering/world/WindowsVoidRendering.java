@@ -15,12 +15,36 @@ public class WindowsVoidRendering {
     public static Identifier ERRORBOX2 = Identifier.of(BonziBUDDY.MOD_ID, "textures/environment/errorskybox2.png");
     public static void renderErrorBoxes(Matrix4f matrix4f) {
         //Error boxes are hard coded to ensure syncing between clients - at least for now
-        renderErrorBox(matrix4f,7f, 0, 90f, true);
+        renderErrorBox(matrix4f,7f, -10, 75f, true);
         renderErrorBox(matrix4f,7f, -20f, 90f, false);
 
         for (int i = 0; i < 7; i++) {
             renderErrorBox(matrix4f, 4f, -40f - i * 2, 80f + i * 3, true);
         }
+
+        renderErrorBox(matrix4f,7f, 70, 85f, true);
+        renderErrorBox(matrix4f,7f, 40, 35f, true);
+        renderErrorBox(matrix4f,7f, 110, 55f, true);
+        renderErrorBox(matrix4f,5f, 140f, 90f, false);
+
+        for (int i = 0; i < 7; i++) {
+            renderErrorBox(matrix4f, 4f, 210f - i * 2, 50f + i * 3, false);
+        }
+
+        renderErrorBox(matrix4f,7f, 230, 15f, true);
+        renderErrorBox(matrix4f,4f, 270, 45, false);
+        renderErrorBox(matrix4f,7f, 310, 55f, true);
+        renderErrorBox(matrix4f,7f, 35, 45, false);
+
+        renderErrorBox(matrix4f,7f, 250, 110, true);
+        renderErrorBox(matrix4f,5f, 335, 97, true);
+        renderErrorBox(matrix4f,7f, 25, 130, true);
+        renderErrorBox(matrix4f,7f, 93, 115, false);
+
+        renderErrorBox(matrix4f,7f, 180, 110, true);
+        renderErrorBox(matrix4f,5f, 165, 130, true);
+        renderErrorBox(matrix4f,7f, 194, 100, true);
+        renderErrorBox(matrix4f,7f, 210, 115, false);
     }
 
     private static void renderErrorBox(Matrix4f matrix4f, float size, float yaw, float pitch, boolean styleOne) {

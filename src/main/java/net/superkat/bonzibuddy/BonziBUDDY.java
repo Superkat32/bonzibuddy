@@ -31,8 +31,6 @@ public class BonziBUDDY implements ModInitializer {
 		//TODO
 		/*
 		Test and fix in multiplayer - Enemy health and damage needs buffing while in multiplayer
-		Mod icon
-		MIT license
 		Bonzi buddy screen
 		If time allows, minigame nbt, otherwise release
 		 */

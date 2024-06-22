@@ -7,10 +7,12 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageType;
+import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import net.superkat.bonzibuddy.BonziBUDDY;
@@ -53,6 +55,9 @@ public class BonziBuddyEntities {
 
     public static final RegistryKey<DamageType> BANANA_DAMAGE = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, Identifier.of(BonziBUDDY.MOD_ID, "banana_damage"));
 
+//    public static final StatusEffect BONZID_EFFECT = new BonzidStatusEffect();
+    public static final RegistryEntry<StatusEffect> BONZID_EFFECT = Registry.registerReference(Registries.STATUS_EFFECT, Identifier.of(BonziBUDDY.MOD_ID, "bonzi"), new BonzidStatusEffect());
+
     public static DamageSource bananaDamageSource(Entity source, @Nullable LivingEntity attacker) {
         return damageSource(source.getWorld(), BANANA_DAMAGE, source, attacker);
     }
@@ -70,5 +75,7 @@ public class BonziBuddyEntities {
 
         FabricDefaultAttributeRegistry.register(BONZI_CLONE, BonziCloneEntity.createMobAttributes());
         FabricDefaultAttributeRegistry.register(BONZI_BOSS, BonziBossEntity.createMobAttributes());
+
+//        Registry.register(Registries.STATUS_EFFECT, Identifier.of(BonziBUDDY.MOD_ID, "bonzi"), BONZID_EFFECT);
     }
 }

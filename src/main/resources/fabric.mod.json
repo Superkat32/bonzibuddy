@@ -3,16 +3,15 @@
 	"id": "bonzibuddy",
 	"version": "${version}",
 	"name": "BonziBUDDY",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "Your best friend on the internet is now in Minecraft!",
 	"authors": [
 		"Superkat32",
 		"Andrew Grant"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"sources": "https://github.com/Superkat32/bonzibuddy"
 	},
-	"license": "CC0-1.0",
+	"license": "MIT",
 	"icon": "assets/bonzibuddy/icon.png",
 	"environment": "*",
 	"entrypoints": {

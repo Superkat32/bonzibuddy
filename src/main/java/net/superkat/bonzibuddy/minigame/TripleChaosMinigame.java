@@ -175,6 +175,13 @@ public class TripleChaosMinigame extends BonziMinigame {
         discardAllEnemies();
         rewardPlayers();
 
+//        if(this.world.random.nextBetween(1, 4) == 1) {
+            players().forEach(player -> {
+                if(player == null) return;
+                player.addStatusEffect(new StatusEffectInstance(BonziBuddyEntities.BONZID_EFFECT, 3600, 1, false, false, true));
+            });
+//        }
+
         super.invalidate();
     }
 

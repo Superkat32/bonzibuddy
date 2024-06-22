@@ -14,6 +14,7 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.superkat.bonzibuddy.entity.BonziBuddyEntities;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -32,7 +33,7 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreen<Playe
     )
     protected void bonzibuddy$drawBackground(DrawContext context, Identifier texture, int x, int y, int u, int v, int width, int height, Operation<Void> original) {
         if(this.client != null) {
-            if(this.client.player.hasStatusEffect(StatusEffects.NIGHT_VISION)) {
+            if(this.client.player.hasStatusEffect(BonziBuddyEntities.BONZID_EFFECT)) {
                 Identifier attempt_texture = Identifier.of("bonzibuddy", texture.getPath());
                 MinecraftClient.getInstance().getTextureManager().bindTexture(attempt_texture);
                 // horrible hack to check if bonzi override exists

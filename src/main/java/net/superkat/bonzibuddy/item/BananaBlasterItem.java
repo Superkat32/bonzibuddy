@@ -54,7 +54,7 @@ public class BananaBlasterItem extends Item implements ProjectileItem {
                 2f
         );
         ItemStack itemStack = user.getStackInHand(hand);
-        user.getItemCooldownManager().set(this, 10);
+        user.getItemCooldownManager().set(this, 7);
         user.incrementStat(Stats.USED.getOrCreateStat(this));
         itemStack.decrementUnlessCreative(1, user);
         return TypedActionResult.success(itemStack, world.isClient());

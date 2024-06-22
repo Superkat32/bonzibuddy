@@ -8,6 +8,7 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.item.Item;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -19,6 +20,7 @@ import net.superkat.bonzibuddy.entity.BonziBuddyEntities;
 import net.superkat.bonzibuddy.entity.bonzi.minigame.mob.AbstractBonziCloneEntity;
 import net.superkat.bonzibuddy.entity.bonzi.minigame.mob.BonziBossEntity;
 import net.superkat.bonzibuddy.entity.bonzi.minigame.mob.BonziCloneEntity;
+import net.superkat.bonzibuddy.item.BonziItems;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameApi;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
 import net.superkat.bonzibuddy.network.packets.minigame.BonziBossBarUpdateS2C;
@@ -53,8 +55,7 @@ public class TripleChaosMinigame extends BonziMinigame {
     public float greenBonziInitHealth = 550f;
     public float blueBonziInitHealth = 650f;
 
-    //FIXME - add the hats
-    public List<?> hatsToReward = Lists.newArrayList();
+    public List<Item> hatsToReward = Lists.newArrayList();
 
     public TripleChaosMinigame(int id, ServerWorld world, BlockPos startPos) {
         super(id, world, startPos);
@@ -164,12 +165,14 @@ public class TripleChaosMinigame extends BonziMinigame {
             lose();
             ticksUntilInvalidate = 140;
         }
+        cachePlayerRewards();
         discardAllEnemies();
     }
 
     @Override
     public void invalidate() {
         discardAllEnemies();
+        rewardPlayers();
 
         super.invalidate();
     }
@@ -354,6 +357,7 @@ public class TripleChaosMinigame extends BonziMinigame {
         boolean redDefeated = redBonzi == null || redBonzi.isDead() || redBonzi.getRemovalReason() == Entity.RemovalReason.DISCARDED;
         boolean greenDefeated = greenBonzi == null || greenBonzi.isDead() || greenBonzi.getRemovalReason() == Entity.RemovalReason.DISCARDED;
         boolean blueDefeated = blueBonzi == null || blueBonzi.isDead() || blueBonzi.getRemovalReason() == Entity.RemovalReason.DISCARDED;
+        boolean shouldGetGoldenHat = redDefeated && greenDefeated && blueDefeated;
 
         int hats = 0;
         hats += redDefeated ? 1 : determineHatsFromPercent(redBonziPercent) ? 1 : 0;
@@ -361,7 +365,15 @@ public class TripleChaosMinigame extends BonziMinigame {
         hats += blueDefeated ? 1 : determineHatsFromPercent(blueBonziPercent) ? 1 : 0;
 
         if(hats >= 1) {
-            //FIXME - choose the hats here
+            if(shouldGetGoldenHat) {
+                hatsToReward.add(BonziItems.GOLDEN_BONZI_HAT);
+            }
+
+            for (int i = 0; i < hats; i++) {
+                int hatToGet = this.world.random.nextInt(BonziItems.hats.size());
+                Item hat = BonziItems.hats.get(hatToGet);
+                this.hatsToReward.add(hat);
+            }
         }
     }
 
@@ -382,7 +394,13 @@ public class TripleChaosMinigame extends BonziMinigame {
     }
 
     public void rewardPlayers() {
+        if(this.hatsToReward.isEmpty()) return;
 
+        this.players().forEach(player -> {
+            this.hatsToReward.forEach(item -> {
+               player.giveItemStack(item.getDefaultStack());
+            });
+        });
     }
 
     @Override

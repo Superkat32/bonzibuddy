@@ -34,6 +34,8 @@ public class BonziBuddyServerNetworkHandler {
         }
     }
 
+
+
     public static void onRequestBonziMinigame(RequestPlayMinigameC2S payload, ServerPlayNetworking.Context context) {
         BonziMinigameType type = payload.minigameType();
         if(type != BonziMinigameType.ABSTRACT) {

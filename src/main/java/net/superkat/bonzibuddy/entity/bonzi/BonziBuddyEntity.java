@@ -19,13 +19,6 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 
 public class BonziBuddyEntity extends PathAwareEntity implements GeoEntity, BonziLikeEntity {
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
-    boolean shouldTurnHead = true;
-    boolean showSunglasses = false;
-    public int ticksUntilNextIdleAnim = 100;
-    public int ticksSinceIdleAnim = 0;
-    public int ticksUntilAnimDone = 0;
-    public boolean readyForIdleAnim = false;
-    public boolean victorySunglasses = false;
     public BonziBuddyEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
         super(entityType, world);
     }

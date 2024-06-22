@@ -9,6 +9,8 @@ import net.minecraft.util.Identifier;
 import net.superkat.bonzibuddy.BonziBUDDY;
 import net.superkat.bonzibuddy.item.hat.HatItem;
 
+import java.util.List;
+
 public class BonziItems {
 
     public static final Item BANANA_BLASTER = register(
@@ -22,6 +24,9 @@ public class BonziItems {
     public static final Item BONZI_BEANIE = registerHat("bonzibeanie");
     public static final Item BONZI_BUCKET_HAT = registerHat("bonzibucket");
     public static final Item BONZI_GOGGLES = registerHat("bonzigoggles");
+    public static final Item GOLDEN_BONZI_HAT = registerHat("goldbonzihat");
+
+    public static List<Item> hats = List.of(TATER_HAT, BONZI_HAT, BONZI_SUNGLASSES, BONZI_BEANIE, BONZI_BUCKET_HAT, BONZI_GOGGLES);
 
     public static <T extends Item> T register(T item, String ID) {
         Identifier itemId = Identifier.of(BonziBUDDY.MOD_ID, ID);
@@ -49,6 +54,7 @@ public class BonziItems {
                     itemGroup.add(BONZI_BEANIE);
                     itemGroup.add(BONZI_BUCKET_HAT);
                     itemGroup.add(BONZI_GOGGLES);
+                    itemGroup.add(GOLDEN_BONZI_HAT);
         });
     }
 

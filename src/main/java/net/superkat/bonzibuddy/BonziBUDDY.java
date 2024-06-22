@@ -28,8 +28,14 @@ public class BonziBUDDY implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		//custom bonzi buddy hello/welcome message?
-//		LOGGER.info("Hello Fabric world!");
+		//TODO
+		/*
+		Test and fix in multiplayer
+		Mod icon
+		MIT license
+		Bonzi buddy screen
+		If time allows, minigame nbt, otherwise release
+		 */
 
 		BonziItems.registerItems();
 

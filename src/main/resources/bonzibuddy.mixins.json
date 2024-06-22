@@ -4,6 +4,7 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "PlayerEntityMixin",
+    "PlayerManagerMixin",
     "ServerPlayerEntityMixin",
     "ServerWorldMixin",
     "WorldRendererMixin"
@@ -12,6 +13,7 @@
     "defaultRequire": 1
   },
   "client": [
+    "ClientPlayNetworkHandlerMixin",
     "InventoryScreenMixin"
   ]
 }

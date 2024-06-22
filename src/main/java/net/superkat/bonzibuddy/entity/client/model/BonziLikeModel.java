@@ -50,7 +50,8 @@ public interface BonziLikeModel {
     }
 
     default boolean showGlobe(GeoEntity animatable, long instanceId) {
-        return getCurrentAnim(animatable, instanceId) == BonziLikeEntity.IDLE_GLOBE && animationPlaying(animatable, instanceId);
+        RawAnimation currentAnim = getCurrentAnim(animatable, instanceId);
+        return (currentAnim == BonziLikeEntity.IDLE_GLOBE || currentAnim == BonziLikeEntity.TRICK_GLOBE) && animationPlaying(animatable, instanceId);
     }
 
     default boolean showSpyglass(GeoEntity animatable, long instanceId) {

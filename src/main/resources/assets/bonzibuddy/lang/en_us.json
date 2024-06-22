@@ -12,5 +12,6 @@
   "bonzibuddy.minigame.defeat": "That's a wrap!",
   "bonzibuddy.minigame.redbonzi": "Red Bonzi",
   "bonzibuddy.minigame.greenbonzi": "Green Bonzi",
-  "bonzibuddy.minigame.bluebonzi": "Blue Bonzi"
+  "bonzibuddy.minigame.bluebonzi": "Blue Bonzi",
+  "bonzibuddy.minigame.respawning": "Respawning in %1$s"
 }

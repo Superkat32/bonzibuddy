@@ -24,6 +24,9 @@ import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
 import net.superkat.bonzibuddy.network.packets.minigame.BonziBossBarUpdateS2C;
 import net.superkat.bonzibuddy.network.packets.minigame.MinigameHudUpdateS2C;
 import net.superkat.bonzibuddy.network.packets.minigame.WaitingForPlayersS2C;
+import org.apache.commons.compress.utils.Lists;
+
+import java.util.List;
 
 public class TripleChaosMinigame extends BonziMinigame {
     public int ticksLeft;
@@ -49,6 +52,9 @@ public class TripleChaosMinigame extends BonziMinigame {
     public float redBonziInitHealth = 400f;
     public float greenBonziInitHealth = 550f;
     public float blueBonziInitHealth = 650f;
+
+    //FIXME - add the hats
+    public List<?> hatsToReward = Lists.newArrayList();
 
     public TripleChaosMinigame(int id, ServerWorld world, BlockPos startPos) {
         super(id, world, startPos);
@@ -333,10 +339,50 @@ public class TripleChaosMinigame extends BonziMinigame {
 
     public boolean bonziBuddiesDefeated() {
         if(this.world.getDifficulty() == Difficulty.PEACEFUL) return true;
-        boolean redDefeated = redBonzi == null || redBonzi.isDead();
-        boolean greenDefeated = greenBonzi == null || greenBonzi.isDead();
-        boolean blueDefeated = blueBonzi == null || blueBonzi.isDead();
+        boolean redDefeated = redBonzi == null || redBonzi.isDead() || redBonzi.getRemovalReason() == Entity.RemovalReason.DISCARDED;
+        boolean greenDefeated = greenBonzi == null || greenBonzi.isDead() || greenBonzi.getRemovalReason() == Entity.RemovalReason.DISCARDED;
+        boolean blueDefeated = blueBonzi == null || blueBonzi.isDead() || blueBonzi.getRemovalReason() == Entity.RemovalReason.DISCARDED;
         return redDefeated && greenDefeated && blueDefeated;
+    }
+
+    /**
+     * The player's rewards are determined and saved right as the game ends, then are given to them as they are returned back to their spawns/to the overworld.
+     *
+     * Each player should be given the same amount of hats, and the same hats because I think that's more fun.
+     */
+    public void cachePlayerRewards() {
+        boolean redDefeated = redBonzi == null || redBonzi.isDead() || redBonzi.getRemovalReason() == Entity.RemovalReason.DISCARDED;
+        boolean greenDefeated = greenBonzi == null || greenBonzi.isDead() || greenBonzi.getRemovalReason() == Entity.RemovalReason.DISCARDED;
+        boolean blueDefeated = blueBonzi == null || blueBonzi.isDead() || blueBonzi.getRemovalReason() == Entity.RemovalReason.DISCARDED;
+
+        int hats = 0;
+        hats += redDefeated ? 1 : determineHatsFromPercent(redBonziPercent) ? 1 : 0;
+        hats += greenDefeated ? 1 : determineHatsFromPercent(greenBonziPercent) ? 1 : 0;
+        hats += blueDefeated ? 1 : determineHatsFromPercent(blueBonziPercent) ? 1 : 0;
+
+        if(hats >= 1) {
+            //FIXME - choose the hats here
+        }
+    }
+
+    /**
+     * Determine the amount of extra hats to give if a boss wasn't defeated, based on their remaining health.
+     *
+     * @param percent A boss' health in percent, 0f to 1f
+     */
+    private boolean determineHatsFromPercent(float percent) {
+        float percentForNoHat = MathHelper.clamp(0.5f + percent, 0.5f, 1f);
+        if(percentForNoHat >= 1f) {
+            return false;
+        } else {
+            float percentForHat = 1f - percentForNoHat;
+            float randomFloat = MathHelper.nextFloat(this.getWorld().random, 0f, 1f);
+            return randomFloat <= percentForHat;
+        }
+    }
+
+    public void rewardPlayers() {
+
     }
 
     @Override

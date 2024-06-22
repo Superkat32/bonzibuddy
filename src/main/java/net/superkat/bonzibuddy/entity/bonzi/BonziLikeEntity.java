@@ -17,11 +17,13 @@ public interface BonziLikeEntity {
     RawAnimation IDLE_GLOBE = RawAnimation.begin().thenPlay("IDLE_GLOBE");
     RawAnimation IDLE_SPYGLASS = RawAnimation.begin().thenPlay("IDLE_SPYGLASS");
     RawAnimation IDLE_BANANA = RawAnimation.begin().thenPlay("IDLE_BANANA");
+    RawAnimation TRICK_GLOBE = RawAnimation.begin().thenPlay("TRICK_GLOBE");
+    RawAnimation TRICK_SHRINK = RawAnimation.begin().thenPlay("TRICK_SHRINK");
     RawAnimation DEATH_ANIM = RawAnimation.begin().thenPlay("YIKES");
     default List<RawAnimation> idleAnimations() {
         return List.of(IDLE_ANIM, IDLE_SUNGLASSES, IDLE_GLOBE, IDLE_SPYGLASS, IDLE_BANANA);
     }
-    List<RawAnimation> trickAnimations = List.of(IDLE_SUNGLASSES, IDLE_GLOBE, DEATH_ANIM);
+    List<RawAnimation> trickAnimations = List.of(TRICK_GLOBE, TRICK_SHRINK, IDLE_SUNGLASSES, IDLE_GLOBE, DEATH_ANIM);
 
     String animControllerName = "controller";
     default PlayState animController(AnimationState<GeoAnimatable> state) {

@@ -64,6 +64,8 @@ public class MinigameHudRenderer {
         if(hudData != null) {
             hudData.setGracePeriod(gracePeriod);
             createGracePeriodWriter(uuid, gracePeriod);
+            MinecraftClient client = MinecraftClient.getInstance();
+            client.player.playSound(gracePeriod <= 0 ? SoundEvents.BLOCK_NOTE_BLOCK_BELL.value() : SoundEvents.BLOCK_NOTE_BLOCK_BIT.value(), 1f, 1f);
         }
     }
 
@@ -116,6 +118,13 @@ public class MinigameHudRenderer {
         MinigameHudData hudData = getHudFromUuid(uuid);
         if(hudData != null) {
             createVictoryTypeWriter(uuid);
+            MinecraftClient client = MinecraftClient.getInstance();
+            client.player.playSound(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 1f, 1f);
+            client.player.playSound(SoundEvents.ENTITY_PLAYER_LEVELUP, 0.8f, 0.5f);
+            client.player.playSound(SoundEvents.ENTITY_PLAYER_LEVELUP, 0.8f, 1.5f);
+            client.player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 0.7f);
+            client.player.playSound(SoundEvents.ENTITY_FIREWORK_ROCKET_TWINKLE, 1f, 0.7f);
+            client.player.playSound(SoundEvents.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM, 2.5f, 1f);
         }
     }
 
@@ -123,6 +132,8 @@ public class MinigameHudRenderer {
         MinigameHudData hudData = getHudFromUuid(uuid);
         if(hudData != null) {
             createDefeatTypeWriter(uuid);
+            MinecraftClient client = MinecraftClient.getInstance();
+            client.player.playSound(SoundEvents.ITEM_TRIDENT_THUNDER.value(), 1f, 0.5f);
         }
     }
 

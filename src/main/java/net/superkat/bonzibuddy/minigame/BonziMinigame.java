@@ -13,6 +13,7 @@ import net.superkat.bonzibuddy.BonziBUDDY;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameApi;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
 import net.superkat.bonzibuddy.network.packets.minigame.MinigameHudUpdateS2C;
+import net.superkat.bonzibuddy.network.packets.minigame.PlayerInMinigameUpdateS2C;
 import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.Nullable;
 
@@ -225,6 +226,9 @@ public class BonziMinigame {
         playersUuid.add(player.getUuid());
         MinigameHudUpdateS2C packet = new MinigameHudUpdateS2C(hudData, MinigameHudUpdateS2C.Action.ADD);
         ServerPlayNetworking.send(player, packet);
+
+        PlayerInMinigameUpdateS2C minigameUpdate = new PlayerInMinigameUpdateS2C(true);
+        ServerPlayNetworking.send(player, minigameUpdate);
     }
 
     public void removePlayer(ServerPlayerEntity player) {
@@ -232,6 +236,9 @@ public class BonziMinigame {
         playersUuid.remove(player.getUuid());
         MinigameHudUpdateS2C packet = new MinigameHudUpdateS2C(hudData, MinigameHudUpdateS2C.Action.REMOVE);
         ServerPlayNetworking.send(player, packet);
+
+        PlayerInMinigameUpdateS2C minigameUpdate = new PlayerInMinigameUpdateS2C(false);
+        ServerPlayNetworking.send(player, minigameUpdate);
     }
 
     /**

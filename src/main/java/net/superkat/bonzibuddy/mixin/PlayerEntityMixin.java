@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(PlayerEntity.class)
 public class PlayerEntityMixin implements BonziMinigamePlayer {
     public boolean respawningFromMinigame = false;
+    public boolean inMinigame = false;
 
     @ModifyExpressionValue(
             method = "dropInventory",
@@ -43,14 +44,23 @@ public class PlayerEntityMixin implements BonziMinigamePlayer {
     }
 
     @Override
+    public void bonzibuddy$setInMinigame(boolean inMinigame) {
+        //Should really only be called and used on the client - Server can check directly
+        this.inMinigame = inMinigame;
+    }
+
+    @Override
     public boolean bonzibuddy$inMinigame() {
         return inBonziMinigame((PlayerEntity) (Object) this);
     }
 
     private boolean inBonziMinigame(PlayerEntity player) {
-        if(!player.getWorld().isClient) { //should never be called on the client but just in case
+        if(!player.getWorld().isClient) {
+            //Can check from the server
             return BonziMinigameApi.playerInMinigame((ServerPlayerEntity) player);
+        } else {
+            //Relies on packets sent from the server for the client
+            return inMinigame;
         }
-        return false;
     }
 }

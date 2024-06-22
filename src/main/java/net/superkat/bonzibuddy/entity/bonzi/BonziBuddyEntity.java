@@ -54,8 +54,7 @@ public class BonziBuddyEntity extends PathAwareEntity implements GeoEntity, Bonz
         RawAnimation anim = trickAnimations.get(i);
         if(anim == BonziLikeEntity.DEATH_ANIM) {
             //reroll making the odds of this animation much less likely
-            //With 2 other trick animations, the odds are 1/9 (1 in 3^3), or 0.11% chances
-            //The goal is to have at least 5 trick animations, making this a 1/25, or 0.04% chance.
+            //With 4 other trick animations, the odds are 1/3125 (1 in 5^5), or 0.00032% chances
             i = this.getWorld().random.nextInt(idleAnimations().size());
             anim = idleAnimations().get(i);
         }
@@ -69,6 +68,8 @@ public class BonziBuddyEntity extends PathAwareEntity implements GeoEntity, Bonz
                 .triggerableAnim(getAnimString(IDLE_GLOBE), IDLE_GLOBE)
                 .triggerableAnim(getAnimString(IDLE_SPYGLASS), IDLE_SPYGLASS)
                 .triggerableAnim(getAnimString(IDLE_BANANA), IDLE_BANANA)
+                .triggerableAnim(getAnimString(TRICK_GLOBE), TRICK_GLOBE)
+                .triggerableAnim(getAnimString(TRICK_SHRINK), TRICK_SHRINK)
                 .triggerableAnim(getAnimString(DEATH_ANIM), DEATH_ANIM)
         );
         controllers.add(new AnimationController<>(this, attackAnimControllerName, 5, this::attackAnimController)

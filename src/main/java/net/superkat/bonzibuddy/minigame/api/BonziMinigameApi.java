@@ -80,6 +80,7 @@ public class BonziMinigameApi {
         switch (minigameType) {
             default -> bonziMinigame = new BonziMinigame(world, nbt);
             case CATASTROPHIC_CLONES -> bonziMinigame = new BonziCatastrophicClonesMinigame(world, nbt);
+            case TRIPLE_CHAOS -> bonziMinigame = new TripleChaosMinigame(world, nbt);
         }
         return bonziMinigame;
     }

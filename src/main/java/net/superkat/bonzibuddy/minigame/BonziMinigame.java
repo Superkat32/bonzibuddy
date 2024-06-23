@@ -2,9 +2,13 @@ package net.superkat.bonzibuddy.minigame;
 
 import com.google.common.collect.Sets;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtHelper;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -32,6 +36,8 @@ public class BonziMinigame {
     protected final int id;
     protected final ServerWorld world;
     protected final BlockPos startPos;
+    //the ticks since the world/nbt has been reloaded
+    protected int ticksSinceReload = 0;
 
     public MinigameHudData hudData = createHudData();
     protected BonziMinigame.Status status;
@@ -122,7 +128,8 @@ public class BonziMinigame {
      * Called every Minecraft tick. Should be the main method for handling everything.
      */
     public void tick() {
-        if(checkForGameEnd()) {
+        ticksSinceReload++;
+        if(checkForGameEnd() && ticksSinceReload >= 60) {
             if(this.onGoing()) {
                 this.end();
             } else if (hasWon() || hasLost()) {
@@ -340,6 +347,25 @@ public class BonziMinigame {
      */
     public void readNbt(NbtCompound nbt) {
         this.status = Status.fromName(nbt.getString("Status"));
+
+        this.ticksSinceStart = nbt.getInt("ticksSinceStart");
+        this.gracePeriodTicks = nbt.getInt("gracePeriodTicks");
+        this.gracePeriodSeconds = nbt.getInt("gracePeriodSeconds");
+
+        if(nbt.contains("Enemies", NbtElement.LIST_TYPE)) {
+            for (NbtElement nbtElement : nbt.getList("Enemies", NbtElement.INT_ARRAY_TYPE)) {
+                UUID entityUuid = NbtHelper.toUuid(nbtElement);
+                MobEntity entity = (MobEntity) this.getWorld().getEntity(entityUuid);
+                if(entity != null) {
+                    this.enemies.add(entity);
+                }
+            }
+        }
+
+        this.maxEnemies = nbt.getInt("maxEnemies");
+        this.ticksUntilInvalidate = nbt.getInt("ticksUntilInvalidate");
+
+        this.ticksSinceReload = 0;
     }
 
     /**
@@ -355,6 +381,18 @@ public class BonziMinigame {
         nbt.putInt("StartY", this.startPos.getY());
         nbt.putInt("StartZ", this.startPos.getZ());
         nbt.putString("Status", this.status.getName());
+
+        nbt.putInt("ticksSinceStart", this.ticksSinceStart);
+        nbt.putInt("gracePeriodTicks", this.gracePeriodTicks);
+        nbt.putInt("gracePeriodSeconds", this.gracePeriodSeconds);
+
+        NbtList enemiesNbtList = new NbtList();
+        for (UUID enemy : this.enemies.stream().map(Entity::getUuid).toList()) {
+            enemiesNbtList.add(NbtHelper.fromUuid(enemy));
+        }
+        nbt.put("Enemies", enemiesNbtList);
+        nbt.putInt("maxEnemies", this.maxEnemies);
+        nbt.putInt("ticksUntilInvalidate", this.ticksUntilInvalidate);
 
         return nbt;
     }

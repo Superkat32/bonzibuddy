@@ -11,6 +11,8 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.Item;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtHelper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
@@ -33,7 +35,7 @@ import java.util.Set;
 public class TripleChaosMinigame extends BonziMinigame {
     public int ticksLeft;
     public int secondsLeft;
-    public BlockPos currentEnemySpawnPos;
+    public BlockPos currentEnemySpawnPos = BlockPos.ORIGIN;
     public int ticksUntilEnemy;
     private int enemiesToSpawn = 3;
     private int maxEnemiesToSpawn;
@@ -68,6 +70,52 @@ public class TripleChaosMinigame extends BonziMinigame {
         maxTicksUntilEnemy = 30;
         minTicksUntilEnemy = 10;
         maxEnemiesToSpawn = 3;
+    }
+
+    @Override
+    public void readNbt(NbtCompound nbt) {
+        this.ticksLeft = nbt.getInt("ticksLeft");
+        this.secondsLeft = nbt.getInt("secondsLeft");
+        NbtHelper.toBlockPos(nbt, "currentEnemySpawnPos").ifPresent(pos -> this.currentEnemySpawnPos = pos);
+        this.ticksUntilEnemy = nbt.getInt("ticksUntilEnemy");
+        this.enemiesToSpawn = nbt.getInt("enemiesToSpawn");
+        this.maxWaitTicksAfterNewEnemyPos = nbt.getInt("maxWaitTicksAfterNewEnemyPos");
+        this.ticksUntilNewEnemyPos = nbt.getInt("ticksUntilNewEnemyPos");
+        this.difficultyLevel = nbt.getInt("difficultyLevel");
+
+        NbtElement redBonziElement = nbt.get("redBonzi");
+        if(redBonziElement != null) {
+            this.redBonzi = (BonziBossEntity) this.getWorld().getEntity(NbtHelper.toUuid(redBonziElement));
+        }
+
+        NbtElement greenBonziElement = nbt.get("greenBonzi");
+        if(greenBonziElement != null) {
+            this.greenBonzi = (BonziBossEntity) this.getWorld().getEntity(NbtHelper.toUuid(greenBonziElement));
+        }
+
+        NbtElement blueBonziElement = nbt.get("blueBonzi");
+        if(greenBonziElement != null) {
+            this.blueBonzi = (BonziBossEntity) this.getWorld().getEntity(NbtHelper.toUuid(blueBonziElement));
+        }
+
+        super.readNbt(nbt);
+    }
+
+    @Override
+    public NbtCompound writeNbt(NbtCompound nbt) {
+        nbt.putInt("ticksLeft", this.ticksLeft);
+        nbt.putInt("secondsLeft", this.secondsLeft);
+        nbt.put("currentEnemySpawnPos", NbtHelper.fromBlockPos(this.currentEnemySpawnPos));
+        nbt.putInt("ticksUntilEnemy", this.ticksUntilEnemy);
+        nbt.putInt("enemiesToSpawn", this.enemiesToSpawn);
+        nbt.putInt("maxWaitTicksAfterNewEnemyPos", this.maxWaitTicksAfterNewEnemyPos);
+        nbt.putInt("ticksUntilNewEnemyPos", this.ticksUntilNewEnemyPos);
+        nbt.putInt("difficultyLevel", this.difficultyLevel);
+
+        nbt.put("redBonzi", NbtHelper.fromUuid(this.redBonzi.getUuid()));
+        nbt.put("greenBonzi", NbtHelper.fromUuid(this.greenBonzi.getUuid()));
+        nbt.put("blueBonzi", NbtHelper.fromUuid(this.blueBonzi.getUuid()));
+        return super.writeNbt(nbt);
     }
 
     /**
@@ -122,7 +170,7 @@ public class TripleChaosMinigame extends BonziMinigame {
         }
 
         if(onGoing()) {
-            if(redBonzi == null || greenBonzi == null || blueBonzi == null) {
+            if((redBonzi == null || greenBonzi == null || blueBonzi == null) && ticksSinceReload >= 40) {
                 scaleFromDifficulty();
                 spawnBonziBuddies();
             }

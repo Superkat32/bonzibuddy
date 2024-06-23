@@ -1,10 +1,7 @@
 package net.superkat.bonzibuddy.network;
 
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.superkat.bonzibuddy.network.packets.BonziBuddyDoATrickC2S;
-import net.superkat.bonzibuddy.network.packets.BonziBuddySyncAnimationS2C;
-import net.superkat.bonzibuddy.network.packets.OpenBonziBuddyScreenS2C;
-import net.superkat.bonzibuddy.network.packets.TriggeredAnimSyncWorkaroundS2C;
+import net.superkat.bonzibuddy.network.packets.*;
 import net.superkat.bonzibuddy.network.packets.minigame.*;
 
 public class BonziBuddyPackets {
@@ -12,6 +9,7 @@ public class BonziBuddyPackets {
         //Server bound packets
         PayloadTypeRegistry.playC2S().register(BonziBuddyDoATrickC2S.ID, BonziBuddyDoATrickC2S.CODEC);
         PayloadTypeRegistry.playC2S().register(RequestPlayMinigameC2S.ID, RequestPlayMinigameC2S.CODEC);
+        PayloadTypeRegistry.playC2S().register(BonziAirplaneC2S.ID, BonziAirplaneC2S.CODEC);
 
         //Client bound packets
         PayloadTypeRegistry.playS2C().register(OpenBonziBuddyScreenS2C.ID, OpenBonziBuddyScreenS2C.CODEC);

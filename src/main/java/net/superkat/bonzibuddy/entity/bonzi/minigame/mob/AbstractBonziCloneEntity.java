@@ -8,9 +8,7 @@ import net.minecraft.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.particle.ParticleTypes;
 import net.minecraft.world.World;
-import net.superkat.bonzibuddy.entity.BonziBuddyEntities;
 import net.superkat.bonzibuddy.entity.bonzi.BonziLikeEntity;
 import net.superkat.bonzibuddy.entity.bonzi.minigame.ProtectBonziEntity;
 import net.superkat.bonzibuddy.minigame.TripleChaosMinigame;
@@ -52,14 +50,14 @@ public abstract class AbstractBonziCloneEntity extends HostileEntity implements 
 
     @Override
     public void onDamaged(DamageSource damageSource) {
-        if (damageSource.isOf(BonziBuddyEntities.BANANA_DAMAGE)) {
-            for (int i = 0; i < 20; i++) {
-                float velX = (float) (this.random.nextFloat() * 2.0 - 1.0);
-                float velY = (float) ((this.random.nextFloat() * 2.0 - 1.0) + 0.2);
-                float velZ = (float) (this.random.nextFloat() * 2.0 - 1.0);
-                this.getWorld().addParticle(ParticleTypes.TOTEM_OF_UNDYING, this.getX(), this.getEyeY(), this.getZ(), velX, velY, velZ);
-            }
-        }
+//        if (damageSource.isOf(BonziBuddyEntities.BANANA_DAMAGE)) {
+//            for (int i = 0; i < 20; i++) {
+//                float velX = (float) (this.random.nextFloat() * 2.0 - 1.0);
+//                float velY = (float) ((this.random.nextFloat() * 2.0 - 1.0) + 0.2);
+//                float velZ = (float) (this.random.nextFloat() * 2.0 - 1.0);
+//                this.getWorld().addParticle(ParticleTypes.TOTEM_OF_UNDYING, this.getX(), this.getEyeY(), this.getZ(), velX, velY, velZ);
+//            }
+//        }
         super.onDamaged(damageSource);
     }
 

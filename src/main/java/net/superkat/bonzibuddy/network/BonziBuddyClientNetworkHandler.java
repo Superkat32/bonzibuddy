@@ -29,7 +29,7 @@ public class BonziBuddyClientNetworkHandler {
         //Client bound packets
         ClientPlayNetworking.registerGlobalReceiver(OpenBonziBuddyScreenS2C.ID, BonziBuddyClientNetworkHandler::onBonziBuddyScreen);
         ClientPlayNetworking.registerGlobalReceiver(BonziBuddySyncAnimationS2C.ID, BonziBuddyClientNetworkHandler::onBonziBuddySyncAnimation);
-        
+
         ClientPlayNetworking.registerGlobalReceiver(MinigameHudUpdateS2C.ID, BonziBuddyClientNetworkHandler::oneMinigameHudUpdate);
         ClientPlayNetworking.registerGlobalReceiver(BonziBossBarUpdateS2C.ID, BonziBuddyClientNetworkHandler::onBonziBossbarUpdate);
         ClientPlayNetworking.registerGlobalReceiver(WaitingForPlayersS2C.ID, BonziBuddyClientNetworkHandler::onWaitingForPlayers);

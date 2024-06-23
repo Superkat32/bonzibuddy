@@ -6,9 +6,11 @@ import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.world.World;
+import net.superkat.bonzibuddy.BonziBUDDY;
 import net.superkat.bonzibuddy.network.packets.OpenBonziBuddyScreenS2C;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -19,6 +21,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 
 public class BonziBuddyEntity extends PathAwareEntity implements GeoEntity, BonziLikeEntity {
     public int ticksUntilIdleAnim = 100;
+    public int emailCooldown = 0;
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     public BonziBuddyEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
         super(entityType, world);
@@ -37,9 +40,21 @@ public class BonziBuddyEntity extends PathAwareEntity implements GeoEntity, Bonz
         return super.interactMob(player, hand);
     }
 
+    /**
+     * Gets called by the server
+     */
+    public void throwAirplanes(int amount) {
+        if(!this.getWorld().isClient && emailCooldown <= 0) {
+            emailCooldown = 15;
+            ServerWorld serverWorld = (ServerWorld) this.getWorld();
+            serverWorld.spawnParticles(BonziBUDDY.PAPER_AIRPLANE, this.getX(), this.getY() + 1, this.getZ(), amount, this.getRandom().nextGaussian(), this.getRandom().nextGaussian(),this.getRandom().nextGaussian(), this.getRandom().nextGaussian());
+        }
+    }
+
     @Override
     public void tick() {
         if(!this.getWorld().isClient) {
+            emailCooldown--;
             ticksUntilIdleAnim--;
             if(ticksUntilIdleAnim <= 0) {
                 ticksUntilIdleAnim = this.random.nextBetween(60, 200);

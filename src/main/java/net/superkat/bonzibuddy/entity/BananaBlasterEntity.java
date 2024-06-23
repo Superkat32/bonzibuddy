@@ -69,6 +69,12 @@ public class BananaBlasterEntity extends AbstractWindChargeEntity {
     @Override
     protected void onEntityHit(EntityHitResult entityHitResult) {
         if(!this.getWorld().isClient) {
+            ServerWorld serverWorld = (ServerWorld) this.getWorld();
+            float velX = (float) (this.random.nextFloat() * 2.0 - 1.0);
+            float velY = (float) ((this.random.nextFloat() * 2.0 - 1.0) + 0.2);
+            float velZ = (float) (this.random.nextFloat() * 2.0 - 1.0);
+            serverWorld.spawnParticles(ParticleTypes.TOTEM_OF_UNDYING, this.getX(), this.getEyeY(), this.getZ(), 20, velX, velY, velZ, 1);
+
             Entity source = this.getOwner();
             LivingEntity attacker = source instanceof LivingEntity livingEntity ? livingEntity : null;
             Entity hitEntity = entityHitResult.getEntity();
@@ -83,7 +89,7 @@ public class BananaBlasterEntity extends AbstractWindChargeEntity {
 
             DamageSource damageSource = BonziBuddyEntities.bananaDamageSource(this, attacker);
             if (hitEntity.damage(damageSource, damageAmount) && hitEntity instanceof LivingEntity livingEntity3) {
-                EnchantmentHelper.onTargetDamaged((ServerWorld)this.getWorld(), livingEntity3, damageSource);
+                EnchantmentHelper.onTargetDamaged(serverWorld, livingEntity3, damageSource);
             }
         }
 

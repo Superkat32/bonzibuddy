@@ -2,7 +2,9 @@ package net.superkat.bonzibuddy;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import net.superkat.bonzibuddy.entity.AirplaneParticle;
 import net.superkat.bonzibuddy.entity.BonziBuddyEntities;
 import net.superkat.bonzibuddy.entity.client.BonziBuddyModelLayers;
 import net.superkat.bonzibuddy.entity.client.renderer.BananaBlasterEntityRenderer;
@@ -15,6 +17,9 @@ import net.superkat.bonzibuddy.rendering.hud.MinigameHudRenderer;
 public class BonziBUDDYClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
+
+        ParticleFactoryRegistry.getInstance().register(BonziBUDDY.PAPER_AIRPLANE, AirplaneParticle.Factory::new);
+
         //Registers Bonzi Buddy Entity model and renderer
         BonziBuddyModelLayers.registerModelLayers();
         EntityRendererRegistry.register(BonziBuddyEntities.BONZI_BUDDY, BonziBuddyEntityRenderer::new);

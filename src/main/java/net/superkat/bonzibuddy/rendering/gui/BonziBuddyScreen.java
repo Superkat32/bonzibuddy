@@ -9,6 +9,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.superkat.bonzibuddy.entity.bonzi.BonziBuddyEntity;
+import net.superkat.bonzibuddy.network.packets.BonziAirplaneC2S;
 import net.superkat.bonzibuddy.network.packets.BonziBuddyDoATrickC2S;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,12 +34,15 @@ public class BonziBuddyScreen extends Screen {
         }).dimensions(260, 40, 120, 20).build();
         this.addDrawableChild(button);
 
+        ButtonWidget sendEmail = ButtonWidget.builder(Text.translatable("bonzibuddy.email"), (btn) -> {
+            sendEmail();
+        }).dimensions(260, 100, 120, 20).build();
+        this.addDrawableChild(sendEmail);
+
         ButtonWidget playTripleChaos = ButtonWidget.builder(Text.translatable("bonzibuddy.playtriplechaos"), (btn) -> {
             openPrepMinigameScreen();
-        }).dimensions(260, 100, 120, 20).build();
+        }).dimensions(260, 160, 120, 20).build();
         this.addDrawableChild(playTripleChaos);
-
-        //TODO - email animation
     }
 
     @Override
@@ -54,6 +58,12 @@ public class BonziBuddyScreen extends Screen {
     public void doATrick() {
         if(bonziBuddyEntity != null) {
             ClientPlayNetworking.send(new BonziBuddyDoATrickC2S(bonziBuddyEntity.getId()));
+        }
+    }
+
+    public void sendEmail() {
+        if(bonziBuddyEntity != null) {
+            ClientPlayNetworking.send(new BonziAirplaneC2S(bonziBuddyEntity.getId()));
         }
     }
 

@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.PlayerSkinDrawer;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.sound.PositionedSoundInstance;
@@ -14,6 +15,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.Difficulty;
 import net.superkat.bonzibuddy.BonziBUDDY;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
 import net.superkat.bonzibuddy.network.packets.minigame.RequestPlayMinigameC2S;
@@ -44,10 +46,17 @@ public class PrepBonziMinigameScreen extends Screen {
 
     @Override
     protected void init() {
-        ButtonWidget playCatastrophicClones = ButtonWidget.builder(Text.translatable("bonzibuddy.begin"), (btn) -> {
+
+        boolean peaceful = this.client.player.getWorld().getDifficulty() == Difficulty.PEACEFUL;
+
+        ButtonWidget playTripleChaos = ButtonWidget.builder(Text.translatable("bonzibuddy.begin"), (btn) -> {
             requestPlayTripleChaos();
         }).dimensions(this.width / 2 - 60, this.height - 40, 120, 20).build();
-        this.addDrawableChild(playCatastrophicClones);
+        playTripleChaos.active = !peaceful;
+        if(peaceful) {
+            playTripleChaos.setTooltip(Tooltip.of(Text.translatable("bonzibuddy.peaceful")));
+        }
+        this.addDrawableChild(playTripleChaos);
 
         players.add(this.client.player);
         entryX = this.width / 2 - 100;
@@ -60,7 +69,6 @@ public class PrepBonziMinigameScreen extends Screen {
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
-//        renderPlayerList(context, collectPlayerEntries(), mouseX, mouseY, entryX, 40);
         renderAllPlayers(context, mouseX, mouseY, entryX, 40);
     }
 

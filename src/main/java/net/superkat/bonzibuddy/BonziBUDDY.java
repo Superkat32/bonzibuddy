@@ -2,6 +2,8 @@ package net.superkat.bonzibuddy;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
+import net.minecraft.particle.SimpleParticleType;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
@@ -26,17 +28,11 @@ public class BonziBUDDY implements ModInitializer {
 			Identifier.of(MOD_ID, "constant_spread"),
 			() -> ConstantSpreadStructurePlacement.CODEC);
 
+    public static final SimpleParticleType PAPER_AIRPLANE = FabricParticleTypes.simple();
+
 	@Override
 	public void onInitialize() {
-		//TODO
-		/*
-		Litereally just add things to Bonzi Buddy now
-		- Email (paper airplane)
-		- Jokes
-		- Fun Facts
-		Bonzi buddy screen
-		If time allows, minigame nbt, otherwise release
-		 */
+        Registry.register(Registries.PARTICLE_TYPE, Identifier.of(MOD_ID, "airplane"), PAPER_AIRPLANE);
 
 		BonziItems.registerItems();
 

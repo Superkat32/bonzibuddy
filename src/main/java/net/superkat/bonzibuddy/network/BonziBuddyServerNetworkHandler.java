@@ -12,6 +12,7 @@ import net.superkat.bonzibuddy.minigame.BonziMinigame;
 import net.superkat.bonzibuddy.minigame.TripleChaosMinigame;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameApi;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
+import net.superkat.bonzibuddy.network.packets.BonziAirplaneC2S;
 import net.superkat.bonzibuddy.network.packets.BonziBuddyDoATrickC2S;
 import net.superkat.bonzibuddy.network.packets.minigame.RequestPlayMinigameC2S;
 import org.apache.commons.compress.utils.Lists;
@@ -25,6 +26,7 @@ public class BonziBuddyServerNetworkHandler {
 
         //Server bound packets
         ServerPlayNetworking.registerGlobalReceiver(BonziBuddyDoATrickC2S.ID, BonziBuddyServerNetworkHandler::onBonziBuddyDoATrick);
+        ServerPlayNetworking.registerGlobalReceiver(BonziAirplaneC2S.ID, BonziBuddyServerNetworkHandler::onBonziAirplane);
         ServerPlayNetworking.registerGlobalReceiver(RequestPlayMinigameC2S.ID, BonziBuddyServerNetworkHandler::onRequestBonziMinigame);
     }
 
@@ -32,6 +34,14 @@ public class BonziBuddyServerNetworkHandler {
         BonziBuddyEntity bonziBuddyEntity = (BonziBuddyEntity) context.player().getWorld().getEntityById(payload.bonziBuddyId());
         if(bonziBuddyEntity != null && bonziBuddyEntity.isAlive()) {
             bonziBuddyEntity.doATrick();
+        }
+    }
+
+    public static void onBonziAirplane(BonziAirplaneC2S payload, ServerPlayNetworking.Context context) {
+        BonziBuddyEntity bonzi = (BonziBuddyEntity) context.player().getWorld().getEntityById(payload.bonziBuddyId());
+        if(bonzi != null && bonzi.isAlive()) {
+            int numberOfAirplanes = bonzi.getWorld().random.nextBetween(1, 3);
+            bonzi.throwAirplanes(numberOfAirplanes);
         }
     }
 
@@ -52,8 +62,6 @@ public class BonziBuddyServerNetworkHandler {
                         ServerPlayerEntity player = (ServerPlayerEntity) world.getEntityById(playerId);
                         players.add(player);
                     }
-//                    List<ServerPlayerEntity> players = world.getPlayers(player -> player.squaredDistanceTo(playerPos) <= 100);
-
                     BlockPos startPos = BonziMinigameApi.getAvailableMinigameBlockpos(bonziWorld);
                     BonziMinigame startedBonziMinigame = BonziMinigameApi.startBonziMinigame(type, bonziWorld, startPos);
                     if(startedBonziMinigame instanceof TripleChaosMinigame chaosMinigame) {

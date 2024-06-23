@@ -1,9 +1,10 @@
-# BonziBUDDY - ModFest 1.21
+# BonziBUDDY - ModFest Carnival
 ## Your best friend on the internet is now in Minecraft!
 
 ### Bonzi Buddy can...
 - Preform a trick!
 - Play a game!
+- Send emails!
 - P... preform another trick!
 - Straight up perish
 - Give you hats if you play his game!
@@ -32,7 +33,7 @@ Take a minute... and show off to your friends!
 ## Take a minute...
 and make a friend for life!
 
-Made for ModFest 1.21!
+Made for ModFest Carnival!
 
 ### Dependencies
 Requires Fabric API and GeckoLib.

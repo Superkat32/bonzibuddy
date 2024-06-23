@@ -123,13 +123,12 @@ public class BonziBossEntity extends AbstractBonziCloneEntity {
         if(isLeaping()) {
             if(getTicksSinceLeap() > 20 && isOnGround()) {
                 setIsLeaping(false);
-                for (int i = 0; i < 20; i++) {
-                    float velX = (float) (this.random.nextFloat() * 2.0 - 1.0);
-                    float velY = (float) ((this.random.nextFloat() * 2.0 - 1.0) + 0.2);
-                    float velZ = (float) (this.random.nextFloat() * 2.0 - 1.0);
-                    this.getWorld().addParticle(ParticleTypes.DRAGON_BREATH, this.getX(), this.getY(), this.getZ(), velX, velY, velZ);
-                    this.getWorld().addParticle(ParticleTypes.DUST_PLUME, this.getX(), this.getY(), this.getZ(), velX, velY, velZ);
-                }
+                ServerWorld serverWorld = (ServerWorld) this.getWorld();
+                float velX = (float) (this.random.nextFloat() * 2.0 - 1.0);
+                float velY = (float) ((this.random.nextFloat() * 2.0 - 1.0) + 0.2);
+                float velZ = (float) (this.random.nextFloat() * 2.0 - 1.0);
+                serverWorld.spawnParticles(ParticleTypes.DRAGON_BREATH, this.getX(), this.getY(), this.getZ(), 20, velX, velY, velZ, 1);
+                serverWorld.spawnParticles(ParticleTypes.DUST_PLUME, this.getX(), this.getY(), this.getZ(), 20, velX, velY, velZ, 1);
                 this.getWorld().playSoundFromEntity(this, SoundEvents.ENTITY_PLAYER_ATTACK_CRIT, SoundCategory.HOSTILE, 1f, 0.7f);
 
                 for(AbstractBonziCloneEntity bonzi : this.getWorld().getNonSpectatingEntities(AbstractBonziCloneEntity.class, this.getBoundingBox().expand(3))) {

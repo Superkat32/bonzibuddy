@@ -14,8 +14,9 @@ import net.superkat.bonzibuddy.minigame.api.BonziMinigameApi;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
 import net.superkat.bonzibuddy.network.packets.BonziBuddyDoATrickC2S;
 import net.superkat.bonzibuddy.network.packets.minigame.RequestPlayMinigameC2S;
+import org.apache.commons.compress.utils.Lists;
 
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Objects;
 
 public class BonziBuddyServerNetworkHandler {
@@ -45,13 +46,19 @@ public class BonziBuddyServerNetworkHandler {
                 Difficulty worldDifficulty = bonziWorld.getDifficulty();
                 if(worldDifficulty != Difficulty.PEACEFUL) {
                     Vec3d playerPos = context.player().getPos();
-                    //FIXME - Allow the starting player to choose the players to play with
-                    List<ServerPlayerEntity> players = world.getPlayers(player -> player.squaredDistanceTo(playerPos) <= 100);
+                    int[] playerIds = payload.playerIds();
+                    ArrayList<ServerPlayerEntity> players = Lists.newArrayList();
+                    for (int playerId : playerIds) {
+                        ServerPlayerEntity player = (ServerPlayerEntity) world.getEntityById(playerId);
+                        players.add(player);
+                    }
+//                    List<ServerPlayerEntity> players = world.getPlayers(player -> player.squaredDistanceTo(playerPos) <= 100);
 
                     BlockPos startPos = BonziMinigameApi.getAvailableMinigameBlockpos(bonziWorld);
                     BonziMinigame startedBonziMinigame = BonziMinigameApi.startBonziMinigame(type, bonziWorld, startPos);
                     if(startedBonziMinigame instanceof TripleChaosMinigame chaosMinigame) {
-                        chaosMinigame.setDifficultyLevel(worldDifficulty.ordinal());
+                        int difficulty = worldDifficulty.ordinal() + players.size() / 2;
+                        chaosMinigame.setDifficultyLevel(difficulty);
                     }
 
                     BonziMinigameApi.teleportPlayersToMinigame(startedBonziMinigame, players);

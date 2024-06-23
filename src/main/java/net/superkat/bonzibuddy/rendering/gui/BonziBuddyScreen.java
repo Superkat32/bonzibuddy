@@ -1,9 +1,11 @@
 package net.superkat.bonzibuddy.rendering.gui;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.superkat.bonzibuddy.entity.bonzi.BonziBuddyEntity;
 import net.superkat.bonzibuddy.network.packets.BonziBuddyDoATrickC2S;
@@ -24,18 +26,24 @@ public class BonziBuddyScreen extends Screen {
     @Override
     protected void init() {
         //FIXME - translatable string
-        ButtonWidget button = ButtonWidget.builder(Text.of("Do A Trick!"), (btn) -> {
+        ButtonWidget button = ButtonWidget.builder(Text.translatable("bonzibuddy.doatrick"), (btn) -> {
             doATrick();
-        }).dimensions(40, 40, 120, 20).build();
+        }).dimensions(260, 40, 120, 20).build();
         this.addDrawableChild(button);
 
-        //FIXME - Allow player to choose teammates
-        ButtonWidget playCatastrophicClones = ButtonWidget.builder(Text.of("Play Triple Chaos!"), (btn) -> {
+        ButtonWidget playTripleChaos = ButtonWidget.builder(Text.translatable("bonzibuddy.playtriplechaos"), (btn) -> {
             openPrepMinigameScreen();
-        }).dimensions(40, 64, 120, 20).build();
-        this.addDrawableChild(playCatastrophicClones);
+        }).dimensions(260, 100, 120, 20).build();
+        this.addDrawableChild(playTripleChaos);
 
         //TODO - email animation
+    }
+
+    @Override
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        super.render(context, mouseX, mouseY, delta);
+//        InventoryScreen.drawEntity();
+//        context.fill(70, this.height / 2 - 20, this.width / 2, this.height / 2 + 90, Color.WHITE.getRGB());
     }
 
     public void doATrick() {
@@ -45,7 +53,8 @@ public class BonziBuddyScreen extends Screen {
     }
 
     public void openPrepMinigameScreen() {
-        this.client.setScreen(new PrepBonziMinigameScreen(Text.of("Prep screen")));
+        BlockPos bonziPos = bonziBuddyEntity == null ? this.client.player.getBlockPos() : bonziBuddyEntity.getBlockPos();
+        this.client.setScreen(new PrepBonziMinigameScreen(bonziPos));
     }
 
     @Override

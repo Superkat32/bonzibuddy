@@ -7,16 +7,17 @@ import net.minecraft.util.Identifier;
 import net.superkat.bonzibuddy.BonziBUDDY;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
 
-public record RequestPlayMinigameC2S(BonziMinigameType minigameType) implements CustomPayload {
+public record RequestPlayMinigameC2S(BonziMinigameType minigameType, int[] playerIds) implements CustomPayload {
     public static final CustomPayload.Id<RequestPlayMinigameC2S> ID = new Id<>(Identifier.of(BonziBUDDY.MOD_ID, "request_minigame_c2s"));
     public static final PacketCodec<RegistryByteBuf, RequestPlayMinigameC2S> CODEC = CustomPayload.codecOf(RequestPlayMinigameC2S::write, RequestPlayMinigameC2S::new);
 
     public RequestPlayMinigameC2S(RegistryByteBuf buf) {
-        this(buf.readEnumConstant(BonziMinigameType.class));
+        this(buf.readEnumConstant(BonziMinigameType.class), buf.readIntArray());
     }
 
     public void write(RegistryByteBuf buf) {
         buf.writeEnumConstant(this.minigameType);
+        buf.writeIntArray(playerIds);
     }
 
     @Override

@@ -18,6 +18,7 @@ import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 public class BonziBuddyEntity extends PathAwareEntity implements GeoEntity, BonziLikeEntity {
+    public int ticksUntilIdleAnim = 100;
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     public BonziBuddyEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
         super(entityType, world);
@@ -36,11 +37,30 @@ public class BonziBuddyEntity extends PathAwareEntity implements GeoEntity, Bonz
         return super.interactMob(player, hand);
     }
 
+    @Override
+    public void tick() {
+        if(!this.getWorld().isClient) {
+            ticksUntilIdleAnim--;
+            if(ticksUntilIdleAnim <= 0) {
+                ticksUntilIdleAnim = this.random.nextBetween(60, 200);
+                if(this.getAnimatableInstanceCache().getManagerForId(this.getId()).getAnimationControllers().get(animControllerName).getCurrentRawAnimation() == null) {
+                    playRandomIdleAnimation();
+                }
+            }
+        }
+        super.tick();
+    }
+
     public void playRandomIdleAnimation() {
         int i = this.getWorld().random.nextInt(idleAnimations().size());
         RawAnimation anim = idleAnimations().get(i);
 //        triggerAnim(animControllerName, getAnimString(anim));
-        syncTrigAnim(animControllerName, getAnimString(anim));
+        syncTrigAnim(animControllerName, getAnimString(anim), true);
+    }
+
+    @Override
+    public boolean deathAnim() {
+        return true;
     }
 
     public void doATrick() {

@@ -33,22 +33,33 @@ public interface BonziLikeEntity {
     List<RawAnimation> trickAnimations = List.of(TRICK_GLOBE, TRICK_SHRINK, IDLE_SUNGLASSES, IDLE_GLOBE, DEATH_ANIM);
 
     default void syncTrigAnim(String controllerName, String animName) {
+        this.syncTrigAnim(controllerName, animName, false);
+    }
+
+    default void syncTrigAnim(String controllerName, String animName, boolean idle) {
         LivingEntity self = (LivingEntity) this;
         int id = self.getId();
-        TriggeredAnimSyncWorkaroundS2C packet = new TriggeredAnimSyncWorkaroundS2C(id, controllerName, animName);
+        TriggeredAnimSyncWorkaroundS2C packet = new TriggeredAnimSyncWorkaroundS2C(id, controllerName, animName, idle);
         for (ServerPlayerEntity player : PlayerLookup.tracking(self)) {
             ServerPlayNetworking.send(player, packet);
         }
-
     }
 
     String animControllerName = "controller";
     default PlayState animController(AnimationState<GeoAnimatable> state) {
+        LivingEntity entity = (LivingEntity) state.getAnimatable();
+        if(deathAnim() && entity.isDead()) {
+            return state.setAndContinue(DEATH_ANIM);
+        }
         if (state.isMoving()) {
             return state.setAndContinue(WALK_ANIM);
         } else {
             return PlayState.STOP;
         }
+    }
+
+    default boolean deathAnim() {
+        return false;
     }
 
     String attackAnimControllerName = "attack_controller";

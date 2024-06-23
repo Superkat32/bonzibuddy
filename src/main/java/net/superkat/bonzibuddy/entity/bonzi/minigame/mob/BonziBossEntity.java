@@ -10,11 +10,13 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import net.superkat.bonzibuddy.minigame.api.BonziMinigameApi;
 
 public class BonziBossEntity extends AbstractBonziCloneEntity {
 
@@ -133,7 +135,7 @@ public class BonziBossEntity extends AbstractBonziCloneEntity {
                 for(AbstractBonziCloneEntity bonzi : this.getWorld().getNonSpectatingEntities(AbstractBonziCloneEntity.class, this.getBoundingBox().expand(3))) {
                     if(bonzi != this) {
                         //friendly fire :)
-                        bonzi.damage(this.getDamageSources().mobAttack(this), 150);
+                        bonzi.damage(this.getDamageSources().mobAttack(this), 115);
                     }
                 }
             }
@@ -201,10 +203,28 @@ public class BonziBossEntity extends AbstractBonziCloneEntity {
     }
 
     @Override
+    public boolean handleFallDamage(float fallDistance, float damageMultiplier, DamageSource damageSource) {
+        return false;
+    }
+
+    @Override
     public void onDeath(DamageSource damageSource) {
         super.onDeath(damageSource);
         if(inMinigame()) {
             tripleChaosMinigame.bossDefeated(this);
+        }
+    }
+
+    @Override
+    public void attemptTickInVoid() {
+        if(!this.getWorld().isClient) {
+            if(inMinigame() && BonziMinigameApi.isBonziBuddyWorld((ServerWorld) this.getWorld())) {
+                if (this.getY() < (double)(this.getWorld().getBottomY() - 64)) {
+                    this.tickInVoid();
+                }
+            }
+        } else {
+            super.attemptTickInVoid();
         }
     }
 

@@ -55,7 +55,6 @@ public class TripleChaosMinigame extends BonziMinigame {
     public float greenBonziInitHealth = 550f;
     public float blueBonziInitHealth = 650f;
 
-//    public List<Item> hatsToReward = Lists.newArrayList();
     public Set<Item> hatsToReward = Sets.newHashSet();
 
     public TripleChaosMinigame(int id, ServerWorld world, BlockPos startPos) {
@@ -175,12 +174,12 @@ public class TripleChaosMinigame extends BonziMinigame {
         discardAllEnemies();
         rewardPlayers();
 
-//        if(this.world.random.nextBetween(1, 4) == 1) {
+        if(this.world.random.nextBetween(1, 4) == 1) {
             players().forEach(player -> {
                 if(player == null) return;
-                player.addStatusEffect(new StatusEffectInstance(BonziBuddyEntities.BONZID_EFFECT, 3600, 1, false, false, true));
+                player.addStatusEffect(new StatusEffectInstance(BonziBuddyEntities.BONZID_EFFECT, 1800, 1, false, false, true));
             });
-//        }
+        }
 
         super.invalidate();
     }

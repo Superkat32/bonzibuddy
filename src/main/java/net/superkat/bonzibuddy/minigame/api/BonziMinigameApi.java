@@ -32,7 +32,7 @@ public class BonziMinigameApi {
 
     //The structure spacing times 16
     public static final int STRUCTURE_SPACING = 256;
-    public static final int STRUCTURE_PLATFORM_Y = 13;
+    public static final int STRUCTURE_PLATFORM_Y = 37;
     public static final int STRUCTURE_SPAWN_Y = STRUCTURE_PLATFORM_Y + 3;
 
     /**

@@ -43,6 +43,11 @@ public class BonziBuddyClientNetworkHandler {
         LivingEntity entity = (LivingEntity) client.world.getEntityById(payload.entityid());
         if(entity != null && entity instanceof BonziLikeEntity) {
             if(entity instanceof GeoEntity geoEntity) {
+                if(payload.idle()) {
+                    if(!geoEntity.getAnimatableInstanceCache().getManagerForId(payload.entityid()).getAnimationControllers().get(BonziLikeEntity.animControllerName).hasAnimationFinished()) {
+                        return;
+                    }
+                }
                 geoEntity.triggerAnim(payload.controller(), payload.anim());
             }
         }

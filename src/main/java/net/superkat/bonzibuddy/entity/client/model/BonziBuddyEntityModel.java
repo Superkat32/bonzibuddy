@@ -3,6 +3,7 @@ package net.superkat.bonzibuddy.entity.client.model;
 import net.minecraft.util.Identifier;
 import net.superkat.bonzibuddy.BonziBUDDY;
 import net.superkat.bonzibuddy.entity.bonzi.BonziBuddyEntity;
+import net.superkat.bonzibuddy.entity.bonzi.BonziLikeEntity;
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.constant.DataTickets;
@@ -24,6 +25,11 @@ public class BonziBuddyEntityModel extends DefaultedEntityGeoModel<BonziBuddyEnt
 
 			turnHead(animatable, entityData, head, instanceId);
 			handleItemsVisibility(animatable, instanceId);
+
+			if(this.getCurrentAnim(animatable, instanceId) == BonziLikeEntity.DEATH_ANIM) {
+				GeoBone root = getAnimationProcessor().getBone("bonzibuddy");
+				root.setRotX(0);
+			}
 //			//Add animation head turning IN ADDITION WITH normal head looking
 ////			head.setRotX(head.getRotX() + entityData.headPitch() * MathHelper.RADIANS_PER_DEGREE);
 ////			head.setRotY(head.getRotY() + entityData.netHeadYaw() * MathHelper.RADIANS_PER_DEGREE);

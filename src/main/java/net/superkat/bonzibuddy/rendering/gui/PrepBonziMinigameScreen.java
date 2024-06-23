@@ -44,7 +44,6 @@ public class PrepBonziMinigameScreen extends Screen {
 
     @Override
     protected void init() {
-        //FIXME - translatable string
         ButtonWidget playCatastrophicClones = ButtonWidget.builder(Text.translatable("bonzibuddy.begin"), (btn) -> {
             requestPlayTripleChaos();
         }).dimensions(this.width / 2 - 60, this.height - 40, 120, 20).build();

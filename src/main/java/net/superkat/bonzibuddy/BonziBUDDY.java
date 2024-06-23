@@ -30,6 +30,10 @@ public class BonziBUDDY implements ModInitializer {
 	public void onInitialize() {
 		//TODO
 		/*
+		Litereally just add things to Bonzi Buddy now
+		- Email (paper airplane)
+		- Jokes
+		- Fun Facts
 		Bonzi buddy screen
 		If time allows, minigame nbt, otherwise release
 		 */

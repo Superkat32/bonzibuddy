@@ -36,5 +36,9 @@
   "bonzibuddy.minigame.redbonzi": "Red Bonzi",
   "bonzibuddy.minigame.greenbonzi": "Green Bonzi",
   "bonzibuddy.minigame.bluebonzi": "Blue Bonzi",
-  "bonzibuddy.minigame.respawning": "Respawning in %1$s"
+  "bonzibuddy.minigame.respawning": "Respawning in %1$s",
+  "bonzibuddy.minigame.exit": "Exit",
+
+  "bonzibuddy.exitscreen": "Are you sure you want to leave the Minigame world?",
+  "bonzibuddy.minigame.exiting": "Requesting minigame world exit..."
 }

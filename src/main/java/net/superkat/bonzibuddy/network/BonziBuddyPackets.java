@@ -9,6 +9,7 @@ public class BonziBuddyPackets {
         //Server bound packets
         PayloadTypeRegistry.playC2S().register(BonziBuddyDoATrickC2S.ID, BonziBuddyDoATrickC2S.CODEC);
         PayloadTypeRegistry.playC2S().register(RequestPlayMinigameC2S.ID, RequestPlayMinigameC2S.CODEC);
+        PayloadTypeRegistry.playC2S().register(RequestReturnToRespawnC2S.ID, RequestReturnToRespawnC2S.CODEC);
         PayloadTypeRegistry.playC2S().register(BonziAirplaneC2S.ID, BonziAirplaneC2S.CODEC);
 
         //Client bound packets

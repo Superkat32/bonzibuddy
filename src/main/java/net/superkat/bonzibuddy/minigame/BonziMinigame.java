@@ -2,7 +2,6 @@ package net.superkat.bonzibuddy.minigame;
 
 import com.google.common.collect.Sets;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.nbt.NbtCompound;
@@ -38,6 +37,7 @@ public class BonziMinigame {
     protected final BlockPos startPos;
     //the ticks since the world/nbt has been reloaded
     protected int ticksSinceReload = 0;
+    protected boolean loadedFromNbt = false;
 
     public MinigameHudData hudData = createHudData();
     protected BonziMinigame.Status status;
@@ -45,7 +45,8 @@ public class BonziMinigame {
     public int ticksSinceStart;
     public int gracePeriodTicks;
     public int gracePeriodSeconds;
-    public Set<MobEntity> enemies = Sets.newHashSet();
+//    public Set<MobEntity> enemies = Sets.newHashSet();
+    public Set<UUID> enemies = Sets.newHashSet();
     public int maxEnemies;
     public int ticksUntilInvalidate;
     public BonziMinigame(int id, ServerWorld world, BlockPos startPos) {
@@ -97,7 +98,7 @@ public class BonziMinigame {
         List<ServerPlayerEntity> inRangePlayers = getNearbyPlayers();
 
         for (ServerPlayerEntity player : allPlayers) {
-            if(!inRangePlayers.contains(player)) {
+            if(!inRangePlayers.contains(player) && playersUuid.contains(player.getUuid())) {
                 removePlayer(player);
             }
         }
@@ -129,7 +130,7 @@ public class BonziMinigame {
      */
     public void tick() {
         ticksSinceReload++;
-        if(checkForGameEnd() && ticksSinceReload >= 60) {
+        if(checkForGameEnd() && ticksSinceReload >= 100) {
             if(this.onGoing()) {
                 this.end();
             } else if (hasWon() || hasLost()) {
@@ -217,7 +218,7 @@ public class BonziMinigame {
     }
 
     public void addEnemy(MobEntity enemy) {
-        enemies.add(enemy);
+        enemies.add(enemy.getUuid());
     }
 
     public void addPlayer(ServerPlayerEntity player) {
@@ -357,7 +358,7 @@ public class BonziMinigame {
                 UUID entityUuid = NbtHelper.toUuid(nbtElement);
                 MobEntity entity = (MobEntity) this.getWorld().getEntity(entityUuid);
                 if(entity != null) {
-                    this.enemies.add(entity);
+                    this.enemies.add(entity.getUuid());
                 }
             }
         }
@@ -365,7 +366,15 @@ public class BonziMinigame {
         this.maxEnemies = nbt.getInt("maxEnemies");
         this.ticksUntilInvalidate = nbt.getInt("ticksUntilInvalidate");
 
+
+        if(nbt.contains("Enemies", NbtElement.LIST_TYPE)) {
+            for (NbtElement nbtElement : nbt.getList("Enemies", NbtElement.INT_ARRAY_TYPE)) {
+                this.enemies.add(NbtHelper.toUuid(nbtElement));
+            }
+        }
+
         this.ticksSinceReload = 0;
+        this.loadedFromNbt = true;
     }
 
     /**
@@ -387,7 +396,7 @@ public class BonziMinigame {
         nbt.putInt("gracePeriodSeconds", this.gracePeriodSeconds);
 
         NbtList enemiesNbtList = new NbtList();
-        for (UUID enemy : this.enemies.stream().map(Entity::getUuid).toList()) {
+        for (UUID enemy : this.enemies) {
             enemiesNbtList.add(NbtHelper.fromUuid(enemy));
         }
         nbt.put("Enemies", enemiesNbtList);

@@ -33,6 +33,25 @@ public class PlayerEntityMixin implements BonziMinigamePlayer {
         return original || inBonziMinigame((PlayerEntity) (Object) this);
     }
 
+    //removed for now because ModFest server will be using adventure mode
+    //Allows singleplayer users to edit the map to their liking - Minecraft style.
+//    @ModifyReturnValue(
+//            method = "isBlockBreakingRestricted",
+//            at = @At("RETURN")
+//    )
+//    private boolean bonzibuddy$noModifyingBlocksInMinigameWorld(boolean original, @Local(argsOnly = true)GameMode gameMode) {
+//        World world = ((PlayerEntity)(Object)this).getWorld();
+//        if (!world.isClient()) {
+//            ServerWorld serverWorld = (ServerWorld) world;
+//            if(BonziMinigameApi.isBonziBuddyWorld(serverWorld)) {
+//                if(gameMode.isSurvivalLike()) {
+//                    return true;
+//                }
+//            }
+//        }
+//        return original;
+//    }
+
     @Override
     public boolean bonzibuddy$respawningFromMinigame() {
         return respawningFromMinigame;

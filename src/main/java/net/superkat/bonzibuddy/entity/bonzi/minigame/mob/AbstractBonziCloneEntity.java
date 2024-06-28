@@ -8,10 +8,14 @@ import net.minecraft.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
 import net.superkat.bonzibuddy.entity.bonzi.BonziLikeEntity;
 import net.superkat.bonzibuddy.entity.bonzi.minigame.ProtectBonziEntity;
+import net.superkat.bonzibuddy.minigame.BonziMinigame;
 import net.superkat.bonzibuddy.minigame.TripleChaosMinigame;
+import net.superkat.bonzibuddy.minigame.api.BonziMinigameApi;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -37,6 +41,27 @@ public abstract class AbstractBonziCloneEntity extends HostileEntity implements 
         this.goalSelector.add(3, new LookAtEntityGoal(this, ProtectBonziEntity.class, 16f, 0.5f));
         this.targetSelector.add(1, new ActiveTargetGoal<>(this, PlayerEntity.class, true));
         this.targetSelector.add(2, new ActiveTargetGoal<>(this, ProtectBonziEntity.class, false));
+    }
+
+    @Override
+    public void readCustomDataFromNbt(NbtCompound nbt) {
+        int minigameId = nbt.getInt("minigameId");
+        if(minigameId != -1) {
+            BonziMinigame minigame = BonziMinigameApi.getMinigameById((ServerWorld) this.getWorld(), minigameId);
+            if(minigame instanceof TripleChaosMinigame triple) {
+                this.tripleChaosMinigame = triple;
+            }
+        }
+
+        super.readCustomDataFromNbt(nbt);
+    }
+
+    @Override
+    public void writeCustomDataToNbt(NbtCompound nbt) {
+        int minigameId = tripleChaosMinigame == null ? -1 : tripleChaosMinigame.getId();
+        nbt.putInt("minigameId", minigameId);
+
+        super.writeCustomDataToNbt(nbt);
     }
 
     @Override

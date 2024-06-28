@@ -14,6 +14,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.Difficulty;
 import net.superkat.bonzibuddy.BonziBUDDY;
@@ -39,6 +40,8 @@ public class PrepBonziMinigameScreen extends Screen {
     private int xPadding = 4;
     private int yPadding = 2;
 
+    public int scrollAmount = 0;
+
     public PrepBonziMinigameScreen(BlockPos bonziPos) {
         super(Text.of("Bonzi Minigame Prep Screen"));
         this.bonziPos = bonziPos;
@@ -63,9 +66,16 @@ public class PrepBonziMinigameScreen extends Screen {
         entryXLimit = this.width / 2 + 100;
     }
 
+    @Override
+    public void tick() {
+        super.tick();
+        this.players.removeIf(player -> !playerInRange(player.getUuid()));
+    }
+
     public List<UUID> collectPlayerEntries() {
         return this.client.player.networkHandler.getPlayerUuids().stream().toList();
     }
+
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
@@ -77,12 +87,31 @@ public class PrepBonziMinigameScreen extends Screen {
 
         UUID mainUuid = this.client.player.getUuid();
         List<UUID> currentPlayer = allPlayers.stream().filter(mainUuid::equals).toList();
-        List<UUID> selectablePlayers = allPlayers.stream().filter(uuid -> playerInRange(uuid) && !mainUuid.equals(uuid)).toList();
-        List<UUID> unselectablePlayers = allPlayers.stream().filter(uuid -> !playerInRange(uuid) && !mainUuid.equals(uuid)).toList();
+        List<UUID> selectablePlayers = selectablePlayers();
+        List<UUID> unselectablePlayers = unselectablePlayers();
 
+        context.enableScissor(x - xPadding - 2, y - yPadding - 2, entryXLimit + xPadding + 2, this.height - 54);
+
+        y += scrollAmount;
         y = renderPlayerList(context, currentPlayer, mouseX, mouseY, x, y);
         y = renderPlayerList(context, selectablePlayers, mouseX, mouseY, x, y);
         y = renderPlayerList(context, unselectablePlayers, mouseX, mouseY, x, y);
+
+        context.disableScissor();
+    }
+
+    private List<UUID> selectablePlayers() {
+        List<UUID> allPlayers = collectPlayerEntries();
+        UUID mainUuid = this.client.player.getUuid();
+        List<UUID> selectablePlayers = allPlayers.stream().filter(uuid -> playerInRange(uuid) && !mainUuid.equals(uuid)).toList();
+        return selectablePlayers;
+    }
+
+    private List<UUID> unselectablePlayers() {
+        List<UUID> allPlayers = collectPlayerEntries();
+        UUID mainUuid = this.client.player.getUuid();
+        List<UUID> unselectablePlayers = allPlayers.stream().filter(uuid -> !playerInRange(uuid) && !mainUuid.equals(uuid)).toList();
+        return unselectablePlayers;
     }
 
     @Override
@@ -102,20 +131,22 @@ public class PrepBonziMinigameScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        int searchY = 40 + iconSize + yPadding * 2 + 4;
-        for (UUID uuid : collectPlayerEntries().stream().filter(uuid -> playerInRange(uuid) && !this.client.player.getUuid().equals(uuid)).toList()) {
-            if(isMouseOverEntry(mouseX, mouseY, entryX, searchY) && playerInRange(uuid)) {
-                PlayerEntity player = playerFromUuid(uuid);
-                if(player != null && player != this.client.player) {
-                    if(players.contains(player)) {
-                        players.remove(player);
-                    } else {
-                        players.add(player);
+        int searchY = 40 + iconSize + yPadding * 2 + 4 + scrollAmount;
+        if(mouseY >= 40 - yPadding - 2 && mouseY <= this.height - 54) {
+            for (UUID uuid : selectablePlayers()) {
+                if(isMouseOverEntry(mouseX, mouseY, entryX, searchY) && playerInRange(uuid)) {
+                    PlayerEntity player = playerFromUuid(uuid);
+                    if(player != null && player != this.client.player) {
+                        if(players.contains(player)) {
+                            players.remove(player);
+                        } else {
+                            players.add(player);
+                        }
+                        this.client.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0F));
                     }
-                    this.client.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0F));
                 }
+                searchY += iconSize + yPadding * 2 + 4;
             }
-            searchY += iconSize + yPadding * 2 + 4;
         }
         return super.mouseClicked(mouseX, mouseY, button);
     }
@@ -123,6 +154,18 @@ public class PrepBonziMinigameScreen extends Screen {
     public boolean isMouseOverEntry(double mouseX, double mouseY, int entryX, int entryY) {
         return mouseX >= entryX && mouseX <= entryXLimit &&
                 mouseY >= entryY && mouseY <= entryY + iconSize + yPadding;
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        int playerAmount = this.collectPlayerEntries().size();
+        if(playerAmount > 5) {
+            int entryHeight = iconSize + yPadding * 2 + 4;
+            this.scrollAmount = MathHelper.clamp(this.scrollAmount + (int) verticalAmount * 10,-entryHeight * playerAmount + (this.height - 54 - 40), 0);
+        } else {
+            scrollAmount = 0;
+        }
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }
 
     /**

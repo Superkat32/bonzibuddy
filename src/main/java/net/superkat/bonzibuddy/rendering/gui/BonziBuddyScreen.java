@@ -31,17 +31,17 @@ public class BonziBuddyScreen extends Screen {
     protected void init() {
         ButtonWidget button = ButtonWidget.builder(Text.translatable("bonzibuddy.doatrick"), (btn) -> {
             doATrick();
-        }).dimensions(260, 40, 120, 20).build();
+        }).dimensions(this.width / 2 + 40, this.height / 2 - 85, 120, 20).build();
         this.addDrawableChild(button);
 
         ButtonWidget sendEmail = ButtonWidget.builder(Text.translatable("bonzibuddy.email"), (btn) -> {
             sendEmail();
-        }).dimensions(260, 100, 120, 20).build();
+        }).dimensions(this.width / 2 + 40, this.height / 2 - 25, 120, 20).build();
         this.addDrawableChild(sendEmail);
 
         ButtonWidget playTripleChaos = ButtonWidget.builder(Text.translatable("bonzibuddy.playtriplechaos"), (btn) -> {
             openPrepMinigameScreen();
-        }).dimensions(260, 160, 120, 20).build();
+        }).dimensions(this.width / 2 + 40, this.height / 2 + 35, 120, 20).build();
         this.addDrawableChild(playTripleChaos);
     }
 

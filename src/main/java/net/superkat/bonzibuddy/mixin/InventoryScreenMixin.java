@@ -5,21 +5,30 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.ConfirmScreen;
 import net.minecraft.client.gui.screen.ingame.AbstractInventoryScreen;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.gui.screen.recipebook.RecipeBookProvider;
+import net.minecraft.client.gui.widget.TextIconButtonWidget;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.screen.PlayerScreenHandler;
+import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.superkat.bonzibuddy.BonziBUDDY;
 import net.superkat.bonzibuddy.entity.BonziBuddyEntities;
+import net.superkat.bonzibuddy.rendering.gui.TextLeftIconWithTextWidget;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(InventoryScreen.class)
 public abstract class InventoryScreenMixin extends AbstractInventoryScreen<PlayerScreenHandler> implements RecipeBookProvider {
+    private static final Identifier LEAVE_MINIGAME_WORLD = Identifier.of(BonziBUDDY.MOD_ID, "minigame/leave");
+    private static final Identifier BONZI_BUDDY = Identifier.of(BonziBUDDY.MOD_ID, "minigame/bonzibuddy");
 
     public InventoryScreenMixin(PlayerScreenHandler screenHandler, PlayerInventory playerInventory, Text text) {
         super(screenHandler, playerInventory, text);
@@ -66,4 +75,33 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreen<Playe
         original.call(instance, textRenderer, text, x, y, color, shadow);
         return 0;
     }
+
+    @Inject(
+            method = "init",
+            at = @At("TAIL")
+    )
+    private void bonzibuddy$addLeaveMinigameWorldButton(CallbackInfo ci) {
+        if(this.client.player.getWorld().getRegistryKey() == BonziBUDDY.PROTECT_BONZIBUDDY) {
+            if (!this.client.interactionManager.hasCreativeInventory()) {
+                TextIconButtonWidget textIconButtonWidget = TextLeftIconWithTextWidget.createLeaveBonziWorldButton(48,
+                    button -> {
+                        this.client.setScreen(new ConfirmScreen(confirmed -> {
+                            if(confirmed) {
+                                this.client.inGameHud.setOverlayMessage(Text.translatable("bonzibuddy.minigame.exiting"), false);
+                                TextLeftIconWithTextWidget.requestReturnToSpawn();
+                            } else {
+                                this.client.setScreen(null);
+                            }
+                        },
+                        Text.translatable("bonzibuddy.exitscreen"),
+                        ScreenTexts.EMPTY
+                        ));
+                    },
+                        false);
+                textIconButtonWidget.setPosition(this.width / 2 + 180, this.height / 2 - 120);
+                this.addDrawableChild(textIconButtonWidget);
+            }
+        }
+    }
+
 }

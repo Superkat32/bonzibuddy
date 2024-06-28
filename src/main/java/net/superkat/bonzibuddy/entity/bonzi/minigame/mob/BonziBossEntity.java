@@ -9,6 +9,7 @@ import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.HostileEntity;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -43,6 +44,22 @@ public class BonziBossEntity extends AbstractBonziCloneEntity {
                 .add(EntityAttributes.GENERIC_ATTACK_KNOCKBACK, 1.25)
                 //if you accidentally spawn this in... oh well
                 .add(EntityAttributes.GENERIC_MAX_HEALTH, 1024);
+    }
+
+    @Override
+    public void readCustomDataFromNbt(NbtCompound nbt) {
+        this.setIsRed(nbt.getBoolean("red"));
+        this.setIsGreen(nbt.getBoolean("green"));
+        this.setIsBlue(nbt.getBoolean("blue"));
+        super.readCustomDataFromNbt(nbt);
+    }
+
+    @Override
+    public void writeCustomDataToNbt(NbtCompound nbt) {
+        nbt.putBoolean("red", this.isRed());
+        nbt.putBoolean("green", this.isGreen());
+        nbt.putBoolean("blue", this.isBlue());
+        super.writeCustomDataToNbt(nbt);
     }
 
     @Override
@@ -121,24 +138,6 @@ public class BonziBossEntity extends AbstractBonziCloneEntity {
         super.tick();
 
         if(isLeaping()) {
-            if(getTicksSinceLeap() > 20 && isOnGround()) {
-                setIsLeaping(false);
-                ServerWorld serverWorld = (ServerWorld) this.getWorld();
-                float velX = (float) (this.random.nextFloat() * 2.0 - 1.0);
-                float velY = (float) ((this.random.nextFloat() * 2.0 - 1.0) + 0.2);
-                float velZ = (float) (this.random.nextFloat() * 2.0 - 1.0);
-                serverWorld.spawnParticles(ParticleTypes.DRAGON_BREATH, this.getX(), this.getY(), this.getZ(), 20, velX, velY, velZ, 1);
-                serverWorld.spawnParticles(ParticleTypes.DUST_PLUME, this.getX(), this.getY(), this.getZ(), 20, velX, velY, velZ, 1);
-                this.getWorld().playSoundFromEntity(this, SoundEvents.ENTITY_PLAYER_ATTACK_CRIT, SoundCategory.HOSTILE, 1f, 0.7f);
-
-                for(AbstractBonziCloneEntity bonzi : this.getWorld().getNonSpectatingEntities(AbstractBonziCloneEntity.class, this.getBoundingBox().expand(3))) {
-                    if(bonzi != this) {
-                        //friendly fire :)
-                        bonzi.damage(this.getDamageSources().mobAttack(this), 115);
-                    }
-                }
-            }
-
             if(this.getWorld().isClient) {
                 BlockPos leapPos = leapPos();
                 this.getWorld().addParticle(ParticleTypes.FALLING_LAVA, leapPos.getX(), leapPos.getY() + 3, leapPos.getZ(), 0, -1, 0);
@@ -162,7 +161,24 @@ public class BonziBossEntity extends AbstractBonziCloneEntity {
                     double z = leapPos.getZ() + (double)(MathHelper.sin(h) * radius);
                     this.getWorld().addImportantParticle(ParticleTypes.DRIPPING_LAVA, x, y, z, 0.001, 0.001, 0.001);
                 }
+            } else if(getTicksSinceLeap() > 20 && isOnGround()) {
+                setIsLeaping(false);
+                ServerWorld serverWorld = (ServerWorld) this.getWorld();
+                float velX = (float) (this.random.nextFloat() * 2.0 - 1.0);
+                float velY = (float) ((this.random.nextFloat() * 2.0 - 1.0) + 0.2);
+                float velZ = (float) (this.random.nextFloat() * 2.0 - 1.0);
+                serverWorld.spawnParticles(ParticleTypes.DRAGON_BREATH, this.getX(), this.getY(), this.getZ(), 20, velX, velY, velZ, 1);
+                serverWorld.spawnParticles(ParticleTypes.DUST_PLUME, this.getX(), this.getY(), this.getZ(), 20, velX, velY, velZ, 1);
+                this.getWorld().playSoundFromEntity(this, SoundEvents.ENTITY_PLAYER_ATTACK_CRIT, SoundCategory.HOSTILE, 1f, 0.7f);
+
+                for(AbstractBonziCloneEntity bonzi : this.getWorld().getNonSpectatingEntities(AbstractBonziCloneEntity.class, this.getBoundingBox().expand(3))) {
+                    if(bonzi != this) {
+                        //friendly fire :)
+                        bonzi.damage(this.getDamageSources().mobAttack(this), 115);
+                    }
+                }
             }
+
         }
 
         if(this.age % 10 == 0) {

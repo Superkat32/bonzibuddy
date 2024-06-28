@@ -1,7 +1,6 @@
 package net.superkat.bonzibuddy.minigame;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
@@ -10,7 +9,6 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.superkat.bonzibuddy.entity.BonziBuddyEntities;
-import net.superkat.bonzibuddy.entity.bonzi.BonziLikeEntity;
 import net.superkat.bonzibuddy.entity.bonzi.minigame.ProtectBonziEntity;
 import net.superkat.bonzibuddy.entity.bonzi.minigame.mob.BonziCloneEntity;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameApi;
@@ -184,14 +182,14 @@ public class BonziCatastrophicClonesMinigame extends BonziMinigame {
     public void lose() {
         super.lose();
         //1 in 100 chance of all of the alive enemies wearing sunglasses upon player defeat :-]
-        int wearSunglasses = this.world.random.nextInt(100);
-        if(wearSunglasses == 0) {
-            this.enemies.forEach(enemy -> {
-                if(enemy instanceof BonziLikeEntity bonziLikeEntity) {
+//        int wearSunglasses = this.world.random.nextInt(100);
+//        if(wearSunglasses == 0) {
+//            this.enemies.forEach(enemy -> {
+//                if(enemy instanceof BonziLikeEntity bonziLikeEntity) {
 //                    bonziLikeEntity.playAnimation(enemy, BonziLikeEntity.BonziAnimation.VICTORY_GLASSES);
-                }
-            });
-        }
+//                }
+//            });
+//        }
     }
 
     @Override
@@ -200,13 +198,23 @@ public class BonziCatastrophicClonesMinigame extends BonziMinigame {
             if(this.protectBonziEntity != null) {
                 this.protectBonziEntity.kill();
             }
-            this.enemies.forEach(LivingEntity::kill);
+            this.enemies.forEach(uuid -> {
+                Entity enemy = this.getWorld().getEntity(uuid);
+                if(enemy != null) {
+                    enemy.kill();
+                }
+            });
         } else {
             //this really doesn't do anything I don't think
             if(this.protectBonziEntity != null) {
                 this.protectBonziEntity.remove(Entity.RemovalReason.DISCARDED);
             }
-            this.enemies.forEach(Entity::discard);
+            this.enemies.forEach(uuid -> {
+                Entity enemy = this.getWorld().getEntity(uuid);
+                if(enemy != null) {
+                    enemy.discard();
+                }
+            });
         }
         super.invalidate();
     }

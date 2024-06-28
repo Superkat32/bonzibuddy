@@ -1,6 +1,7 @@
 package net.superkat.bonzibuddy.minigame;
 
 import com.google.common.collect.Sets;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -31,6 +32,7 @@ import net.superkat.bonzibuddy.network.packets.minigame.MinigameHudUpdateS2C;
 import net.superkat.bonzibuddy.network.packets.minigame.WaitingForPlayersS2C;
 
 import java.util.Set;
+import java.util.UUID;
 
 public class TripleChaosMinigame extends BonziMinigame {
     public int ticksLeft;
@@ -46,6 +48,9 @@ public class TripleChaosMinigame extends BonziMinigame {
 
     public int difficultyLevel = 1;
 
+    private UUID redBonziUUID;
+    private UUID greenBonziUUID;
+    private UUID blueBonziUUID;
     public BonziBossEntity redBonzi = null;
     public BonziBossEntity greenBonzi = null;
     public BonziBossEntity blueBonzi = null;
@@ -83,20 +88,35 @@ public class TripleChaosMinigame extends BonziMinigame {
         this.ticksUntilNewEnemyPos = nbt.getInt("ticksUntilNewEnemyPos");
         this.difficultyLevel = nbt.getInt("difficultyLevel");
 
-        NbtElement redBonziElement = nbt.get("redBonzi");
-        if(redBonziElement != null) {
-            this.redBonzi = (BonziBossEntity) this.getWorld().getEntity(NbtHelper.toUuid(redBonziElement));
+        this.redBonziPercent = nbt.getFloat("redBonziPercent");
+        this.greenBonziPercent = nbt.getFloat("greenBonziPercent");
+        this.blueBonziPercent = nbt.getFloat("blueBonziPercent");
+        this.hudData.redBonziPercent = redBonziPercent;
+        this.hudData.greenBonziPercent = greenBonziPercent;
+        this.hudData.blueBonziPercent = blueBonziPercent;
+
+        if(redBonziPercent > 0f) {
+            NbtElement redBonziElement = nbt.get("redBonzi");
+            if(redBonziElement != null) {
+                this.redBonziUUID = NbtHelper.toUuid(redBonziElement);
+            }
         }
 
-        NbtElement greenBonziElement = nbt.get("greenBonzi");
-        if(greenBonziElement != null) {
-            this.greenBonzi = (BonziBossEntity) this.getWorld().getEntity(NbtHelper.toUuid(greenBonziElement));
+
+        if (greenBonziPercent > 0f) {
+            NbtElement greenBonziElement = nbt.get("greenBonzi");
+            if(greenBonziElement != null) {
+                this.greenBonziUUID = NbtHelper.toUuid(greenBonziElement);
+            }
         }
 
-        NbtElement blueBonziElement = nbt.get("blueBonzi");
-        if(greenBonziElement != null) {
-            this.blueBonzi = (BonziBossEntity) this.getWorld().getEntity(NbtHelper.toUuid(blueBonziElement));
+        if (blueBonziPercent > 0f) {
+            NbtElement blueBonziElement = nbt.get("blueBonzi");
+            if(blueBonziElement != null) {
+                this.blueBonziUUID = NbtHelper.toUuid(blueBonziElement);
+            }
         }
+
 
         super.readNbt(nbt);
     }
@@ -112,9 +132,17 @@ public class TripleChaosMinigame extends BonziMinigame {
         nbt.putInt("ticksUntilNewEnemyPos", this.ticksUntilNewEnemyPos);
         nbt.putInt("difficultyLevel", this.difficultyLevel);
 
-        nbt.put("redBonzi", NbtHelper.fromUuid(this.redBonzi.getUuid()));
-        nbt.put("greenBonzi", NbtHelper.fromUuid(this.greenBonzi.getUuid()));
-        nbt.put("blueBonzi", NbtHelper.fromUuid(this.blueBonzi.getUuid()));
+        nbt.putFloat("redBonziPercent", this.redBonziPercent);
+        nbt.putFloat("greenBonziPercent", this.greenBonziPercent);
+        nbt.putFloat("blueBonziPercent", this.blueBonziPercent);
+        if(redBonzi != null && redBonzi.isAlive()) {
+            nbt.put("redBonzi", NbtHelper.fromUuid(this.redBonzi.getUuid()));
+        }
+        if(greenBonzi != null && greenBonzi.isAlive()) {
+            nbt.put("greenBonzi", NbtHelper.fromUuid(this.greenBonzi.getUuid()));
+        } if(blueBonzi != null && blueBonzi.isAlive()) {
+            nbt.put("blueBonzi", NbtHelper.fromUuid(this.blueBonzi.getUuid()));
+        }
         return super.writeNbt(nbt);
     }
 
@@ -146,6 +174,17 @@ public class TripleChaosMinigame extends BonziMinigame {
     }
 
     @Override
+    public void addPlayer(ServerPlayerEntity player) {
+        super.addPlayer(player);
+        BonziBossBarUpdateS2C redPacket = new BonziBossBarUpdateS2C(this.hudData.uuid, this.hudData.redBonziPercent, BonziBossBarUpdateS2C.BonziBoss.RED);
+        BonziBossBarUpdateS2C greenPacket = new BonziBossBarUpdateS2C(this.hudData.uuid, this.hudData.greenBonziPercent, BonziBossBarUpdateS2C.BonziBoss.GREEN);
+        BonziBossBarUpdateS2C bluePacket = new BonziBossBarUpdateS2C(this.hudData.uuid, this.hudData.blueBonziPercent, BonziBossBarUpdateS2C.BonziBoss.BLUE);
+        ServerPlayNetworking.send(player, redPacket);
+        ServerPlayNetworking.send(player, greenPacket);
+        ServerPlayNetworking.send(player, bluePacket);
+    }
+
+    @Override
     public void start() {
         secondsLeft = 100;
         ticksLeft = secondsLeft * 20;
@@ -162,17 +201,41 @@ public class TripleChaosMinigame extends BonziMinigame {
         super.tick();
 
         for (ServerPlayerEntity player : players()) {
-            if(player == null) return;
-            if(player.getY() < (double)(this.getWorld().getBottomY())) {
-                //if the player falls into the void - doesn't kill them because bugs'o'plenty
-                player.teleport(this.world, this.startPos.getX(), this.startPos.getY() + 2, this.startPos.getZ(), 0f, 0f);
+            if(player != null) {
+                if(player.getY() < (double)(this.getWorld().getBottomY())) {
+                    //if the player falls into the void - doesn't kill them because bugs'o'plenty
+                    player.teleport(this.world, this.startPos.getX(), this.startPos.getY() + 2, this.startPos.getZ(), 0f, 0f);
+                }
             }
         }
 
         if(onGoing()) {
             if((redBonzi == null || greenBonzi == null || blueBonzi == null) && ticksSinceReload >= 40) {
-                scaleFromDifficulty();
-                spawnBonziBuddies();
+                if(loadedFromNbt) {
+                    if(this.redBonziUUID != null) {
+                        BonziBossEntity bonziBoss = (BonziBossEntity) this.getWorld().getEntity(redBonziUUID);
+                        if(bonziBoss != null) {
+                            this.redBonzi = bonziBoss;
+                        }
+                    }
+
+                    if(this.greenBonziUUID != null) {
+                        BonziBossEntity bonziBoss = (BonziBossEntity) this.getWorld().getEntity(greenBonziUUID);
+                        if(bonziBoss != null) {
+                            this.greenBonzi = bonziBoss;
+                        }
+                    }
+
+                    if(this.blueBonziUUID != null) {
+                        BonziBossEntity bonziBoss = (BonziBossEntity) this.getWorld().getEntity(blueBonziUUID);
+                        if(bonziBoss != null) {
+                            this.blueBonzi = bonziBoss;
+                        }
+                    }
+                } else {
+                    scaleFromDifficulty();
+                    spawnBonziBuddies();
+                }
             }
             ticksLeft--;
 
@@ -328,7 +391,12 @@ public class TripleChaosMinigame extends BonziMinigame {
             this.blueBonzi.discard();
         }
 
-        this.enemies.forEach(Entity::discard);
+        this.enemies.forEach(enemyUuid -> {
+            Entity enemy = this.getWorld().getEntity(enemyUuid);
+            if(enemy != null) {
+                enemy.discard();
+            }
+        });
     }
     
     public void updateBossHealth(BonziBossEntity boss) {

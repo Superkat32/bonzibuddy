@@ -28,7 +28,7 @@
 	"mixins": [
 		"bonzibuddy.mixins.json"
 	],
-	"accessWidener": "bonzibuddy.accessWidener",
+	"accessWidener": "bonzibuddy.accesswidener",
 	"depends": {
 		"fabricloader": ">=0.15.11",
 		"minecraft": "~1.21",

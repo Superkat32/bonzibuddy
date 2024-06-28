@@ -94,8 +94,17 @@ public class BonziMinigame {
      * Send updates, such as packets, to all involved players.
      */
     public void updateInvolvedPlayers() {
-        List<ServerPlayerEntity> allPlayers = world.getPlayers();
+        List<ServerPlayerEntity> allPlayers = this.world.getPlayers();
         List<ServerPlayerEntity> inRangePlayers = getNearbyPlayers();
+
+        if(allPlayers.isEmpty() && !playersUuid.isEmpty()) {
+            for (UUID uuid : playersUuid) {
+                ServerPlayerEntity player = this.world.getServer().getPlayerManager().getPlayer(uuid);
+                if(player != null) {
+                    removePlayer(player);
+                }
+            }
+        }
 
         for (ServerPlayerEntity player : allPlayers) {
             if(!inRangePlayers.contains(player) && playersUuid.contains(player.getUuid())) {

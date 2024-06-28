@@ -200,6 +200,20 @@ public class TripleChaosMinigame extends BonziMinigame {
     public void tick() {
         super.tick();
 
+        if(!isLoaded()) {
+
+            if(ticksUntilInvalidate % 20 == 0) {
+                updateInvolvedPlayers();
+            }
+
+            ticksUntilInvalidate--;
+
+            if(ticksUntilInvalidate <= 0) {
+                invalidate();
+            }
+            return;
+        }
+
         for (ServerPlayerEntity player : players()) {
             if(player != null) {
                 if(player.getY() < (double)(this.getWorld().getBottomY())) {

@@ -5,7 +5,6 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ConfirmScreen;
 import net.minecraft.client.gui.screen.ingame.AbstractInventoryScreen;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.gui.screen.recipebook.RecipeBookProvider;
@@ -19,6 +18,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.superkat.bonzibuddy.BonziBUDDY;
 import net.superkat.bonzibuddy.entity.BonziBuddyEntities;
+import net.superkat.bonzibuddy.rendering.gui.ConfirmLeaveMinigameWorldScreen;
 import net.superkat.bonzibuddy.rendering.gui.TextLeftIconWithTextWidget;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -85,7 +85,7 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreen<Playe
             if (!this.client.interactionManager.hasCreativeInventory()) {
                 TextIconButtonWidget textIconButtonWidget = TextLeftIconWithTextWidget.createLeaveBonziWorldButton(48,
                     button -> {
-                        this.client.setScreen(new ConfirmScreen(confirmed -> {
+                        this.client.setScreen(new ConfirmLeaveMinigameWorldScreen(confirmed -> {
                             if(confirmed) {
                                 this.client.inGameHud.setOverlayMessage(Text.translatable("bonzibuddy.minigame.exiting"), false);
                                 TextLeftIconWithTextWidget.requestReturnToSpawn();

@@ -44,7 +44,7 @@ public class BonziBuddyEntities {
     public static final EntityType<BonziBossEntity> BONZI_BOSS = Registry.register(
             Registries.ENTITY_TYPE,
             Identifier.of(BonziBUDDY.MOD_ID, "bonziboss"),
-            EntityType.Builder.create(BonziBossEntity::new, SpawnGroup.CREATURE).dimensions(0.75f, 1.0f).build()
+            EntityType.Builder.create(BonziBossEntity::new, SpawnGroup.CREATURE).dimensions(0.85f, 1.3f).build()
     );
 
     public static final EntityType<BananaBlasterEntity> BANANA_BLASTER_PROJECTILE = Registry.register(

@@ -39,9 +39,10 @@ public class BonziBossEntity extends AbstractBonziCloneEntity {
         return LivingEntity.createLivingAttributes()
                 .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 48)
                 .add(EntityAttributes.GENERIC_SCALE, 5.0)
-                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.15)
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.2)
                 .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 16)
                 .add(EntityAttributes.GENERIC_ATTACK_KNOCKBACK, 1.25)
+                .add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 0)
                 //if you accidentally spawn this in... oh well
                 .add(EntityAttributes.GENERIC_MAX_HEALTH, 1024);
     }
@@ -82,6 +83,8 @@ public class BonziBossEntity extends AbstractBonziCloneEntity {
         if(isRed) {
             this.secondsBetweenLeaps = 11;
             this.ticksUntilLeap = secondsBetweenLeaps * 20;
+            this.getAttributeInstance(EntityAttributes.GENERIC_ATTACK_KNOCKBACK).setBaseValue(2);
+            this.getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE).setBaseValue(20);
         }
     }
 
@@ -94,6 +97,7 @@ public class BonziBossEntity extends AbstractBonziCloneEntity {
         if(isGreen) {
             this.secondsBetweenLeaps = 15;
             this.ticksUntilLeap = secondsBetweenLeaps * 20;
+            this.getAttributeInstance(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE).setBaseValue(0.5);
         }
     }
 
@@ -106,6 +110,7 @@ public class BonziBossEntity extends AbstractBonziCloneEntity {
         if(isBlue) {
             this.secondsBetweenLeaps = 13;
             this.ticksUntilLeap = secondsBetweenLeaps * 20;
+            this.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED).setBaseValue(0.5);
         }
     }
 

@@ -12,10 +12,13 @@ import net.superkat.bonzibuddy.minigame.BonziMinigame;
 import net.superkat.bonzibuddy.minigame.TripleChaosMinigame;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameApi;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
+import net.superkat.bonzibuddy.minigame.room.FriendRoom;
+import net.superkat.bonzibuddy.minigame.room.FriendRoomManager;
 import net.superkat.bonzibuddy.network.packets.BonziAirplaneC2S;
 import net.superkat.bonzibuddy.network.packets.BonziBuddyDoATrickC2S;
 import net.superkat.bonzibuddy.network.packets.minigame.RequestPlayMinigameC2S;
 import net.superkat.bonzibuddy.network.packets.minigame.RequestReturnToRespawnC2S;
+import net.superkat.bonzibuddy.network.packets.room.*;
 
 import java.util.Objects;
 import java.util.Set;
@@ -29,6 +32,10 @@ public class BonziBuddyServerNetworkHandler {
         ServerPlayNetworking.registerGlobalReceiver(BonziAirplaneC2S.ID, BonziBuddyServerNetworkHandler::onBonziAirplane);
         ServerPlayNetworking.registerGlobalReceiver(RequestPlayMinigameC2S.ID, BonziBuddyServerNetworkHandler::onRequestBonziMinigame);
         ServerPlayNetworking.registerGlobalReceiver(RequestReturnToRespawnC2S.ID, BonziBuddyServerNetworkHandler::onRequestReturnToRespawn);
+        ServerPlayNetworking.registerGlobalReceiver(CreateFriendRoomC2S.ID, BonziBuddyServerNetworkHandler::onFriendRoomCreate);
+        ServerPlayNetworking.registerGlobalReceiver(RequestSyncFriendRoomsC2S.ID, BonziBuddyServerNetworkHandler::onRequestSyncFriendRooms);
+        ServerPlayNetworking.registerGlobalReceiver(JoinFriendRoomC2S.ID, BonziBuddyServerNetworkHandler::onFriendRoomJoin);
+        ServerPlayNetworking.registerGlobalReceiver(LeaveFriendRoomC2S.ID, BonziBuddyServerNetworkHandler::onRoomLeave);
     }
 
     public static void onBonziBuddyDoATrick(BonziBuddyDoATrickC2S payload, ServerPlayNetworking.Context context) {
@@ -52,6 +59,35 @@ public class BonziBuddyServerNetworkHandler {
             if(BonziMinigameApi.isBonziBuddyWorld((ServerWorld) player.getWorld())) {
                 BonziMinigameApi.teleportPlayerToRespawn(player);
             }
+        }
+    }
+
+    public static void onFriendRoomCreate(CreateFriendRoomC2S payload, ServerPlayNetworking.Context context) {
+        ServerPlayerEntity player = context.player();
+        if(player != null && player.isAlive()) {
+            FriendRoom room = FriendRoomManager.createRoom(player.getUuid());
+            ServerPlayNetworking.send(player, new CreatedFriendRoomS2C());
+        }
+    }
+
+    public static void onFriendRoomJoin(JoinFriendRoomC2S payload, ServerPlayNetworking.Context context) {
+        ServerPlayerEntity player = context.player();
+        if(player != null && player.isAlive()) {
+            FriendRoomManager.playerJoinRoom(player, payload.roomUuid());
+        }
+    }
+
+    public static void onRoomLeave(LeaveFriendRoomC2S payload, ServerPlayNetworking.Context context) {
+        ServerPlayerEntity player = context.player();
+        if(player != null && player.isAlive()) {
+            FriendRoomManager.playerLeaveRoom(player, payload.roomUuid());
+        }
+    }
+
+    public static void onRequestSyncFriendRooms(RequestSyncFriendRoomsC2S payload, ServerPlayNetworking.Context context) {
+        ServerPlayerEntity player = context.player();
+        if(player != null && player.isAlive()) {
+            FriendRoomManager.syncRooms(player);
         }
     }
 

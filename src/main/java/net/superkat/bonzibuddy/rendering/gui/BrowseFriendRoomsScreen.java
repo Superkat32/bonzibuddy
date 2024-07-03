@@ -1,10 +1,10 @@
 package net.superkat.bonzibuddy.rendering.gui;
 
+import com.google.common.collect.Sets;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.PlayerSkinDrawer;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.util.SkinTextures;
@@ -18,20 +18,27 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.Difficulty;
 import net.superkat.bonzibuddy.BonziBUDDY;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
+import net.superkat.bonzibuddy.minigame.room.FriendRoom;
 import net.superkat.bonzibuddy.network.packets.minigame.RequestPlayMinigameC2S;
+import net.superkat.bonzibuddy.network.packets.room.CreateFriendRoomC2S;
+import net.superkat.bonzibuddy.network.packets.room.JoinFriendRoomC2S;
+import net.superkat.bonzibuddy.network.packets.room.RequestSyncFriendRoomsC2S;
 import org.apache.commons.compress.utils.Lists;
 
 import java.awt.*;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-public class PrepBonziMinigameScreen extends Screen {
+public class BrowseFriendRoomsScreen extends Screen {
 
     public Identifier SELECTED = Identifier.of(BonziBUDDY.MOD_ID, "selected");
     public Identifier OUT_OF_RANGE = Identifier.of(BonziBUDDY.MOD_ID, "outofrange");
 
-    List<PlayerEntity> players = Lists.newArrayList();
+    public List<PlayerEntity> players = Lists.newArrayList();
+    public Set<FriendRoom> rooms = Sets.newHashSet();
+    public boolean roomsUpdated = false;
     public BlockPos bonziPos;
     private int iconSize = 24;
     private int entryX = this.width / 2 - 100;
@@ -41,43 +48,50 @@ public class PrepBonziMinigameScreen extends Screen {
 
     public int scrollAmount = 0;
 
-    public PrepBonziMinigameScreen(BlockPos bonziPos) {
+    public BrowseFriendRoomsScreen(BlockPos bonziPos) {
         super(Text.of("Bonzi Minigame Prep Screen"));
         this.bonziPos = bonziPos;
     }
 
     @Override
     protected void init() {
+
         boolean peaceful = this.client.player.getWorld().getDifficulty() == Difficulty.PEACEFUL;
 
-        VeryFancyButtonWidget playTripleChaos = new VeryFancyButtonWidget(
-                this.height - 40,
-                this.width,
-                Text.translatable("bonzibuddy.begin"),
-                (btn) -> requestPlayTripleChaos()
-        ).showOutOfRange(peaceful);
-        if(peaceful) {
-            playTripleChaos.setTooltip(Tooltip.of(Text.translatable("bonzibuddy.peaceful")));
-        }
-        addDrawableChild(playTripleChaos);
+//        ButtonWidget playTripleChaos = ButtonWidget.builder(Text.translatable("bonzibuddy.begin"), (btn) -> {
+//            requestPlayTripleChaos();
+//        }).dimensions(this.width / 2 - 60, this.height - 40, 120, 20).build();
+//        playTripleChaos.active = !peaceful;
+//        if(peaceful) {
+//            playTripleChaos.setTooltip(Tooltip.of(Text.translatable("bonzibuddy.peaceful")));
+//        }
+//        this.addDrawableChild(playTripleChaos);
 
-        VeryFancyButtonWidget browseFriendRooms = new VeryFancyButtonWidget(
-                this.height - 76,
-                this.width,
-                Text.translatable("bonzibuddy.multiplayer"),
-                (btn) -> browseFriendRooms()
-        );
-        addDrawableChild(browseFriendRooms);
+//        VeryFancyButtonWidget test = (VeryFancyButtonWidget) ButtonWidget.builder(Text.translatable("bonzibuddy.begin"), (btn) -> {
+//            requestPlayTripleChaos();
+//        }).dimensions(this.width / 2 - 60, this.height - 40, 120, 20).build();
+//        test.active = !peaceful;
+//        if(peaceful) {
+//            test.setTooltip(Tooltip.of(Text.translatable("bonzibuddy.peaceful")));
+//        }
+//        this.addDrawableChild(test);
+
 
         players.add(this.client.player);
         entryX = this.width / 2 - 100;
         entryXLimit = this.width / 2 + 100;
+
+        refreshRooms();
     }
 
     @Override
     public void tick() {
         super.tick();
         this.players.removeIf(player -> !playerInRange(player.getUuid()));
+        if(roomsUpdated) {
+            redrawRooms();
+            roomsUpdated = false;
+        }
     }
 
     public List<UUID> collectPlayerEntries() {
@@ -87,25 +101,97 @@ public class PrepBonziMinigameScreen extends Screen {
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
-        renderAllPlayers(context, mouseX, mouseY, entryX, 40);
+//        renderAllPlayers(context, mouseX, mouseY, entryX, 40);
+        if(!roomsUpdated && this.children().isEmpty()) {
+            context.drawCenteredTextWithShadow(this.client.textRenderer, Text.translatable("bonzibuddy.loadingfriendrooms"), this.width / 2, this.height / 2, Color.WHITE.getRGB());
+        }
     }
 
     public void renderAllPlayers(DrawContext context, int mouseX, int mouseY, int x, int y) {
-        List<UUID> allPlayers = collectPlayerEntries();
+//        List<UUID> allPlayers = collectPlayerEntries();
+//
+//        UUID mainUuid = this.client.player.getUuid();
+//        List<UUID> currentPlayer = allPlayers.stream().filter(mainUuid::equals).toList();
+//        List<UUID> selectablePlayers = selectablePlayers();
+//        List<UUID> unselectablePlayers = unselectablePlayers();
+//
+//        context.enableScissor(x - xPadding - 2, y - yPadding - 2, entryXLimit + xPadding + 2, this.height - 54);
+//
+//        y += scrollAmount;
+//        y = renderPlayerList(context, currentPlayer, mouseX, mouseY, x, y);
+//        y = renderPlayerList(context, selectablePlayers, mouseX, mouseY, x, y);
+//        y = renderPlayerList(context, unselectablePlayers, mouseX, mouseY, x, y);
 
-        UUID mainUuid = this.client.player.getUuid();
-        List<UUID> currentPlayer = allPlayers.stream().filter(mainUuid::equals).toList();
-        List<UUID> selectablePlayers = selectablePlayers();
-        List<UUID> unselectablePlayers = unselectablePlayers();
+//        context.disableScissor();
+    }
 
-        context.enableScissor(x - xPadding - 2, y - yPadding - 2, entryXLimit + xPadding + 2, this.height - 54);
+    public void refreshRooms() {
+        ClientPlayNetworking.send(new RequestSyncFriendRoomsC2S());
+    }
 
-        y += scrollAmount;
-        y = renderPlayerList(context, currentPlayer, mouseX, mouseY, x, y);
-        y = renderPlayerList(context, selectablePlayers, mouseX, mouseY, x, y);
-        y = renderPlayerList(context, unselectablePlayers, mouseX, mouseY, x, y);
+    public void redrawRooms() {
+        if(!this.children().isEmpty()) {
+            this.clearChildren();
+        }
 
-        context.disableScissor();
+        int buttonX = entryX - xPadding;
+        int buttonWidth = (entryXLimit + xPadding + xPadding) - (entryX);
+        int buttonY = 38;
+        int buttonHeight = iconSize + yPadding + 2;
+
+        VeryFancyButtonWidget createRoom = new VeryFancyButtonWidget(
+                buttonX, buttonY,
+                buttonWidth, buttonHeight,
+                Text.translatable("bonzibuddy.createroom"),
+                (btn) -> {
+                    createFriendRoom();
+                }
+        ).playerIcon(this.client.player.getUuid());
+        this.addDrawableChild(createRoom);
+
+        VeryFancyButtonWidget refresh = new VeryFancyButtonWidget(
+                this.height - 40,
+                this.width,
+                Text.translatable("bonzibuddy.refresh"),
+                (btn) -> {
+                    refreshRooms();
+                }
+        );
+        this.addDrawableChild(refresh);
+
+        buttonY += buttonHeight + 12;
+        for (FriendRoom room : rooms) {
+            VeryFancyButtonWidget roomButton = new VeryFancyButtonWidget(
+                    buttonX, buttonY,
+                    buttonWidth, buttonHeight,
+                    Text.translatable("bonzibuddy.joinableroom", getPlayerName(room.hostUuid)),
+                    (btn) -> {
+                        joinFriendRoom(room);
+                    }
+            ).playerIcon(room.getHostUuid());
+            this.addDrawableChild(roomButton);
+            buttonY += buttonHeight + 4;
+        }
+    }
+
+    public void updateRooms(Set<FriendRoom> rooms) {
+        this.rooms = rooms;
+        roomsUpdated = true;
+        UUID playerUuid = this.client.player.getUuid();
+        for (FriendRoom room : rooms) {
+            if(room.players.contains(playerUuid)) {
+                this.client.setScreen(new FriendRoomScreen(room));
+            }
+        }
+    }
+
+    private Text getPlayerName(UUID uuid) {
+        PlayerListEntry playerEntry = this.client.player.networkHandler.getPlayerListEntry(uuid);
+        Text playerName = Text.translatable("bonzibuddy.roomerror");
+        if(playerEntry != null) {
+            playerName = this.client.inGameHud.getPlayerListHud().getPlayerName(playerEntry);
+        }
+        return playerName;
     }
 
     private List<UUID> selectablePlayers() {
@@ -222,9 +308,12 @@ public class PrepBonziMinigameScreen extends Screen {
         PlayerSkinDrawer.draw(context, skinTexturesSupplier.get(), x, y, size);
     }
 
-    public void browseFriendRooms() {
-//        ClientPlayNetworking.send(new CreateFriendRoomC2S());
-        this.client.setScreen(new BrowseFriendRoomsScreen(bonziPos));
+    public void createFriendRoom() {
+        ClientPlayNetworking.send(new CreateFriendRoomC2S());
+    }
+
+    public void joinFriendRoom(FriendRoom room) {
+        ClientPlayNetworking.send(new JoinFriendRoomC2S(room.hostUuid));
     }
 
     public void requestPlayTripleChaos() {

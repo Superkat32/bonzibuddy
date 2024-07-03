@@ -3,7 +3,14 @@
   "bonzibuddy.email": "Send an email!",
   "bonzibuddy.playtriplechaos": "Play Triple Chaos!",
   "bonzibuddy.peaceful": "Can't play while the difficulty is on peaceful!",
+  "bonzibuddy.multiplayer": "Play With Friends!",
   "bonzibuddy.begin": "Let's go!",
+  "bonzibuddy.createroom": "Create Friend Room",
+  "bonzibuddy.joinableroom": "%1$s's Room",
+  "bonzibuddy.loadingfriendrooms": "Loading...",
+  "bonzibuddy.leaveroom": "Leave Room",
+  "bonzibuddy.refresh": "Refresh",
+  "bonzibuddy.roomerror": "Unable to find room...?",
 
   "item.bonzibuddy.banana_blaster": "Banana Blaster",
 

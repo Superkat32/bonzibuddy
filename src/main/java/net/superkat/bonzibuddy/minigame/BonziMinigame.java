@@ -101,7 +101,8 @@ public class BonziMinigame {
             for (UUID uuid : playersUuid) {
                 ServerPlayerEntity player = this.world.getServer().getPlayerManager().getPlayer(uuid);
                 if(player != null) {
-                    removePlayer(player);
+                    //i don't understand why this is here but it causes a server crash
+//                    removePlayer(player);
                 }
             }
         }

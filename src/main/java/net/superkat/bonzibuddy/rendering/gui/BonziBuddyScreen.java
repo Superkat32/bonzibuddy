@@ -4,7 +4,6 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
-import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -29,20 +28,48 @@ public class BonziBuddyScreen extends Screen {
 
     @Override
     protected void init() {
-        ButtonWidget button = ButtonWidget.builder(Text.translatable("bonzibuddy.doatrick"), (btn) -> {
-            doATrick();
-        }).dimensions(this.width / 2 + 40, this.height / 2 - 85, 120, 20).build();
-        this.addDrawableChild(button);
 
-        ButtonWidget sendEmail = ButtonWidget.builder(Text.translatable("bonzibuddy.email"), (btn) -> {
-            sendEmail();
-        }).dimensions(this.width / 2 + 40, this.height / 2 - 25, 120, 20).build();
+        VeryFancyButtonWidget doATrick = new VeryFancyButtonWidget(
+                this.width / 2 + 20,
+                this.height / 2 - 85,
+                160, 28,
+                Text.translatable("bonzibuddy.doatrick"),
+                (btn) -> doATrick()
+        );
+        this.addDrawableChild(doATrick);
+
+//        ButtonWidget button = ButtonWidget.builder(Text.translatable("bonzibuddy.doatrick"), (btn) -> {
+//            doATrick();
+//        }).dimensions(this.width / 2 + 40, this.height / 2 - 85, 120, 20).build();
+//        this.addDrawableChild(button);
+
+        VeryFancyButtonWidget sendEmail = new VeryFancyButtonWidget(
+                this.width / 2 + 20,
+                this.height / 2 - 25,
+                160, 28,
+                Text.translatable("bonzibuddy.email"),
+                (btn) -> sendEmail()
+        );
         this.addDrawableChild(sendEmail);
 
-        ButtonWidget playTripleChaos = ButtonWidget.builder(Text.translatable("bonzibuddy.playtriplechaos"), (btn) -> {
-            openPrepMinigameScreen();
-        }).dimensions(this.width / 2 + 40, this.height / 2 + 35, 120, 20).build();
+//        ButtonWidget sendEmail = ButtonWidget.builder(Text.translatable("bonzibuddy.email"), (btn) -> {
+//            sendEmail();
+//        }).dimensions(this.width / 2 + 40, this.height / 2 - 25, 120, 20).build();
+//        this.addDrawableChild(sendEmail);
+
+        VeryFancyButtonWidget playTripleChaos = new VeryFancyButtonWidget(
+                this.width / 2 + 20,
+                this.height / 2 + 40,
+                160, 28,
+                Text.translatable("bonzibuddy.playtriplechaos"),
+                (btn) -> openPrepMinigameScreen()
+        );
         this.addDrawableChild(playTripleChaos);
+
+//        ButtonWidget playTripleChaos = ButtonWidget.builder(Text.translatable("bonzibuddy.playtriplechaos"), (btn) -> {
+//            openPrepMinigameScreen();
+//        }).dimensions(this.width / 2 + 40, this.height / 2 + 35, 120, 20).build();
+//        this.addDrawableChild(playTripleChaos);
     }
 
     @Override

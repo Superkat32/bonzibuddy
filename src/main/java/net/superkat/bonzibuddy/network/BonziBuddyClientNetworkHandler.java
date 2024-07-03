@@ -10,6 +10,7 @@ import net.minecraft.text.Text;
 import net.superkat.bonzibuddy.entity.bonzi.BonziLikeEntity;
 import net.superkat.bonzibuddy.minigame.MinigameHudData;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigamePlayer;
+import net.superkat.bonzibuddy.minigame.room.FriendRoom;
 import net.superkat.bonzibuddy.network.packets.BonziBuddySyncAnimationS2C;
 import net.superkat.bonzibuddy.network.packets.OpenBonziBuddyScreenS2C;
 import net.superkat.bonzibuddy.network.packets.TriggeredAnimSyncWorkaroundS2C;
@@ -17,10 +18,17 @@ import net.superkat.bonzibuddy.network.packets.minigame.BonziBossBarUpdateS2C;
 import net.superkat.bonzibuddy.network.packets.minigame.MinigameHudUpdateS2C;
 import net.superkat.bonzibuddy.network.packets.minigame.PlayerInMinigameUpdateS2C;
 import net.superkat.bonzibuddy.network.packets.minigame.WaitingForPlayersS2C;
+import net.superkat.bonzibuddy.network.packets.room.CreatedFriendRoomS2C;
+import net.superkat.bonzibuddy.network.packets.room.OnFriendRoomJoinS2C;
+import net.superkat.bonzibuddy.network.packets.room.RoomPlayerUpdateS2C;
+import net.superkat.bonzibuddy.network.packets.room.SyncFriendRoomsS2C;
 import net.superkat.bonzibuddy.rendering.gui.BonziBuddyScreen;
+import net.superkat.bonzibuddy.rendering.gui.BrowseFriendRoomsScreen;
+import net.superkat.bonzibuddy.rendering.gui.FriendRoomScreen;
 import net.superkat.bonzibuddy.rendering.hud.MinigameHudRenderer;
 import software.bernie.geckolib.animatable.GeoEntity;
 
+import java.util.HashSet;
 import java.util.UUID;
 
 public class BonziBuddyClientNetworkHandler {
@@ -34,6 +42,10 @@ public class BonziBuddyClientNetworkHandler {
         ClientPlayNetworking.registerGlobalReceiver(BonziBossBarUpdateS2C.ID, BonziBuddyClientNetworkHandler::onBonziBossbarUpdate);
         ClientPlayNetworking.registerGlobalReceiver(WaitingForPlayersS2C.ID, BonziBuddyClientNetworkHandler::onWaitingForPlayers);
         ClientPlayNetworking.registerGlobalReceiver(PlayerInMinigameUpdateS2C.ID, BonziBuddyClientNetworkHandler::onInMinigameUpdate);
+        ClientPlayNetworking.registerGlobalReceiver(CreatedFriendRoomS2C.ID, BonziBuddyClientNetworkHandler::onFriendRoomCreation);
+        ClientPlayNetworking.registerGlobalReceiver(SyncFriendRoomsS2C.ID, BonziBuddyClientNetworkHandler::onFriendRoomSync);
+        ClientPlayNetworking.registerGlobalReceiver(RoomPlayerUpdateS2C.ID, BonziBuddyClientNetworkHandler::onRoomPlayerUpdate);
+        ClientPlayNetworking.registerGlobalReceiver(OnFriendRoomJoinS2C.ID, BonziBuddyClientNetworkHandler::onRoomJoin);
 
         ClientPlayNetworking.registerGlobalReceiver(TriggeredAnimSyncWorkaroundS2C.ID, BonziBuddyClientNetworkHandler::animSync);
     }
@@ -56,6 +68,44 @@ public class BonziBuddyClientNetworkHandler {
     public static void onBonziBuddyScreen(OpenBonziBuddyScreenS2C payload, ClientPlayNetworking.Context context) {
         MinecraftClient client = context.client();
         client.setScreen(new BonziBuddyScreen(context.player().getWorld(), payload.bonziBuddyId()));
+    }
+
+    public static void onFriendRoomCreation(CreatedFriendRoomS2C payload, ClientPlayNetworking.Context context) {
+        MinecraftClient client = context.client();
+        if(client.currentScreen instanceof BrowseFriendRoomsScreen friendRoomsScreen) {
+            friendRoomsScreen.refreshRooms();
+        }
+    }
+
+    public static void onFriendRoomSync(SyncFriendRoomsS2C payload, ClientPlayNetworking.Context context) {
+        MinecraftClient client = context.client();
+        if(client.currentScreen instanceof BrowseFriendRoomsScreen friendRoomsScreen) {
+            friendRoomsScreen.updateRooms(new HashSet<>(payload.rooms));
+        }
+    }
+
+    public static void onRoomPlayerUpdate(RoomPlayerUpdateS2C payload, ClientPlayNetworking.Context context) {
+        MinecraftClient client = context.client();
+        if(client.currentScreen instanceof FriendRoomScreen friendRoomScreen) {
+            FriendRoom room = friendRoomScreen.room;
+            if(room.hostUuid.equals(payload.roomUuid())) {
+                UUID playerUpdated = payload.playerUpdated();
+                boolean playerJoined = payload.playerJoined();
+                if(playerJoined) {
+                    room.addPlayer(playerUpdated);
+                } else {
+                    room.removePlayer(playerUpdated);
+                }
+                friendRoomScreen.redrawPlayers();
+            }
+        }
+    }
+
+    public static void onRoomJoin(OnFriendRoomJoinS2C payload, ClientPlayNetworking.Context context) {
+        MinecraftClient client = context.client();
+        if(client.currentScreen instanceof BrowseFriendRoomsScreen friendRoomsScreen) {
+            friendRoomsScreen.refreshRooms();
+        }
     }
 
     public static void onBonziBuddySyncAnimation(BonziBuddySyncAnimationS2C payload, ClientPlayNetworking.Context context) {
@@ -86,7 +136,7 @@ public class BonziBuddyClientNetworkHandler {
         BonziBossBarUpdateS2C.BonziBoss type = payload.bonziBoss();
         MinigameHudRenderer.updateBossPercent(hudUuid, percent, type);
     }
-    
+
     public static void oneMinigameHudUpdate(MinigameHudUpdateS2C payload, ClientPlayNetworking.Context context) {
         MinecraftClient client = context.client();
         UUID hudUuid = payload.uuid;

@@ -7,19 +7,22 @@ import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Difficulty;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
 import net.superkat.bonzibuddy.minigame.room.FriendRoom;
 import net.superkat.bonzibuddy.network.packets.minigame.RequestPlayMinigameC2S;
 import net.superkat.bonzibuddy.network.packets.room.LeaveFriendRoomC2S;
 
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
 public class FriendRoomScreen extends Screen {
 
     public final FriendRoom room;
+    public VeryFancyListWidget veryFancyListWidget = null;
 
     protected FriendRoomScreen(FriendRoom room) {
         super(Text.of("Friend Room"));
@@ -62,6 +65,17 @@ public class FriendRoomScreen extends Screen {
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
+        Text playerName = getPlayerName(this.room.hostUuid);
+        context.drawCenteredTextWithShadow(this.client.textRenderer, Text.translatable("bonzibuddy.joinableroom", playerName), this.width / 2, 10, Color.white.getRGB());
+    }
+
+    private Text getPlayerName(UUID uuid) {
+        PlayerListEntry playerEntry = this.client.player.networkHandler.getPlayerListEntry(uuid);
+        Text playerName = Text.translatable("bonzibuddy.roomerror");
+        if(playerEntry != null) {
+            playerName = this.client.inGameHud.getPlayerListHud().getPlayerName(playerEntry);
+        }
+        return playerName;
     }
 
     public List<UUID> collectPlayerEntries() {
@@ -73,25 +87,62 @@ public class FriendRoomScreen extends Screen {
     }
 
     public void drawPlayers() {
-        List<UUID> allPlayers = this.room.players.stream().toList();
-
-        UUID hostUuid = room.hostUuid;
-        UUID playerUuid = this.client.player.getUuid();
-
         int buttonX = this.width / 2 - 104;
         int buttonY = 38;
         int buttonWidth = this.width / 2 + 104 - buttonX;
         int buttonHeight = 28;
 
-        List<UUID> hostPlayer = allPlayers.stream().filter(hostUuid::equals).toList();
-        List<UUID> currentPlayer = allPlayers.stream().filter(playerUuid::equals).toList();
-        List<UUID> otherPlayers = allPlayers.stream().filter(uuid -> !uuid.equals(hostUuid) && !uuid.equals(playerUuid)).toList();
+        UUID hostUuid = room.hostUuid;
+        UUID playerUuid = this.client.player.getUuid();
+        ArrayList<UUID> allPlayers = new ArrayList<>(this.room.players.stream().toList());
 
-        buttonY = renderList(hostPlayer, buttonX, buttonY, buttonWidth, buttonHeight);
-        if(!room.hostUuid.equals(playerUuid)) {
-            buttonY = renderList(currentPlayer, buttonX, buttonY, buttonWidth, buttonHeight);
+        //move the host to the top
+        Collections.swap(allPlayers, allPlayers.indexOf(hostUuid), 0);
+        if(!isRoomHost()) {
+            //move the current player beneath the host
+            Collections.swap(allPlayers, allPlayers.indexOf(playerUuid), 1);
         }
-        buttonY = renderList(otherPlayers, buttonX, buttonY, buttonWidth, buttonHeight);
+        //sort rest of the players by in-game username - 1am right now can't believe this worked LOL
+        allPlayers.subList(isRoomHost() ? 1 : 2, allPlayers.size()).sort((uuid1, uuid2) -> getPlayerName(uuid1).toString().compareToIgnoreCase(getPlayerName(uuid2).toString()));
+
+        this.veryFancyListWidget = new VeryFancyListWidget(buttonX - 10, buttonY, buttonWidth + 20, this.height - 96, this.height, buttonHeight);
+
+        for (UUID uuid : allPlayers) {
+            drawPlayer(uuid, buttonY);
+            buttonY += buttonHeight + 4;
+        }
+
+        this.addDrawableChild(veryFancyListWidget);
+
+//
+//        int buttonX = this.width / 2 - 104;
+//        int buttonY = 38;
+//        int buttonWidth = this.width / 2 + 104 - buttonX;
+//        int buttonHeight = 28;
+//
+//        List<UUID> hostPlayer = allPlayers.stream().filter(hostUuid::equals).toList();
+//        List<UUID> currentPlayer = allPlayers.stream().filter(playerUuid::equals).toList();
+//        List<UUID> otherPlayers = allPlayers.stream().filter(uuid -> !uuid.equals(hostUuid) && !uuid.equals(playerUuid)).toList();
+//
+//        buttonY = renderList(hostPlayer, buttonX, buttonY, buttonWidth, buttonHeight);
+//        if(!room.hostUuid.equals(playerUuid)) {
+//            buttonY = renderList(currentPlayer, buttonX, buttonY, buttonWidth, buttonHeight);
+//        }
+//        buttonY = renderList(otherPlayers, buttonX, buttonY, buttonWidth, buttonHeight);
+    }
+
+    private void drawPlayer(UUID uuid, int buttonY) {
+        Text playerName = getPlayerName(uuid);
+
+        VeryFancyButtonWidget playerButton = new VeryFancyButtonWidget(
+                buttonY,
+                this.width,
+                playerName,
+                (btn) -> {
+
+                }
+        ).playerIcon(uuid).showSelected(true);
+        this.veryFancyListWidget.addButton(playerButton);
     }
 
     public int renderList(List<UUID> players, int x, int y, int buttonWidth, int buttonHeight) {
@@ -128,7 +179,7 @@ public class FriendRoomScreen extends Screen {
     public void leaveRoom() {
         ClientPlayNetworking.send(new LeaveFriendRoomC2S(this.room.getHostUuid()));
 
-        this.client.setScreen(new BrowseFriendRoomsScreen(BlockPos.ORIGIN));
+        this.client.setScreen(new BrowseFriendRoomsScreen());
     }
 
     @Override

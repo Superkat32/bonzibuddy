@@ -223,8 +223,7 @@ public class PrepBonziMinigameScreen extends Screen {
     }
 
     public void browseFriendRooms() {
-//        ClientPlayNetworking.send(new CreateFriendRoomC2S());
-        this.client.setScreen(new BrowseFriendRoomsScreen(bonziPos));
+        this.client.setScreen(new BrowseFriendRoomsScreen());
     }
 
     public void requestPlayTripleChaos() {

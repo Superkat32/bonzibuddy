@@ -3,23 +3,10 @@ package net.superkat.bonzibuddy.rendering.gui;
 import com.google.common.collect.Sets;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.PlayerSkinDrawer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.client.util.SkinTextures;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.Difficulty;
-import net.superkat.bonzibuddy.BonziBUDDY;
-import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
 import net.superkat.bonzibuddy.minigame.room.FriendRoom;
-import net.superkat.bonzibuddy.network.packets.minigame.RequestPlayMinigameC2S;
 import net.superkat.bonzibuddy.network.packets.room.CreateFriendRoomC2S;
 import net.superkat.bonzibuddy.network.packets.room.JoinFriendRoomC2S;
 import net.superkat.bonzibuddy.network.packets.room.RequestSyncFriendRoomsC2S;
@@ -29,57 +16,34 @@ import java.awt.*;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Supplier;
 
 public class BrowseFriendRoomsScreen extends Screen {
-
-    public Identifier SELECTED = Identifier.of(BonziBUDDY.MOD_ID, "selected");
-    public Identifier OUT_OF_RANGE = Identifier.of(BonziBUDDY.MOD_ID, "outofrange");
-
-    public List<PlayerEntity> players = Lists.newArrayList();
+    public List<VeryFancyButtonWidget> roomButtons = Lists.newArrayList();
     public Set<FriendRoom> rooms = Sets.newHashSet();
+    public VeryFancyListWidget veryFancyListWidget = null;
     public boolean roomsUpdated = false;
-    public BlockPos bonziPos;
     private int iconSize = 24;
-    private int entryX = this.width / 2 - 100;
-    private int entryXLimit = this.width / 2 + 100;
-    private int xPadding = 4;
-    private int yPadding = 2;
+    private int buttonX;
+    private int buttonWidth;
+    private int buttonHeight;
+    private int padding = 4;
 
     public int scrollAmount = 0;
 
-    public BrowseFriendRoomsScreen(BlockPos bonziPos) {
+    public BrowseFriendRoomsScreen() {
         super(Text.of("Bonzi Minigame Prep Screen"));
-        this.bonziPos = bonziPos;
     }
 
     @Override
     protected void init() {
+        int entryX = this.width / 2 - 100;
+        int entryXLimit = this.width / 2 + 100;
+        int xPadding = 4;
+        int yPadding = 2;
 
-        boolean peaceful = this.client.player.getWorld().getDifficulty() == Difficulty.PEACEFUL;
-
-//        ButtonWidget playTripleChaos = ButtonWidget.builder(Text.translatable("bonzibuddy.begin"), (btn) -> {
-//            requestPlayTripleChaos();
-//        }).dimensions(this.width / 2 - 60, this.height - 40, 120, 20).build();
-//        playTripleChaos.active = !peaceful;
-//        if(peaceful) {
-//            playTripleChaos.setTooltip(Tooltip.of(Text.translatable("bonzibuddy.peaceful")));
-//        }
-//        this.addDrawableChild(playTripleChaos);
-
-//        VeryFancyButtonWidget test = (VeryFancyButtonWidget) ButtonWidget.builder(Text.translatable("bonzibuddy.begin"), (btn) -> {
-//            requestPlayTripleChaos();
-//        }).dimensions(this.width / 2 - 60, this.height - 40, 120, 20).build();
-//        test.active = !peaceful;
-//        if(peaceful) {
-//            test.setTooltip(Tooltip.of(Text.translatable("bonzibuddy.peaceful")));
-//        }
-//        this.addDrawableChild(test);
-
-
-        players.add(this.client.player);
-        entryX = this.width / 2 - 100;
-        entryXLimit = this.width / 2 + 100;
+        this.buttonX = entryX - xPadding;
+        this.buttonWidth = (entryXLimit + xPadding + xPadding) - (entryX);
+        this.buttonHeight = iconSize + yPadding + 2;
 
         refreshRooms();
     }
@@ -87,42 +51,18 @@ public class BrowseFriendRoomsScreen extends Screen {
     @Override
     public void tick() {
         super.tick();
-        this.players.removeIf(player -> !playerInRange(player.getUuid()));
         if(roomsUpdated) {
             redrawRooms();
             roomsUpdated = false;
         }
     }
 
-    public List<UUID> collectPlayerEntries() {
-        return this.client.player.networkHandler.getPlayerUuids().stream().toList();
-    }
-
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
-//        renderAllPlayers(context, mouseX, mouseY, entryX, 40);
         if(!roomsUpdated && this.children().isEmpty()) {
             context.drawCenteredTextWithShadow(this.client.textRenderer, Text.translatable("bonzibuddy.loadingfriendrooms"), this.width / 2, this.height / 2, Color.WHITE.getRGB());
         }
-    }
-
-    public void renderAllPlayers(DrawContext context, int mouseX, int mouseY, int x, int y) {
-//        List<UUID> allPlayers = collectPlayerEntries();
-//
-//        UUID mainUuid = this.client.player.getUuid();
-//        List<UUID> currentPlayer = allPlayers.stream().filter(mainUuid::equals).toList();
-//        List<UUID> selectablePlayers = selectablePlayers();
-//        List<UUID> unselectablePlayers = unselectablePlayers();
-//
-//        context.enableScissor(x - xPadding - 2, y - yPadding - 2, entryXLimit + xPadding + 2, this.height - 54);
-//
-//        y += scrollAmount;
-//        y = renderPlayerList(context, currentPlayer, mouseX, mouseY, x, y);
-//        y = renderPlayerList(context, selectablePlayers, mouseX, mouseY, x, y);
-//        y = renderPlayerList(context, unselectablePlayers, mouseX, mouseY, x, y);
-
-//        context.disableScissor();
     }
 
     public void refreshRooms() {
@@ -131,13 +71,12 @@ public class BrowseFriendRoomsScreen extends Screen {
 
     public void redrawRooms() {
         if(!this.children().isEmpty()) {
+            roomButtons.clear();
             this.clearChildren();
         }
 
-        int buttonX = entryX - xPadding;
-        int buttonWidth = (entryXLimit + xPadding + xPadding) - (entryX);
+        this.scrollAmount = 0;
         int buttonY = 38;
-        int buttonHeight = iconSize + yPadding + 2;
 
         VeryFancyButtonWidget createRoom = new VeryFancyButtonWidget(
                 buttonX, buttonY,
@@ -160,18 +99,33 @@ public class BrowseFriendRoomsScreen extends Screen {
         this.addDrawableChild(refresh);
 
         buttonY += buttonHeight + 12;
+
+        int listHeight = this.height - 100 - buttonHeight - padding;
+        this.veryFancyListWidget = new VeryFancyListWidget(buttonX - 10, buttonY, buttonWidth + 20, listHeight, this.height, buttonHeight + padding);
         for (FriendRoom room : rooms) {
-            VeryFancyButtonWidget roomButton = new VeryFancyButtonWidget(
-                    buttonX, buttonY,
-                    buttonWidth, buttonHeight,
-                    Text.translatable("bonzibuddy.joinableroom", getPlayerName(room.hostUuid)),
-                    (btn) -> {
-                        joinFriendRoom(room);
-                    }
-            ).playerIcon(room.getHostUuid());
-            this.addDrawableChild(roomButton);
-            buttonY += buttonHeight + 4;
+            //to test scissor, loop here
+            //TODO - custom list for all the rooms
+//            for (int i = 0; i < 13; i++) {
+            drawRoom(room, buttonY);
+            buttonY += buttonHeight + padding;
+//            }
         }
+        this.addDrawableChild(this.veryFancyListWidget);
+    }
+
+    private void drawRoom(FriendRoom room, int buttonY) {
+        UUID host = room.getHostUuid();
+        List<UUID> roomPlayers = room.players.stream().filter(uuid -> !uuid.equals(host)).toList();
+
+        VeryFancyButtonWidget roomButton = new VeryFancyButtonWidget(
+                buttonX, buttonY,
+                buttonWidth, buttonHeight,
+                Text.translatable("bonzibuddy.joinableroom", getPlayerName(room.hostUuid)),
+                (btn) -> {
+                    joinFriendRoom(room);
+                }
+        ).playerIcon(host).withMiniPlayerIcons(roomPlayers);
+        this.veryFancyListWidget.addButton(roomButton);
     }
 
     public void updateRooms(Set<FriendRoom> rooms) {
@@ -194,118 +148,28 @@ public class BrowseFriendRoomsScreen extends Screen {
         return playerName;
     }
 
-    private List<UUID> selectablePlayers() {
-        List<UUID> allPlayers = collectPlayerEntries();
-        UUID mainUuid = this.client.player.getUuid();
-        List<UUID> selectablePlayers = allPlayers.stream().filter(uuid -> playerInRange(uuid) && !mainUuid.equals(uuid)).toList();
-        return selectablePlayers;
-    }
-
-    private List<UUID> unselectablePlayers() {
-        List<UUID> allPlayers = collectPlayerEntries();
-        UUID mainUuid = this.client.player.getUuid();
-        List<UUID> unselectablePlayers = allPlayers.stream().filter(uuid -> !playerInRange(uuid) && !mainUuid.equals(uuid)).toList();
-        return unselectablePlayers;
-    }
-
     @Override
     public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
         super.renderBackground(context, mouseX, mouseY, delta);
     }
 
-    private PlayerEntity playerFromUuid(UUID uuid) {
-        return this.client.player.getWorld().getPlayerByUuid(uuid);
-    }
-
-    private boolean playerInRange(UUID uuid) {
-        PlayerEntity player = playerFromUuid(uuid);
-        if(player == null) return false;
-        return player.squaredDistanceTo(Vec3d.of(bonziPos)) <= 16 * 16; //16 block radius
-    }
-
-    @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        int searchY = 40 + iconSize + yPadding * 2 + 4 + scrollAmount;
-        if(mouseY >= 40 - yPadding - 2 && mouseY <= this.height - 54) {
-            for (UUID uuid : selectablePlayers()) {
-                if(isMouseOverEntry(mouseX, mouseY, entryX, searchY) && playerInRange(uuid)) {
-                    PlayerEntity player = playerFromUuid(uuid);
-                    if(player != null && player != this.client.player) {
-                        if(players.contains(player)) {
-                            players.remove(player);
-                        } else {
-                            players.add(player);
-                        }
-                        this.client.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0F));
-                    }
-                }
-                searchY += iconSize + yPadding * 2 + 4;
-            }
-        }
-        return super.mouseClicked(mouseX, mouseY, button);
-    }
-
-    public boolean isMouseOverEntry(double mouseX, double mouseY, int entryX, int entryY) {
-        return mouseX >= entryX && mouseX <= entryXLimit &&
-                mouseY >= entryY && mouseY <= entryY + iconSize + yPadding;
-    }
-
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
-        int playerAmount = this.collectPlayerEntries().size();
-        if(playerAmount > 5) {
-            int entryHeight = iconSize + yPadding * 2 + 4;
-            this.scrollAmount = MathHelper.clamp(this.scrollAmount + (int) verticalAmount * 10,-entryHeight * playerAmount + (this.height - 54 - 40), 0);
-        } else {
-            scrollAmount = 0;
-        }
+//        int rooms = this.roomButtons.size();
+//        int scroll = (int) (verticalAmount * 10);
+//        int min = -rooms * (buttonHeight + padding) + this.height - 100 - buttonHeight - padding;
+//        int max = 0;
+//
+//        if(this.scrollAmount + scroll <= min || this.scrollAmount + scroll > max) {
+//            scroll = 0;
+//        }
+//        this.scrollAmount = MathHelper.clamp(this.scrollAmount + scroll, min, max);
+//
+//        for (int i = 0; i < rooms; i++) {
+//            VeryFancyButtonWidget roomButton = this.roomButtons.get(i);
+//            roomButton.setY(roomButton.getY() + scroll);
+//        }
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
-    }
-
-    /**
-     * @return The y of next entry to be rendered, if any is to be rendered.
-     */
-    public int renderPlayerList(DrawContext context, List<UUID> playerUuids, double mouseX, double mouseY, int x, int y) {
-        for (UUID uuid : playerUuids) {
-            boolean selected = players.contains(playerFromUuid(uuid));
-            boolean outOfRange = !playerInRange(uuid);
-
-            if(isMouseOverEntry(mouseX, mouseY, x, y)) {
-                context.fill(x - xPadding - 2, y - yPadding - 2, entryXLimit + xPadding + 2, y + iconSize + yPadding + 2, Color.WHITE.getRGB());
-            }
-
-
-            context.fill(x - xPadding, y - yPadding, entryXLimit + xPadding, y + iconSize + yPadding, Color.GRAY.getRGB());
-
-            if(selected) {
-                context.fill(x - xPadding, y - yPadding, entryXLimit + xPadding, y + iconSize + yPadding, new Color(0, 255, 0, 155).getRGB());
-            } else if (outOfRange) {
-                context.fill(x - xPadding, y - yPadding, entryXLimit + xPadding, y + iconSize + yPadding, new Color(122, 27, 27, 155).getRGB());
-            }
-
-            context.fill(x - xPadding, y - yPadding + iconSize / 2, entryXLimit + xPadding + 2, y + iconSize + yPadding + 2, new Color(0, 0, 0, 128).getRGB());
-
-
-            PlayerListEntry playerEntry = this.client.player.networkHandler.getPlayerListEntry(uuid);
-            renderPlayerFace(context, playerEntry, x, y, iconSize);
-
-            if(selected) {
-                context.drawGuiTexture(SELECTED, x, y, iconSize, iconSize);
-            } else if (outOfRange) {
-                context.drawGuiTexture(OUT_OF_RANGE, x + 16, y - 4, 12, 12);
-            }
-
-            Text playerName = this.client.inGameHud.getPlayerListHud().getPlayerName(playerEntry);
-            context.drawText(this.client.textRenderer, playerName, x + iconSize + xPadding, y + iconSize / 4, Color.WHITE.getRGB(), true);
-
-            y += iconSize + yPadding * 2 + 4;
-        }
-        return y;
-    }
-
-    private void renderPlayerFace(DrawContext context, PlayerListEntry playerEntry, int x, int y, int size) {
-        Supplier<SkinTextures> skinTexturesSupplier = playerEntry::getSkinTextures;
-        PlayerSkinDrawer.draw(context, skinTexturesSupplier.get(), x, y, size);
     }
 
     public void createFriendRoom() {
@@ -314,17 +178,6 @@ public class BrowseFriendRoomsScreen extends Screen {
 
     public void joinFriendRoom(FriendRoom room) {
         ClientPlayNetworking.send(new JoinFriendRoomC2S(room.hostUuid));
-    }
-
-    public void requestPlayTripleChaos() {
-        if(players.isEmpty()) return;
-
-        int[] playerIds = new int[players.size()];
-
-        for (int i = 0; i < players.size(); i++) {
-            playerIds[i] = players.get(i).getId();
-        }
-        ClientPlayNetworking.send(new RequestPlayMinigameC2S(BonziMinigameType.TRIPLE_CHAOS, playerIds));
     }
 
     @Override

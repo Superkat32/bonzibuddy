@@ -11,8 +11,10 @@ import net.minecraft.client.util.SkinTextures;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.superkat.bonzibuddy.BonziBUDDY;
+import org.apache.commons.compress.utils.Lists;
 
 import java.awt.*;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -23,6 +25,8 @@ public class VeryFancyButtonWidget extends ButtonWidget {
     public static Identifier OUT_OF_RANGE = Identifier.of(BonziBUDDY.MOD_ID, "outofrange");
 
     public UUID playerIconUuid;
+    public List<UUID> miniPlayerIconUuids = Lists.newArrayList();
+    public int miniIconSize = 8;
     public Identifier icon;
     public int iconSize = 24;
     public boolean playSound = true;
@@ -68,6 +72,11 @@ public class VeryFancyButtonWidget extends ButtonWidget {
         return this;
     }
 
+    public VeryFancyButtonWidget withMiniPlayerIcons(List<UUID> players) {
+        this.miniPlayerIconUuids = players;
+        return this;
+    }
+
     @Override
     protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
         RenderSystem.enableDepthTest();
@@ -95,6 +104,15 @@ public class VeryFancyButtonWidget extends ButtonWidget {
             renderPlayerFace(context, playerEntry, this.getX() + 4, this.getY() + 2, this.iconSize);
         } else if(icon != null) {
             context.drawGuiTexture(icon, this.getX() + 4, this.getY() + 2, iconSize, iconSize);
+        }
+
+        if(!miniPlayerIconUuids.isEmpty()) {
+            int iconX = this.getX() + iconSize + 6;
+            for (UUID player : miniPlayerIconUuids) {
+                PlayerListEntry playerEntry = MinecraftClient.getInstance().player.networkHandler.getPlayerListEntry(player);
+                renderPlayerFace(context, playerEntry, iconX, this.getY() + iconSize + 2 - miniIconSize, this.miniIconSize);
+                iconX += miniIconSize + 2;
+            }
         }
 
         if(showCheckmark) {

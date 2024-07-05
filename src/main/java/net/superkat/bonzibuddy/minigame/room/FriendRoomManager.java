@@ -50,9 +50,9 @@ public class FriendRoomManager {
                 rooms.remove(roomUuid);
             } else if (hostLeaving) {
                 //remove all the players instead of finding a new host because I honestly can't be bothered
-                for (UUID roomPlayerUuid : room.players) {
-                    room.removePlayer(roomPlayerUuid);
-                }
+//                for (UUID roomPlayerUuid : room.players) {
+//                    room.removePlayer(roomPlayerUuid);
+//                }
 
                 rooms.remove(roomUuid);
             }

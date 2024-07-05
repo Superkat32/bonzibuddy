@@ -88,7 +88,8 @@ public class BonziBuddyClientNetworkHandler {
         MinecraftClient client = context.client();
         if(client.currentScreen instanceof FriendRoomScreen friendRoomScreen) {
             FriendRoom room = friendRoomScreen.room;
-            if(room.hostUuid.equals(payload.roomUuid())) {
+            UUID hostUuid = room.hostUuid;
+            if(hostUuid.equals(payload.roomUuid())) {
                 UUID playerUpdated = payload.playerUpdated();
                 boolean playerJoined = payload.playerJoined();
                 if(playerJoined) {
@@ -96,7 +97,12 @@ public class BonziBuddyClientNetworkHandler {
                 } else {
                     room.removePlayer(playerUpdated);
                 }
-                friendRoomScreen.redrawPlayers();
+
+                if(playerUpdated.equals(hostUuid)) {
+                    client.setScreen(new BrowseFriendRoomsScreen());
+                } else {
+                    friendRoomScreen.redrawPlayers();
+                }
             }
         }
     }

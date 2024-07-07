@@ -45,7 +45,6 @@ public class BonziMinigame {
     public int ticksSinceStart;
     public int gracePeriodTicks;
     public int gracePeriodSeconds;
-//    public Set<MobEntity> enemies = Sets.newHashSet();
     public Set<UUID> enemies = Sets.newHashSet();
     public int maxEnemies;
     public int ticksUntilInvalidate;
@@ -56,6 +55,7 @@ public class BonziMinigame {
 
         this.status = Status.STARTING;
         this.maxEnemies = 48;
+        this.ticksUntilInvalidate = world.getGameRules().getInt(BonziBUDDY.UNLOADED_INVALIDATION_SECONDS) * 20;
     }
 
     //Minigame from NBT
@@ -143,9 +143,11 @@ public class BonziMinigame {
         if(checkForGameEnd() && ticksSinceReload >= 100) {
             if(this.onGoing()) {
                 this.end();
+                if(fullLogs()) BonziBUDDY.LOGGER.info("Minigame {} invalidated because of game end", this.getId());
             } else if (hasWon() || hasLost()) {
                 ticksUntilInvalidate--;
                 if (ticksUntilInvalidate <= 0) {
+                    if(fullLogs()) BonziBUDDY.LOGGER.info("Minigame {} invalidated because of game end (won or lost)", this.getId());
                     invalidate();
                 }
             }
@@ -185,7 +187,8 @@ public class BonziMinigame {
         if(!loaded) {
             if(wasLoaded) {
                 sendRemoveMinigameHudPacket();
-                ticksUntilInvalidate = 300;
+                ticksUntilInvalidate = this.world.getGameRules().getInt(BonziBUDDY.UNLOADED_INVALIDATION_SECONDS) * 20;
+                if(extraLogs()) BonziBUDDY.LOGGER.info("Minigame {} unloaded!", this.getId());
             }
             return false;
         }
@@ -197,16 +200,19 @@ public class BonziMinigame {
      */
     public void tickSecond() {
         updateInvolvedPlayers();
+        if(fullLogs()) BonziBUDDY.LOGGER.info("tickSecond");
     }
 
     public void gracePeriodTickSecond() {
         updateInvolvedPlayers();
+        if(fullLogs()) BonziBUDDY.LOGGER.info("tickGraceSecond");
     }
 
     public void startGracePeriod() {
         gracePeriodTicks = gracePeriodSeconds * 20;
         this.status = Status.GRACE_PERIOD;
         updateInvolvedPlayers();
+        if(fullLogs()) BonziBUDDY.LOGGER.info("Grace period started for minigame {}", this.getId());
     }
 
     /**
@@ -239,6 +245,10 @@ public class BonziMinigame {
 
         PlayerInMinigameUpdateS2C minigameUpdate = new PlayerInMinigameUpdateS2C(true);
         ServerPlayNetworking.send(player, minigameUpdate);
+
+        if(extraLogs()) {
+            BonziBUDDY.LOGGER.info("Added player {} to minigame!", player.getName());
+        }
     }
 
     public void removePlayer(ServerPlayerEntity player) {
@@ -249,6 +259,10 @@ public class BonziMinigame {
 
         PlayerInMinigameUpdateS2C minigameUpdate = new PlayerInMinigameUpdateS2C(false);
         ServerPlayNetworking.send(player, minigameUpdate);
+
+        if(extraLogs()) {
+            BonziBUDDY.LOGGER.info("Removed player {} from minigame!", player.getName());
+        }
     }
 
     /**
@@ -285,11 +299,13 @@ public class BonziMinigame {
     public void win() {
         this.status = Status.VICTORY;
         sendUpdateMinigameHudPacket(MinigameHudUpdateS2C.Action.VICTORY);
+        if(extraLogs()) BonziBUDDY.LOGGER.info("Won minigame {}", this.getId());
     }
 
     public void lose() {
         this.status = Status.LOSS;
         sendUpdateMinigameHudPacket(MinigameHudUpdateS2C.Action.DEFEAT);
+        if(extraLogs()) BonziBUDDY.LOGGER.info("Lost minigame {}", this.getId());
     }
 
     /**
@@ -297,6 +313,7 @@ public class BonziMinigame {
      */
     public void end() {
         invalidate();
+        if(extraLogs()) BonziBUDDY.LOGGER.info("Ended minigame {}", this.getId());
     }
 
     /**
@@ -414,6 +431,20 @@ public class BonziMinigame {
         nbt.putInt("ticksUntilInvalidate", this.ticksUntilInvalidate);
 
         return nbt;
+    }
+
+    /**
+     * Used for some extra logs that would be helpful in knowing what important code is being activated.
+     */
+    protected boolean extraLogs() {
+        return DisasterLoggerLevel.extras(this.world.getGameRules().get(BonziBUDDY.MINIGAME_DISASTER_LOGGER_LEVEL).get());
+    }
+
+    /**
+     * Used to log literally as many things as possible.
+     */
+    protected boolean fullLogs() {
+        return DisasterLoggerLevel.full(this.world.getGameRules().get(BonziBUDDY.MINIGAME_DISASTER_LOGGER_LEVEL).get());
     }
 
     public MinigameHudData createHudData() {

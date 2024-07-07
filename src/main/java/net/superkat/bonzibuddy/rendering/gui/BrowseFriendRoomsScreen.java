@@ -4,9 +4,13 @@ import com.google.common.collect.Sets;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.text.Text;
+import net.minecraft.world.Difficulty;
+import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
 import net.superkat.bonzibuddy.minigame.room.FriendRoom;
+import net.superkat.bonzibuddy.network.packets.minigame.RequestPlayMinigameC2S;
 import net.superkat.bonzibuddy.network.packets.room.CreateFriendRoomC2S;
 import net.superkat.bonzibuddy.network.packets.room.JoinFriendRoomC2S;
 import net.superkat.bonzibuddy.network.packets.room.RequestSyncFriendRoomsC2S;
@@ -89,7 +93,7 @@ public class BrowseFriendRoomsScreen extends Screen {
         this.addDrawableChild(createRoom);
 
         VeryFancyButtonWidget refresh = new VeryFancyButtonWidget(
-                this.height - 40,
+                this.height - 40 - buttonHeight - 4,
                 this.width,
                 Text.translatable("bonzibuddy.refresh"),
                 (btn) -> {
@@ -98,13 +102,27 @@ public class BrowseFriendRoomsScreen extends Screen {
         );
         this.addDrawableChild(refresh);
 
+        boolean peaceful = this.client.player.getWorld().getDifficulty() == Difficulty.PEACEFUL;
+        VeryFancyButtonWidget playTripleChaos = new VeryFancyButtonWidget(
+                this.height - 40,
+                this.width,
+                Text.translatable("bonzibuddy.begin"),
+                (btn) -> requestPlaySoloTripleChaos()
+        ).showOutOfOrder(inRoom()).showOutOfRange(!inRoom() && peaceful);
+        if(inRoom()) {
+            //in theory this should never be seen but
+            playTripleChaos.setTooltip(Tooltip.of(Text.translatable("bonzibuddy.inroom")));
+        } else if(peaceful) {
+            playTripleChaos.setTooltip(Tooltip.of(Text.translatable("bonzibuddy.peaceful")));
+        }
+        addDrawableChild(playTripleChaos);
+
         buttonY += buttonHeight + 12;
 
-        int listHeight = this.height - 100 - buttonHeight - padding;
+        int listHeight = this.height - 100 - buttonHeight - padding - buttonHeight - 4;
         this.veryFancyListWidget = new VeryFancyListWidget(buttonX - 10, buttonY, buttonWidth + 20, listHeight, this.height, buttonHeight + padding);
         for (FriendRoom room : rooms) {
             //to test scissor, loop here
-            //TODO - custom list for all the rooms
 //            for (int i = 0; i < 13; i++) {
             drawRoom(room, buttonY);
             buttonY += buttonHeight + padding;
@@ -139,6 +157,16 @@ public class BrowseFriendRoomsScreen extends Screen {
         }
     }
 
+    public boolean inRoom() {
+        UUID playerUuid = this.client.player.getUuid();
+        for (FriendRoom room : rooms) {
+            if(room.players.contains(playerUuid)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private Text getPlayerName(UUID uuid) {
         PlayerListEntry playerEntry = this.client.player.networkHandler.getPlayerListEntry(uuid);
         Text playerName = Text.translatable("bonzibuddy.roomerror");
@@ -148,28 +176,20 @@ public class BrowseFriendRoomsScreen extends Screen {
         return playerName;
     }
 
-    @Override
-    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
-        super.renderBackground(context, mouseX, mouseY, delta);
-    }
+//    @Override
+//    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
+//        super.renderBackground(context, mouseX, mouseY, delta);
+//    }
 
-    @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
-//        int rooms = this.roomButtons.size();
-//        int scroll = (int) (verticalAmount * 10);
-//        int min = -rooms * (buttonHeight + padding) + this.height - 100 - buttonHeight - padding;
-//        int max = 0;
-//
-//        if(this.scrollAmount + scroll <= min || this.scrollAmount + scroll > max) {
-//            scroll = 0;
-//        }
-//        this.scrollAmount = MathHelper.clamp(this.scrollAmount + scroll, min, max);
-//
-//        for (int i = 0; i < rooms; i++) {
-//            VeryFancyButtonWidget roomButton = this.roomButtons.get(i);
-//            roomButton.setY(roomButton.getY() + scroll);
-//        }
-        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+//    @Override
+//    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+//        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+//    }
+
+    public void requestPlaySoloTripleChaos() {
+        int[] playerIds = new int[1];
+        playerIds[0] = this.client.player.getId();
+        ClientPlayNetworking.send(new RequestPlayMinigameC2S(BonziMinigameType.TRIPLE_CHAOS, playerIds));
     }
 
     public void createFriendRoom() {

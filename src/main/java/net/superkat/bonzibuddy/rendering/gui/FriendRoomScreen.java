@@ -12,6 +12,7 @@ import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
 import net.superkat.bonzibuddy.minigame.room.FriendRoom;
 import net.superkat.bonzibuddy.network.packets.minigame.RequestPlayMinigameC2S;
 import net.superkat.bonzibuddy.network.packets.room.LeaveFriendRoomC2S;
+import net.superkat.bonzibuddy.network.packets.room.RemovePlayerFromRoomC2S;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -113,22 +114,6 @@ public class FriendRoomScreen extends Screen {
         }
 
         this.addDrawableChild(veryFancyListWidget);
-
-//
-//        int buttonX = this.width / 2 - 104;
-//        int buttonY = 38;
-//        int buttonWidth = this.width / 2 + 104 - buttonX;
-//        int buttonHeight = 28;
-//
-//        List<UUID> hostPlayer = allPlayers.stream().filter(hostUuid::equals).toList();
-//        List<UUID> currentPlayer = allPlayers.stream().filter(playerUuid::equals).toList();
-//        List<UUID> otherPlayers = allPlayers.stream().filter(uuid -> !uuid.equals(hostUuid) && !uuid.equals(playerUuid)).toList();
-//
-//        buttonY = renderList(hostPlayer, buttonX, buttonY, buttonWidth, buttonHeight);
-//        if(!room.hostUuid.equals(playerUuid)) {
-//            buttonY = renderList(currentPlayer, buttonX, buttonY, buttonWidth, buttonHeight);
-//        }
-//        buttonY = renderList(otherPlayers, buttonX, buttonY, buttonWidth, buttonHeight);
     }
 
     private void drawPlayer(UUID uuid, int buttonY) {
@@ -139,10 +124,20 @@ public class FriendRoomScreen extends Screen {
                 this.width,
                 playerName,
                 (btn) -> {
-
+                    if(isRoomHost()) {
+                        ((VeryFancyButtonWidget)btn).toggleIconButton();
+                    }
                 }
-        ).playerIcon(uuid).showSelected(true);
+        ).playerIcon(uuid).showSelected(true)
+                .withIconButton(24,
+                    VeryFancyButtonWidget.LEAVE,
+                    Text.translatable("bonzibuddy.removeplayer", playerName),
+                    (btn) -> removePlayer(uuid));
         this.veryFancyListWidget.addButton(playerButton);
+
+        if(playerButton.iconButton != null && !uuid.equals(this.room.hostUuid)) {
+            this.addDrawableChild(playerButton.iconButton);
+        }
     }
 
     public int renderList(List<UUID> players, int x, int y, int buttonWidth, int buttonHeight) {
@@ -180,6 +175,12 @@ public class FriendRoomScreen extends Screen {
         ClientPlayNetworking.send(new LeaveFriendRoomC2S(this.room.getHostUuid()));
 
         this.client.setScreen(new BrowseFriendRoomsScreen());
+    }
+
+    public void removePlayer(UUID player) {
+        if(isRoomHost()) {
+            ClientPlayNetworking.send(new RemovePlayerFromRoomC2S(this.room.getHostUuid(), player));
+        }
     }
 
     @Override

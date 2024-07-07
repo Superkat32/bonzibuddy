@@ -16,6 +16,7 @@ public class BonziBuddyPackets {
         PayloadTypeRegistry.playC2S().register(RequestSyncFriendRoomsC2S.ID, RequestSyncFriendRoomsC2S.CODEC);
         PayloadTypeRegistry.playC2S().register(JoinFriendRoomC2S.ID, JoinFriendRoomC2S.CODEC);
         PayloadTypeRegistry.playC2S().register(LeaveFriendRoomC2S.ID, LeaveFriendRoomC2S.CODEC);
+        PayloadTypeRegistry.playC2S().register(RemovePlayerFromRoomC2S.ID, RemovePlayerFromRoomC2S.CODEC);
 
         //Client bound packets
         PayloadTypeRegistry.playS2C().register(OpenBonziBuddyScreenS2C.ID, OpenBonziBuddyScreenS2C.CODEC);

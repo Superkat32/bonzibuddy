@@ -35,7 +35,8 @@ public class BonziBuddyEntity extends PathAwareEntity implements GeoEntity, Bonz
     @Override
     protected ActionResult interactMob(PlayerEntity player, Hand hand) {
         if(!this.getWorld().isClient) {
-            ServerPlayNetworking.send((ServerPlayerEntity) player, new OpenBonziBuddyScreenS2C(this.getId()));
+            boolean tripleChaosEnabled = this.getWorld().getGameRules().getBoolean(BonziBUDDY.TRIPLE_CHAOS_ENABLED);
+            ServerPlayNetworking.send((ServerPlayerEntity) player, new OpenBonziBuddyScreenS2C(this.getId(), tripleChaosEnabled));
         }
         return super.interactMob(player, hand);
     }

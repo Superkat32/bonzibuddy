@@ -20,6 +20,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.Difficulty;
+import net.superkat.bonzibuddy.BonziBUDDY;
 import net.superkat.bonzibuddy.entity.BonziBuddyEntities;
 import net.superkat.bonzibuddy.entity.bonzi.minigame.mob.AbstractBonziCloneEntity;
 import net.superkat.bonzibuddy.entity.bonzi.minigame.mob.BonziBossEntity;
@@ -208,7 +209,8 @@ public class TripleChaosMinigame extends BonziMinigame {
 
             ticksUntilInvalidate--;
 
-            if(ticksUntilInvalidate <= 0) {
+            if(ticksUntilInvalidate <= 0 && ticksSinceReload >= 100) {
+                if(fullLogs()) BonziBUDDY.LOGGER.info("Triple Chaos Minigame {} invalidated because of game end (unloaded)", this.getId());
                 invalidate();
             }
             return;
@@ -219,6 +221,7 @@ public class TripleChaosMinigame extends BonziMinigame {
                 if(player.getY() < (double)(this.getWorld().getBottomY())) {
                     //if the player falls into the void - doesn't kill them because bugs'o'plenty
                     player.teleport(this.world, this.startPos.getX(), this.startPos.getY() + 2, this.startPos.getZ(), 0f, 0f);
+                    if(fullLogs()) BonziBUDDY.LOGGER.info("Triple Chaos Minigame {} - teleported player {} because they fell in the void", this.getId(), player.getName());
                 }
             }
         }
@@ -286,9 +289,11 @@ public class TripleChaosMinigame extends BonziMinigame {
         if(bonziBuddiesDefeated()) {
             win();
             ticksUntilInvalidate = 300;
+            if(extraLogs()) BonziBUDDY.LOGGER.info("Ended Triple Chaos Minigame {} (Bonzi Buddies defeated)", this.getId());
         } else {
             lose();
             ticksUntilInvalidate = 140;
+            if(extraLogs()) BonziBUDDY.LOGGER.info("Ended Triple Chaos Minigame {} (Defeat likely)", this.getId());
         }
         cachePlayerRewards();
         discardAllEnemies();
@@ -343,6 +348,8 @@ public class TripleChaosMinigame extends BonziMinigame {
         this.blueBonzi.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(blueBonziInitHealth);
         this.blueBonzi.setIsBlue(true);
         this.blueBonzi.setTripleChaosMinigame(this);
+
+        if(fullLogs()) BonziBUDDY.LOGGER.info("Spawned Bonzi Buddies!");
     }
 
     public void spawnClone() {
@@ -411,6 +418,8 @@ public class TripleChaosMinigame extends BonziMinigame {
                 enemy.discard();
             }
         });
+
+        if(fullLogs()) BonziBUDDY.LOGGER.info("Discarded all enemies!");
     }
     
     public void updateBossHealth(BonziBossEntity boss) {
@@ -513,6 +522,8 @@ public class TripleChaosMinigame extends BonziMinigame {
                 this.hatsToReward.add(hat);
             }
         }
+
+        if(fullLogs()) BonziBUDDY.LOGGER.info("Caching player rewards...");
     }
 
     /**

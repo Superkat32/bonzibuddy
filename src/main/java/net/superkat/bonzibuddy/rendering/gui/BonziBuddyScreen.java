@@ -17,13 +17,16 @@ import java.awt.*;
 public class BonziBuddyScreen extends Screen {
     @Nullable //nullable for possible commands allowing to open this screen?
     public BonziBuddyEntity bonziBuddyEntity;
+    public boolean tripleChaosEnabled = true;
+
     public BonziBuddyScreen() {
         super(Text.of("Bonzi buddy screen"));
     }
 
-    public BonziBuddyScreen(World world, int bonziBuddyId) {
+    public BonziBuddyScreen(World world, int bonziBuddyId, boolean tripleChaosEnabled) {
         this();
         this.bonziBuddyEntity = (BonziBuddyEntity) world.getEntityById(bonziBuddyId);
+        this.tripleChaosEnabled = tripleChaosEnabled;
     }
 
     @Override
@@ -38,11 +41,6 @@ public class BonziBuddyScreen extends Screen {
         );
         this.addDrawableChild(doATrick);
 
-//        ButtonWidget button = ButtonWidget.builder(Text.translatable("bonzibuddy.doatrick"), (btn) -> {
-//            doATrick();
-//        }).dimensions(this.width / 2 + 40, this.height / 2 - 85, 120, 20).build();
-//        this.addDrawableChild(button);
-
         VeryFancyButtonWidget sendEmail = new VeryFancyButtonWidget(
                 this.width / 2 + 20,
                 this.height / 2 - 25,
@@ -52,24 +50,14 @@ public class BonziBuddyScreen extends Screen {
         );
         this.addDrawableChild(sendEmail);
 
-//        ButtonWidget sendEmail = ButtonWidget.builder(Text.translatable("bonzibuddy.email"), (btn) -> {
-//            sendEmail();
-//        }).dimensions(this.width / 2 + 40, this.height / 2 - 25, 120, 20).build();
-//        this.addDrawableChild(sendEmail);
-
         VeryFancyButtonWidget playTripleChaos = new VeryFancyButtonWidget(
                 this.width / 2 + 20,
                 this.height / 2 + 40,
                 160, 28,
                 Text.translatable("bonzibuddy.playtriplechaos"),
                 (btn) -> openPrepMinigameScreen()
-        );
+        ).showOutOfOrder(!tripleChaosEnabled);
         this.addDrawableChild(playTripleChaos);
-
-//        ButtonWidget playTripleChaos = ButtonWidget.builder(Text.translatable("bonzibuddy.playtriplechaos"), (btn) -> {
-//            openPrepMinigameScreen();
-//        }).dimensions(this.width / 2 + 40, this.height / 2 + 35, 120, 20).build();
-//        this.addDrawableChild(playTripleChaos);
     }
 
     @Override
@@ -96,7 +84,7 @@ public class BonziBuddyScreen extends Screen {
 
     public void openPrepMinigameScreen() {
         BlockPos bonziPos = bonziBuddyEntity == null ? this.client.player.getBlockPos() : bonziBuddyEntity.getBlockPos();
-        this.client.setScreen(new PrepBonziMinigameScreen(bonziPos));
+        this.client.setScreen(new BrowseFriendRoomsScreen());
     }
 
     @Override

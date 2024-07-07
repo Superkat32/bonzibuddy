@@ -44,19 +44,24 @@ public class FriendRoomManager {
         if(room != null) {
             UUID playerUuid = player.getUuid();
             boolean hostLeaving = room.hostUuid.equals(playerUuid);
+            room.syncPlayers(player, false);
             room.removePlayer(playerUuid);
 
             if(room.players.isEmpty()) {
                 rooms.remove(roomUuid);
             } else if (hostLeaving) {
-                //remove all the players instead of finding a new host because I honestly can't be bothered
-//                for (UUID roomPlayerUuid : room.players) {
-//                    room.removePlayer(roomPlayerUuid);
-//                }
-
+                //closes the room instead of finding a new host because I honestly can't be bothered
                 rooms.remove(roomUuid);
             }
-            room.syncPlayers(player, false);
+        }
+    }
+
+    public static void removePlayer(ServerPlayerEntity host, UUID removeUuid) {
+        UUID roomUuid = host.getUuid();
+        FriendRoom room = rooms.get(roomUuid);
+        if(room != null) {
+            ServerPlayerEntity removePlayer = (ServerPlayerEntity) host.getWorld().getPlayerByUuid(removeUuid);
+            playerLeaveRoom(removePlayer, roomUuid);
         }
     }
 

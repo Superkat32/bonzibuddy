@@ -4,13 +4,18 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.superkat.bonzibuddy.entity.bonzi.BonziLikeEntity;
 import net.superkat.bonzibuddy.minigame.MinigameHudData;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigamePlayer;
 import net.superkat.bonzibuddy.minigame.room.FriendRoom;
+import net.superkat.bonzibuddy.minigame.room.FriendRoomManager;
 import net.superkat.bonzibuddy.network.packets.BonziBuddySyncAnimationS2C;
 import net.superkat.bonzibuddy.network.packets.OpenBonziBuddyScreenS2C;
 import net.superkat.bonzibuddy.network.packets.TriggeredAnimSyncWorkaroundS2C;
@@ -79,39 +84,121 @@ public class BonziBuddyClientNetworkHandler {
 
     public static void onFriendRoomSync(SyncFriendRoomsS2C payload, ClientPlayNetworking.Context context) {
         MinecraftClient client = context.client();
+        FriendRoomManager.syncRooms(payload);
+
+        UUID selfUuid = client.player.getUuid();
+        for (FriendRoom room : FriendRoomManager.rooms.values()) {
+            if(room.players.contains(selfUuid)) {
+                if(FriendRoomManager.currentRoom == null) {
+                    //player joined room
+                    client.player.playSoundToPlayer(SoundEvents.BLOCK_AMETHYST_BLOCK_RESONATE, SoundCategory.PLAYERS, 1f, 1f);
+                }
+                FriendRoomManager.currentRoom = room;
+            }
+        }
+
+        //safety check
+        if(FriendRoomManager.currentRoom != null && !FriendRoomManager.currentRoom.players.contains(selfUuid)) {
+            FriendRoomManager.currentRoom = null;
+        }
+
         if(client.currentScreen instanceof BrowseFriendRoomsScreen friendRoomsScreen) {
-            friendRoomsScreen.updateRooms(new HashSet<>(payload.rooms));
+            friendRoomsScreen.updateRooms(new HashSet<>(FriendRoomManager.rooms.values()));
         }
     }
 
     public static void onRoomPlayerUpdate(RoomPlayerUpdateS2C payload, ClientPlayNetworking.Context context) {
         MinecraftClient client = context.client();
-        if(client.currentScreen instanceof FriendRoomScreen friendRoomScreen) {
-            FriendRoom room = friendRoomScreen.room;
-            UUID hostUuid = room.hostUuid;
+        FriendRoom room = FriendRoomManager.currentRoom;
+        if(room != null) {
+            UUID hostUuid = room.getHostUuid();
             UUID selfUuid = client.player.getUuid();
             if(hostUuid.equals(payload.roomUuid())) {
                 UUID playerUpdated = payload.playerUpdated();
                 boolean playerJoined = payload.playerJoined();
+
+                boolean leftRoom = false;
+                boolean roomDisbanded = playerUpdated.equals(hostUuid);
+
                 if(playerJoined) {
                     room.addPlayer(playerUpdated);
+                    client.player.playSoundToPlayer(SoundEvents.BLOCK_AMETHYST_BLOCK_RESONATE, SoundCategory.PLAYERS, 1f, 1f);
                 } else {
                     room.removePlayer(playerUpdated);
+                    SoundEvent leaveSound = SoundEvents.ITEM_AXE_WAX_OFF;
+
+                    if(roomDisbanded) {
+                        leaveSound = SoundEvents.BLOCK_AMETHYST_BLOCK_BREAK;
+                        leftRoom = true;
+                    } else if (playerUpdated.equals(selfUuid)) {
+                        leftRoom = true;
+                    }
+
+                    client.player.playSoundToPlayer(leaveSound, SoundCategory.PLAYERS, 1f, 1f);
+
+                    if(leftRoom) {
+                        FriendRoomManager.currentRoom = null;
+                    }
                 }
 
-                if(playerUpdated.equals(hostUuid)) {
-                    client.setScreen(new BrowseFriendRoomsScreen());
-                } else if (playerUpdated.equals(selfUuid)) {
-                    client.setScreen(new BrowseFriendRoomsScreen());
-                } else {
-                    friendRoomScreen.redrawPlayers();
+                if(client.currentScreen instanceof FriendRoomScreen friendRoomScreen) {
+                    if(leftRoom) {
+                        client.setScreen(new BrowseFriendRoomsScreen());
+                    } else {
+                        friendRoomScreen.redrawPlayers();
+                    }
+                } else if(!(client.currentScreen instanceof BrowseFriendRoomsScreen)){
+                    if(playerJoined) {
+                        client.inGameHud.getChatHud().addMessage(Text.translatable("bonzibuddy.playerjoin", getPlayerName(playerUpdated)));
+                    } else {
+                        if(roomDisbanded) {
+                            client.inGameHud.getChatHud().addMessage(Text.translatable("bonzibuddy.disbanded", getPlayerName(playerUpdated)));
+                        } else {
+                            client.inGameHud.getChatHud().addMessage(Text.translatable("bonzibuddy.playerleave", getPlayerName(playerUpdated)));
+                        }
+                    }
                 }
             }
+
         }
+
+//        if(client.currentScreen instanceof FriendRoomScreen friendRoomScreen) {
+//            FriendRoom room = friendRoomScreen.room;
+//            UUID hostUuid = room.hostUuid;
+//            UUID selfUuid = client.player.getUuid();
+//            if(hostUuid.equals(payload.roomUuid())) {
+//                UUID playerUpdated = payload.playerUpdated();
+//                boolean playerJoined = payload.playerJoined();
+//                if(playerJoined) {
+//                    room.addPlayer(playerUpdated);
+//                } else {
+//                    room.removePlayer(playerUpdated);
+//                }
+//
+//                if(playerUpdated.equals(hostUuid)) {
+//                    client.setScreen(new BrowseFriendRoomsScreen());
+//                } else if (playerUpdated.equals(selfUuid)) {
+//                    client.setScreen(new BrowseFriendRoomsScreen());
+//                } else {
+//                    friendRoomScreen.redrawPlayers();
+//                }
+//            }
+//        }
+    }
+
+    private static Text getPlayerName(UUID playerUuid) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        PlayerListEntry playerEntry = client.player.networkHandler.getPlayerListEntry(playerUuid);
+        Text playerName = Text.of("");
+        if(playerEntry != null) {
+            playerName = client.inGameHud.getPlayerListHud().getPlayerName(playerEntry);
+        }
+        return playerName;
     }
 
     public static void onRoomJoin(OnFriendRoomJoinS2C payload, ClientPlayNetworking.Context context) {
         MinecraftClient client = context.client();
+
         if(client.currentScreen instanceof BrowseFriendRoomsScreen friendRoomsScreen) {
             friendRoomsScreen.refreshRooms();
         }

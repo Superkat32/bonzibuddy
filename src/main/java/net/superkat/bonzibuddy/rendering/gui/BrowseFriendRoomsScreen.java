@@ -10,6 +10,7 @@ import net.minecraft.text.Text;
 import net.minecraft.world.Difficulty;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameType;
 import net.superkat.bonzibuddy.minigame.room.FriendRoom;
+import net.superkat.bonzibuddy.minigame.room.FriendRoomManager;
 import net.superkat.bonzibuddy.network.packets.minigame.RequestPlayMinigameC2S;
 import net.superkat.bonzibuddy.network.packets.room.CreateFriendRoomC2S;
 import net.superkat.bonzibuddy.network.packets.room.JoinFriendRoomC2S;
@@ -149,12 +150,15 @@ public class BrowseFriendRoomsScreen extends Screen {
     public void updateRooms(Set<FriendRoom> rooms) {
         this.rooms = rooms;
         roomsUpdated = true;
-        UUID playerUuid = this.client.player.getUuid();
-        for (FriendRoom room : rooms) {
-            if(room.players.contains(playerUuid)) {
-                this.client.setScreen(new FriendRoomScreen(room));
-            }
+        if(FriendRoomManager.currentRoom != null) {
+            this.client.setScreen(new FriendRoomScreen(FriendRoomManager.currentRoom));
         }
+//        UUID playerUuid = this.client.player.getUuid();
+//        for (FriendRoom room : rooms) {
+//            if(room.players.contains(playerUuid)) {
+//                this.client.setScreen(new FriendRoomScreen(room));
+//            }
+//        }
     }
 
     public boolean inRoom() {
@@ -175,16 +179,6 @@ public class BrowseFriendRoomsScreen extends Screen {
         }
         return playerName;
     }
-
-//    @Override
-//    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
-//        super.renderBackground(context, mouseX, mouseY, delta);
-//    }
-
-//    @Override
-//    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
-//        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
-//    }
 
     public void requestPlaySoloTripleChaos() {
         int[] playerIds = new int[1];

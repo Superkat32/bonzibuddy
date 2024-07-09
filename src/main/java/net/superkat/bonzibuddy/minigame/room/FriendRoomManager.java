@@ -11,6 +11,7 @@ import java.util.UUID;
 
 public class FriendRoomManager {
     public static final Map<UUID, FriendRoom> rooms = Maps.newHashMap();
+    public static FriendRoom currentRoom = null;
 
     public static FriendRoom createRoom(UUID hostUuid) {
         FriendRoom room = new FriendRoom(hostUuid);;
@@ -28,6 +29,11 @@ public class FriendRoomManager {
     public static void syncRooms(ServerPlayerEntity player) {
         SyncFriendRoomsS2C payload = new SyncFriendRoomsS2C(rooms.values().stream().toList());
         ServerPlayNetworking.send(player, payload);
+    }
+
+    public static void syncRooms(SyncFriendRoomsS2C payload) {
+        rooms.clear();
+        payload.rooms.forEach(room -> rooms.put(room.getHostUuid(), room));
     }
 
     public static void playerJoinRoom(ServerPlayerEntity player, UUID roomUuid) {

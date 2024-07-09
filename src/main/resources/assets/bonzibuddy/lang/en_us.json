@@ -15,6 +15,10 @@
   "bonzibuddy.outoforder": "Out of order!!",
   "bonzibuddy.inroom": "You're in a friend room!",
 
+  "bonzibuddy.playerjoin": "§d[Bonzi Buddy]§r: %1$s Joined!",
+  "bonzibuddy.playerleave": "§d[Bonzi Buddy]§r: %1$s Left!",
+  "bonzibuddy.disbanded": "§d[Bonzi Buddy]§r: %1$s's Room Has Been Disbanded!",
+
   "item.bonzibuddy.banana_blaster": "Banana Blaster",
 
   "item.bonzibuddy.tater": "Tater Hat",

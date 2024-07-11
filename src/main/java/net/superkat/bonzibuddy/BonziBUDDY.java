@@ -2,10 +2,10 @@ package net.superkat.bonzibuddy;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.fabricmc.fabric.api.gamerule.v1.GameRuleFactory;
 import net.fabricmc.fabric.api.gamerule.v1.GameRuleRegistry;
 import net.fabricmc.fabric.api.gamerule.v1.rule.EnumRule;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
 import net.minecraft.particle.SimpleParticleType;
 import net.minecraft.registry.Registries;
@@ -19,8 +19,8 @@ import net.minecraft.world.gen.chunk.placement.StructurePlacementType;
 import net.superkat.bonzibuddy.entity.BonziBuddyEntities;
 import net.superkat.bonzibuddy.item.BonziItems;
 import net.superkat.bonzibuddy.minigame.DisasterLoggerLevel;
-import net.superkat.bonzibuddy.minigame.api.BonziMinigameApi;
 import net.superkat.bonzibuddy.minigame.command.BonziMinigameCommand;
+import net.superkat.bonzibuddy.minigame.room.FriendRoomManager;
 import net.superkat.bonzibuddy.network.BonziBuddyServerNetworkHandler;
 import net.superkat.bonzibuddy.worldgen.ConstantSpreadStructurePlacement;
 import org.slf4j.Logger;
@@ -62,10 +62,8 @@ public class BonziBUDDY implements ModInitializer {
 		//BonziMinigame command
 		CommandRegistrationCallback.EVENT.register(((dispatcher, registryAccess, environment) -> BonziMinigameCommand.register(dispatcher)));
 
-		ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) -> {
-			if(BonziMinigameApi.isBonziBuddyWorld(origin)) {
-
-			}
+		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
+			FriendRoomManager.playerDisconnected(handler.player);
 		});
 	}
 }

@@ -71,4 +71,13 @@ public class FriendRoomManager {
         }
     }
 
+    public static void playerDisconnected(ServerPlayerEntity player) {
+        UUID playerUuid = player.getUuid();
+        rooms.values().forEach(room -> {
+            if(room.players.contains(playerUuid)) {
+                playerLeaveRoom(player, room.hostUuid);
+            }
+        });
+    }
+
 }

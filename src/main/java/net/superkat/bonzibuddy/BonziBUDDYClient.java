@@ -12,6 +12,7 @@ import net.superkat.bonzibuddy.entity.client.renderer.BananaBlasterEntityRendere
 import net.superkat.bonzibuddy.entity.client.renderer.BonziBuddyEntityRenderer;
 import net.superkat.bonzibuddy.entity.client.renderer.mob.BonziBossEntityRenderer;
 import net.superkat.bonzibuddy.entity.client.renderer.mob.BonziCloneEntityRenderer;
+import net.superkat.bonzibuddy.minigame.room.FriendRoomManager;
 import net.superkat.bonzibuddy.network.BonziBuddyClientNetworkHandler;
 import net.superkat.bonzibuddy.rendering.hud.MinigameHudRenderer;
 
@@ -32,6 +33,8 @@ public class BonziBUDDYClient implements ClientModInitializer {
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
             MinigameHudRenderer.minigameHuds.clear();
+            FriendRoomManager.rooms.clear();
+            FriendRoomManager.currentRoom = null;
         });
         ClientTickEvents.END_WORLD_TICK.register(world -> {
             if(!MinigameHudRenderer.minigameHuds.values().isEmpty()) {

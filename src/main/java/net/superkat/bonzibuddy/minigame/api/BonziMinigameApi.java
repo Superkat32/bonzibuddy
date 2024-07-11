@@ -6,12 +6,17 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnLocation;
 import net.minecraft.entity.SpawnRestriction;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.structure.StructureStart;
+import net.minecraft.util.math.*;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.TeleportTarget;
+import net.minecraft.world.gen.chunk.ChunkGenerator;
+import net.minecraft.world.gen.structure.Structure;
 import net.superkat.bonzibuddy.BonziBUDDY;
 import net.superkat.bonzibuddy.entity.BonziBuddyEntities;
 import net.superkat.bonzibuddy.minigame.BonziCatastrophicClonesMinigame;
@@ -21,6 +26,7 @@ import net.superkat.bonzibuddy.minigame.TripleChaosMinigame;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Class to be called by all minigames and outside code for common actions, such as starting a minigame.
@@ -34,6 +40,10 @@ public class BonziMinigameApi {
     public static final int STRUCTURE_SPACING = 256;
     public static final int STRUCTURE_PLATFORM_Y = 37;
     public static final int STRUCTURE_SPAWN_Y = STRUCTURE_PLATFORM_Y + 3;
+
+    public static void requestMinigame(ServerWorld world, List<ServerPlayerEntity> players) {
+        getMinigameManager(world).requestMinigame(players);
+    }
 
     /**
      * Start a Bonzi Minigame of a specific type at a specific position.
@@ -233,13 +243,13 @@ public class BonziMinigameApi {
         BonziMinigameManager minigameManager = getMinigameManager(world);
         int totalMinigames = minigameManager.getAllMinigames().size();
         if(totalMinigames == 0) {
-            return findStructureCenterOffset(world, 0, STRUCTURE_PLATFORM_Y, 0);
+            return findStructureCenterOffset(world, 0, STRUCTURE_PLATFORM_Y, 0, true);
         } else {
-            return findStructureCenterOffset(world, totalMinigames * STRUCTURE_SPACING, STRUCTURE_PLATFORM_Y, 0);
+            return findStructureCenterOffset(world, totalMinigames * STRUCTURE_SPACING, STRUCTURE_PLATFORM_Y, 0, true);
         }
     }
 
-    private static BlockPos findStructureCenterOffset(ServerWorld world, int x, int y, int z) {
+    private static BlockPos findStructureCenterOffset(ServerWorld world, int x, int y, int z, boolean attemptStructureSpawn) {
         BlockPos searchPos = new BlockPos(x, y, z);
         int s = 25; //search
         if(!world.getBlockState(searchPos.add(0, 0, s)).isAir()) {
@@ -251,8 +261,74 @@ public class BonziMinigameApi {
         } else if(!world.getBlockState(searchPos.add(s, 0, 0)).isAir()) {
             return new BlockPos(searchPos).add(s, 0, 0);
         } else {
-            BonziBUDDY.LOGGER.warn("Couldn't find the center of the structure! Preforming detailed search...");
-            return searchPos;
+            BonziBUDDY.LOGGER.error("[Bonzi Buddy]: Couldn't find the center of the structure!");
+            if(!world.getServer().getSaveProperties().getGeneratorOptions().shouldGenerateStructures()) {
+                BonziBUDDY.LOGGER.warn("[Bonzi Buddy]: Generate structures is disabled! That may be the cause");
+            }
+
+            if(attemptStructureSpawn && world.getGameRules().get(BonziBUDDY.ATTEMPT_BACKUP_STRUCTURE).get()) {
+                BonziBUDDY.LOGGER.info("[Bonzi Buddy]: Attempting to manually generate structure");
+                if(attemptSpawnStructure(world, x, y, 0)) {
+                    BonziBUDDY.LOGGER.info("[Bonzi Buddy]: Attempting structure search again...");
+                    return findStructureCenterOffset(world, x, y, z, false);
+                }
+                BonziBUDDY.LOGGER.error("[Bonzi Buddy]: Returning backup BlockPos. This may spawn players in the void!");
+            }
+            return BlockPos.ORIGIN;
+        }
+    }
+
+    private static boolean attemptSpawnStructure(ServerWorld world, int x, int y, int z) {
+        //safety check
+        if(!isBonziBuddyWorld(world)) return false;
+
+        DynamicRegistryManager.Immutable registryManager = world.getServer().getRegistryManager();
+        Optional<RegistryEntry.Reference<Structure>> platformKey = registryManager.get(RegistryKeys.STRUCTURE).getEntry(BonziBUDDY.PLATFORM);
+        if(platformKey.isEmpty()) {
+            BonziBUDDY.LOGGER.error("[Bonzi Buddy]: Failed to place structure - Platform structure registry key is empty!");
+            return false;
+        }
+        Structure structure = platformKey.get().value();
+        ChunkGenerator chunkGenerator = world.getChunkManager().getChunkGenerator();
+        StructureStart structureStart = structure.createStructureStart(
+                registryManager,
+                chunkGenerator,
+                chunkGenerator.getBiomeSource(),
+                world.getChunkManager().getNoiseConfig(),
+                world.getStructureTemplateManager(),
+                world.getSeed(),
+                new ChunkPos(x, z),
+                0,
+                world,
+                biome -> true
+        );
+        if (!structureStart.hasChildren()) {
+            BonziBUDDY.LOGGER.error("[Bonzi Buddy]: Failed to place structure...");
+            return false;
+        } else {
+            BlockBox blockBox = structureStart.getBoundingBox();
+            ChunkPos chunkPos = new ChunkPos(ChunkSectionPos.getSectionCoord(blockBox.getMinX()), ChunkSectionPos.getSectionCoord(blockBox.getMinZ()));
+            ChunkPos chunkPos2 = new ChunkPos(ChunkSectionPos.getSectionCoord(blockBox.getMaxX()), ChunkSectionPos.getSectionCoord(blockBox.getMaxZ()));
+            //if chunk loaded instead?
+
+            //TODO - snail picture
+            if(ChunkPos.stream(chunkPos, chunkPos2).filter(pos -> !world.canSetBlock(pos.getStartPos())).findAny().isPresent()) {
+                BonziBUDDY.LOGGER.error("[Bonzi Buddy]: Failed to place structure - Location is unloaded!");
+                return false;
+            }
+            ChunkPos.stream(chunkPos, chunkPos2)
+                    .forEach(
+                            chunkPosx -> structureStart.place(
+                                    world,
+                                    world.getStructureAccessor(),
+                                    chunkGenerator,
+                                    world.getRandom(),
+                                    new BlockBox(chunkPosx.getStartX(), world.getBottomY(), chunkPosx.getStartZ(), chunkPosx.getEndX(), world.getTopY(), chunkPosx.getEndZ()),
+                                    chunkPosx
+                            )
+                    );
+            BonziBUDDY.LOGGER.info("[Bonzi Buddy]: Placed structure at {}, {} successfully!", x, z);
+            return true;
         }
     }
 

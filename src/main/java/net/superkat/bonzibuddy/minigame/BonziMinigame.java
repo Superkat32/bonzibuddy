@@ -246,6 +246,14 @@ public class BonziMinigame {
         PlayerInMinigameUpdateS2C minigameUpdate = new PlayerInMinigameUpdateS2C(true);
         ServerPlayNetworking.send(player, minigameUpdate);
 
+        sendUpdateMinigameHudPacket(MinigameHudUpdateS2C.Action.UPDATE_ONE_PLAYER_LEFT);
+
+        if(hasLost()) {
+            ServerPlayNetworking.send(player, new MinigameHudUpdateS2C(hudData, MinigameHudUpdateS2C.Action.DEFEAT));
+        } else if(hasWon()) {
+            ServerPlayNetworking.send(player, new MinigameHudUpdateS2C(hudData, MinigameHudUpdateS2C.Action.VICTORY));
+        }
+
         if(extraLogs()) {
             BonziBUDDY.LOGGER.info("Added player {} to minigame!", player.getName());
         }

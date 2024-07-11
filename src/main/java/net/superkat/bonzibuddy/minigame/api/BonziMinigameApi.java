@@ -251,8 +251,8 @@ public class BonziMinigameApi {
         } else if(!world.getBlockState(searchPos.add(s, 0, 0)).isAir()) {
             return new BlockPos(searchPos).add(s, 0, 0);
         } else {
-            BonziBUDDY.LOGGER.warn("Couldn't find the center of the structure! Preforming detailed search...");
-            return searchPos;
+            BonziBUDDY.LOGGER.error("[Bonzi Buddy]: Couldn't find the center of the structure! {}, {}, {}", x, y, z);
+            return BlockPos.ORIGIN;
         }
     }
 

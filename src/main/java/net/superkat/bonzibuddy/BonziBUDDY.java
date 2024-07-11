@@ -2,6 +2,7 @@ package net.superkat.bonzibuddy;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.fabricmc.fabric.api.gamerule.v1.GameRuleFactory;
 import net.fabricmc.fabric.api.gamerule.v1.GameRuleRegistry;
 import net.fabricmc.fabric.api.gamerule.v1.rule.EnumRule;
@@ -18,6 +19,7 @@ import net.minecraft.world.gen.chunk.placement.StructurePlacementType;
 import net.superkat.bonzibuddy.entity.BonziBuddyEntities;
 import net.superkat.bonzibuddy.item.BonziItems;
 import net.superkat.bonzibuddy.minigame.DisasterLoggerLevel;
+import net.superkat.bonzibuddy.minigame.api.BonziMinigameApi;
 import net.superkat.bonzibuddy.minigame.command.BonziMinigameCommand;
 import net.superkat.bonzibuddy.network.BonziBuddyServerNetworkHandler;
 import net.superkat.bonzibuddy.worldgen.ConstantSpreadStructurePlacement;
@@ -42,6 +44,7 @@ public class BonziBUDDY implements ModInitializer {
 			LOGGER.info("[BonziBUDDY]: oh snappers");
 		}
 	}));
+	public static final GameRules.Key<GameRules.IntRule> MAX_ONGOING_MINIGAMES = GameRuleRegistry.register("tripleChaosMaxOngoingGames", GameRules.Category.MOBS, GameRuleFactory.createIntRule(10, 1, 10));
 
     public static final SimpleParticleType PAPER_AIRPLANE = FabricParticleTypes.simple();
 
@@ -58,5 +61,11 @@ public class BonziBUDDY implements ModInitializer {
 
 		//BonziMinigame command
 		CommandRegistrationCallback.EVENT.register(((dispatcher, registryAccess, environment) -> BonziMinigameCommand.register(dispatcher)));
+
+		ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) -> {
+			if(BonziMinigameApi.isBonziBuddyWorld(origin)) {
+
+			}
+		});
 	}
 }

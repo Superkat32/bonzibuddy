@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Difficulty;
 import net.superkat.bonzibuddy.BonziBUDDY;
@@ -105,32 +106,48 @@ public class BonziBuddyServerNetworkHandler {
             ServerWorld world = context.player().getServerWorld();
             ServerWorld bonziWorld = Objects.requireNonNull(context.player().getServer()).getWorld(BonziBUDDY.PROTECT_BONZIBUDDY);
 
-            boolean tripleChaosEnabled = world.getGameRules().getBoolean(BonziBUDDY.TRIPLE_CHAOS_ENABLED);
-
             if(bonziWorld != null) {
-                if(tripleChaosEnabled) {
-                    Difficulty worldDifficulty = bonziWorld.getDifficulty();
-                    if(worldDifficulty != Difficulty.PEACEFUL) {
-                        int[] playerIds = payload.playerIds();
-                        Set<ServerPlayerEntity> players = Sets.newHashSet();
-                        for (int playerId : playerIds) {
-                            ServerPlayerEntity player = (ServerPlayerEntity) world.getEntityById(playerId);
-                            players.add(player);
-                        }
-                        BlockPos startPos = BonziMinigameApi.getAvailableMinigameBlockpos(bonziWorld);
-                        BonziMinigame startedBonziMinigame = BonziMinigameApi.startBonziMinigame(type, bonziWorld, startPos);
-                        if(startedBonziMinigame instanceof TripleChaosMinigame chaosMinigame) {
-                            int difficulty = worldDifficulty.ordinal() + players.size() / 2;
-                            chaosMinigame.setDifficultyLevel(difficulty);
-                        }
-
-                        BonziMinigameApi.teleportPlayersToMinigame(startedBonziMinigame, players.stream().toList());
-                    } else {
-                        BonziBUDDY.LOGGER.warn("Can't start Bonzi Minigame! The difficulty is in peaceful!");
-                    }
-                } else {
-                    BonziBUDDY.LOGGER.warn("Can't start Bonzi Minigame! They are disabled!");
+                boolean tripleChaosEnabled = world.getGameRules().getBoolean(BonziBUDDY.TRIPLE_CHAOS_ENABLED);
+                if(!tripleChaosEnabled) {
+                    BonziBUDDY.LOGGER.error("Can't start Bonzi Minigame! They are disabled!");
+                    return;
                 }
+
+                Difficulty worldDifficulty = bonziWorld.getDifficulty();
+                if(worldDifficulty == Difficulty.PEACEFUL) {
+                    BonziBUDDY.LOGGER.error("Can't start Bonzi Minigame! The difficulty is in peaceful!");
+                    return;
+                }
+
+                int[] playerIds = payload.playerIds();
+                Set<ServerPlayerEntity> players = Sets.newHashSet();
+                for (int playerId : playerIds) {
+                    ServerPlayerEntity player = (ServerPlayerEntity) world.getEntityById(playerId);
+                    players.add(player);
+                }
+
+                int maxMinigames = world.getGameRules().getInt(BonziBUDDY.MAX_ONGOING_MINIGAMES);
+                if(BonziMinigameApi.getAllMinigames(bonziWorld).size() >= maxMinigames) {
+                    BonziBUDDY.LOGGER.error("Can't start Bonzi Minigame! Ongoing minigame limit reached!");
+                    players.forEach(player -> player.sendMessageToClient(Text.translatable("bonzibuddy.error.maxlimit"), false));
+                    return;
+                }
+
+                BlockPos startPos = BonziMinigameApi.getAvailableMinigameBlockpos(bonziWorld);
+                if(startPos != BlockPos.ORIGIN) {
+                    BonziMinigame startedBonziMinigame = BonziMinigameApi.startBonziMinigame(type, bonziWorld, startPos);
+                    if(startedBonziMinigame instanceof TripleChaosMinigame chaosMinigame) {
+                        int difficulty = worldDifficulty.ordinal() + players.size() / 2;
+                        chaosMinigame.setDifficultyLevel(difficulty);
+                    }
+
+                    BonziMinigameApi.teleportPlayersToMinigame(startedBonziMinigame, players.stream().toList());
+                } else {
+                    BonziBUDDY.LOGGER.error("Can't start Bonzi Minigame! Couldn't find structure location!");
+                    players.forEach(player -> player.sendMessageToClient(Text.translatable("bonzibuddy.error.nolocation"), false));
+                }
+            } else {
+                BonziBUDDY.LOGGER.error("Can't start Bonzi Minigame! (World is null or some other errorMessage?)");
             }
         }
     }

@@ -33,6 +33,7 @@ public class MinigameHudRenderer {
     public static final Map<UUID, MinigameHudData> minigameHuds = Maps.newLinkedHashMap();
 //    public static final Map<UUID, TextTypeWriter> textTypeWriters = Maps.newLinkedHashMap();
     public static final Map<UUID, List<TextTypeWriter>> textTypeWriters = Maps.newLinkedHashMap();
+    public static int ticksSinceUpdate = 0;
 
     public static void registerHudRenderEvents() {
         HudRenderCallback.EVENT.register(MinigameHudRenderer::renderMinigameHuds);

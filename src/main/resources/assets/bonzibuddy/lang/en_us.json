@@ -19,6 +19,9 @@
   "bonzibuddy.playerleave": "§d[Bonzi Buddy]§r: %1$s Left!",
   "bonzibuddy.disbanded": "§d[Bonzi Buddy]§r: %1$s's Room Has Been Disbanded!",
 
+  "bonzibuddy.error.nolocation": "§cFailed to create minigame!§r (Structure couldn't be found! Is generate structures enabled?)",
+  "bonzibuddy.error.maxlimit": "§cFailed to create minigame!§r (The limit of ongoing minigames has been reached! Try again soon.)",
+
   "item.bonzibuddy.banana_blaster": "Banana Blaster",
 
   "item.bonzibuddy.tater": "Tater Hat",

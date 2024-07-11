@@ -246,5 +246,6 @@ public class BonziBuddyClientNetworkHandler {
                 MinigameHudRenderer.minigameHuds.remove(hudUuid);
             }
         }
+        MinigameHudRenderer.ticksSinceUpdate = 0;
     }
 }

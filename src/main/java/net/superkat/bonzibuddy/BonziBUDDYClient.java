@@ -1,6 +1,7 @@
 package net.superkat.bonzibuddy;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
@@ -31,6 +32,15 @@ public class BonziBUDDYClient implements ClientModInitializer {
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
             MinigameHudRenderer.minigameHuds.clear();
+        });
+        ClientTickEvents.END_WORLD_TICK.register(world -> {
+            if(!MinigameHudRenderer.minigameHuds.values().isEmpty()) {
+                MinigameHudRenderer.ticksSinceUpdate++;
+                //no update should take more than a second, let alone 15 seconds
+                if(MinigameHudRenderer.ticksSinceUpdate >= 300) {
+                    MinigameHudRenderer.minigameHuds.clear();
+                }
+            }
         });
 
         //Packets

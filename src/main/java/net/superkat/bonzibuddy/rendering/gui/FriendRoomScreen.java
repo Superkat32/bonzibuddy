@@ -40,7 +40,7 @@ public class FriendRoomScreen extends Screen {
                     this.width,
                     Text.translatable("bonzibuddy.begin"),
                     (btn) -> requestPlayTripleChaos()
-            ).showOutOfRange(peaceful);
+            ).showOutOfRange(peaceful).showSelected(!peaceful);
             if(peaceful) {
                 playTripleChaos.setTooltip(Tooltip.of(Text.translatable("bonzibuddy.peaceful")));
             }

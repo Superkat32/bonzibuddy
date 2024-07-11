@@ -177,6 +177,7 @@ public class VeryFancyButtonWidget extends ButtonWidget {
     }
 
     private void renderPlayerFace(DrawContext context, PlayerListEntry playerEntry, int x, int y, int size) {
+        if(playerEntry == null) return;
         Supplier<SkinTextures> skinTexturesSupplier = playerEntry::getSkinTextures;
         PlayerSkinDrawer.draw(context, skinTexturesSupplier.get(), x, y, size);
     }

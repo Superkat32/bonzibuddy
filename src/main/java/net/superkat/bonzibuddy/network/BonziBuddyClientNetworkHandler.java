@@ -159,31 +159,7 @@ public class BonziBuddyClientNetworkHandler {
                     }
                 }
             }
-
         }
-
-//        if(client.currentScreen instanceof FriendRoomScreen friendRoomScreen) {
-//            FriendRoom room = friendRoomScreen.room;
-//            UUID hostUuid = room.hostUuid;
-//            UUID selfUuid = client.player.getUuid();
-//            if(hostUuid.equals(payload.roomUuid())) {
-//                UUID playerUpdated = payload.playerUpdated();
-//                boolean playerJoined = payload.playerJoined();
-//                if(playerJoined) {
-//                    room.addPlayer(playerUpdated);
-//                } else {
-//                    room.removePlayer(playerUpdated);
-//                }
-//
-//                if(playerUpdated.equals(hostUuid)) {
-//                    client.setScreen(new BrowseFriendRoomsScreen());
-//                } else if (playerUpdated.equals(selfUuid)) {
-//                    client.setScreen(new BrowseFriendRoomsScreen());
-//                } else {
-//                    friendRoomScreen.redrawPlayers();
-//                }
-//            }
-//        }
     }
 
     private static Text getPlayerName(UUID playerUuid) {

@@ -336,6 +336,7 @@ public class BonziMinigameApi {
         ServerWorld world = minigame.getWorld();
         BlockPos minigameStartPos = minigame.getStartPos();
         players.forEach(player ->  {
+            if(player == null) return;
             player.teleport(world, minigameStartPos.getX(), minigameStartPos.getY() + 3, minigameStartPos.getZ(), 0f, 0f);
         });
     }

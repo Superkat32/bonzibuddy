@@ -109,7 +109,7 @@ public class BrowseFriendRoomsScreen extends Screen {
                 this.width,
                 Text.translatable("bonzibuddy.begin"),
                 (btn) -> requestPlaySoloTripleChaos()
-        ).showOutOfOrder(inRoom()).showOutOfRange(!inRoom() && peaceful);
+        ).showOutOfOrder(inRoom()).showOutOfRange(!inRoom() && peaceful).showSelected(!inRoom() && !peaceful);
         if(inRoom()) {
             //in theory this should never be seen but
             playTripleChaos.setTooltip(Tooltip.of(Text.translatable("bonzibuddy.inroom")));

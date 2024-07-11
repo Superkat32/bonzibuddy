@@ -5,13 +5,8 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Unit;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.Difficulty;
 import net.minecraft.world.PersistentState;
 import net.superkat.bonzibuddy.BonziBUDDY;
 import net.superkat.bonzibuddy.minigame.api.BonziMinigameApi;
@@ -28,8 +23,6 @@ import java.util.Map;
  */
 public class BonziMinigameManager extends PersistentState {
     private final Map<Integer, BonziMinigame> minigames = Maps.newHashMap();
-    private final Map<Integer, BlockPos> requestedMinigames = Maps.newHashMap();
-    private final Map<Integer, List<ServerPlayerEntity>> playersWaiting = Maps.newHashMap();
     private final ServerWorld world;
     private int nextAvailableId;
 
@@ -80,47 +73,6 @@ public class BonziMinigameManager extends PersistentState {
                 minigame.tick();
             }
         }
-
-        //the most convoluted way of working around the chunks not being loaded
-        //I can't freaking believe this worked xD - haha doesn't work on server ;-;
-        Iterator<Map.Entry<Integer, BlockPos>> requestedMinigamesId = this.requestedMinigames.entrySet().iterator();
-        Iterator<List<ServerPlayerEntity>> waitingPlayers = this.playersWaiting.values().iterator();
-        while (requestedMinigamesId.hasNext() && waitingPlayers.hasNext()) {
-            Map.Entry<Integer, BlockPos> entry = requestedMinigamesId.next();
-            BlockPos minigameStartPos = entry.getValue();
-            int id = entry.getKey();
-            List<ServerPlayerEntity> players = waitingPlayers.next();
-            if (!minigameStartPos.equals(BlockPos.ORIGIN)) {
-                BonziMinigame minigame = BonziMinigameApi.startBonziMinigame(BonziMinigameType.TRIPLE_CHAOS, this.world, minigameStartPos);
-
-                Difficulty worldDifficulty = this.world.getDifficulty();
-                int difficulty = worldDifficulty.ordinal() + players.size() / 2;
-                if(minigame instanceof TripleChaosMinigame chaosMinigame) {
-                    chaosMinigame.setDifficultyLevel(difficulty);
-                }
-                BonziMinigameApi.teleportPlayersToMinigame(minigame, players);
-
-                this.world.getChunkManager().removeTicket(ChunkTicketType.DRAGON, new ChunkPos(minigameStartPos.getX(), minigameStartPos.getZ()), 4, Unit.INSTANCE);
-                requestedMinigamesId.remove();
-                waitingPlayers.remove();
-            } else { //starting pos not found yet
-                ChunkPos location = new ChunkPos(this.minigames.size() == 0 ? 0 : this.minigames.size() * BonziMinigameApi.STRUCTURE_SPACING, 0);
-                this.world.getChunkManager().addTicket(ChunkTicketType.DRAGON, location, 4, Unit.INSTANCE);
-                boolean locationLoaded = this.world.isChunkLoaded(location.x, location.z);
-                if(locationLoaded) {
-                    BlockPos spawnPos = BonziMinigameApi.getAvailableMinigameBlockpos(this.world);
-                    if(spawnPos != BlockPos.ORIGIN) {
-                        this.requestedMinigames.put(id, spawnPos);
-                    }
-                }
-            }
-        }
-    }
-
-    public void requestMinigame(List<ServerPlayerEntity> players) {
-        int id = this.nextAvailableId++;
-        this.requestedMinigames.put(id, BlockPos.ORIGIN);
-        this.playersWaiting.put(id, players);
     }
 
     public BonziMinigame getMinigameById(int id) {

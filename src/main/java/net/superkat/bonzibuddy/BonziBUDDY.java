@@ -15,7 +15,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.chunk.placement.StructurePlacementType;
-import net.minecraft.world.gen.structure.Structure;
 import net.superkat.bonzibuddy.entity.BonziBuddyEntities;
 import net.superkat.bonzibuddy.item.BonziItems;
 import net.superkat.bonzibuddy.minigame.DisasterLoggerLevel;
@@ -34,7 +33,6 @@ public class BonziBUDDY implements ModInitializer {
 			Registries.STRUCTURE_PLACEMENT,
 			Identifier.of(MOD_ID, "constant_spread"),
 			() -> ConstantSpreadStructurePlacement.CODEC);
-	public static final RegistryKey<Structure> PLATFORM = RegistryKey.of(RegistryKeys.STRUCTURE, Identifier.of(MOD_ID, "platform"));
 
 	public static final GameRules.Key<GameRules.BooleanRule> TRIPLE_CHAOS_ENABLED = GameRuleRegistry.register("tripleChaosEnabled", GameRules.Category.MOBS, GameRuleFactory.createBooleanRule(true));
 	public static final GameRules.Key<GameRules.IntRule> UNLOADED_INVALIDATION_SECONDS = GameRuleRegistry.register("tripleChaosUnloadedSeconds", GameRules.Category.MOBS, GameRuleFactory.createIntRule(5, 0, 30));
@@ -44,7 +42,6 @@ public class BonziBUDDY implements ModInitializer {
 			LOGGER.info("[BonziBUDDY]: oh snappers");
 		}
 	}));
-	public static final GameRules.Key<GameRules.BooleanRule> ATTEMPT_BACKUP_STRUCTURE = GameRuleRegistry.register("tripleChaosAttemptGenerateStructure", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
 
     public static final SimpleParticleType PAPER_AIRPLANE = FabricParticleTypes.simple();
 
